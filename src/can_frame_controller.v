@@ -23,7 +23,6 @@ module can_frame_controller(
     output reg         stuff_en,        // current field is subject to stuffing
  
     output reg         error_detected,  // pulse: bump TEC/REC
-    output reg         flag_type,       // 0 = dominant flag, 1 = recessive flag
  
     output reg         tx_done,
     output reg         tx_busy
@@ -53,6 +52,7 @@ localparam INTERM_LEN = 6'd3;
 localparam ERR_FLAG_LEN = 6'd6;
 localparam ERR_DELIM_LEN= 6'd7;   // exit bit of WAIT_RECESSIVE = bit 1
 
+localparam BIT_CNT_MIN = 6'd1;
 
 reg [3:0] present_state,next_state;
 
@@ -177,7 +177,7 @@ begin
 
 		ERROR_DELIM:
 		begin
-			if(bit_cnt == 6'd1)
+			if(bit_cnt == BIT_CNT_MIN)
 				next_state = INTERMISSION;
 			else
 				next_state = ERROR_DELIM;
@@ -266,7 +266,6 @@ end
 always@(*)
 begin
  	field_sel      = present_state;
-        flag_type      = node_state;
         tx_busy        = (present_state != IDLE);
 
         if (bit_error_occured || ack_error_occured)
