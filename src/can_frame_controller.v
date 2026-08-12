@@ -104,7 +104,7 @@ begin
 	CONTROL:
 	begin
 		if(bit_cnt == 6'd1)
-			next_state = (rtr) ? CRC: DATA;
+			next_state = (rtr || dlc == 0) ? CRC: DATA;
 		else
 			next_state = CONTROL;
 	end
@@ -224,4 +224,29 @@ begin
 		end
 	end
 end
+
+always@(posedge clk or negedge rst_n)
+begin
+	if(!rst_n)
+	begin
+		byte_idx <= 0;
+	end
+	else
+	begin
+		if(state != DATA)
+		begin
+			byte_idx <= 0;
+		end
+		else
+		begin
+			if( (bit_cnt == 6'd1) && !stuff_insert)
+				byte_idx <= byte_idx + 1;
+			else
+				byte_idx <= byte_idx;
+		end	
+	end
+end
+
+
+
 endmodule
