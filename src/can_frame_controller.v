@@ -221,7 +221,10 @@ begin
 			begin
 				if(!stuff_insert)
 				begin
-					bit_cnt <= (bit_cnt == 6'd1) ? bit_cnt : (bit_cnt - 6'd1);
+					if(bit_cnt == 6'd1)
+						bit_cnt <= bit_cnt;
+					else
+						bit_cnt <= bit_cnt - 1;
 				end
 				else
 				begin
