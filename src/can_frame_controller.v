@@ -1,4 +1,4 @@
-module can_frame_fsm (
+module can_frame_controller(
     input  wire        clk,
     input  wire        rst_n,
     input  wire        bit_en,          // one pulse per bit-time
@@ -65,7 +65,7 @@ wire ack_error_occured =  (!ack_recieved && (present_state == ACK));
 
 always@(posedge clk or negedge rst_n)
 begin
-	if(rst_n)
+	if(!rst_n)
 	begin
 		present_state <= IDLE;
 	end
