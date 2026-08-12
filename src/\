@@ -1,0 +1,123 @@
+module can_frame_fsm (
+    input  wire        clk,
+    input  wire        rst_n,
+    input  wire        bit_en,          // one pulse per bit-time
+
+    input  wire        can_rx_sync,     // synchronized bus level
+
+    input  wire        tx_request,      // host has a message pending
+    input  wire        rtr,             // 0 = data frame, 1 = remote frame
+    input  wire        ide,             // 0 = standard, 1 = extended
+    input  wire [3:0]  dlc,             // data length code
+ 
+    input  wire        bit_error,       // tx != rx, exceptions already filtered
+    input  wire        ack_received,    // dominant seen in ACK slot
+    input  wire        stuff_insert,    // this cycle is a stuffed bit
+ 
+    input  wire        node_state,      // 0 = error-active, 1 = error-passive
+ 
+    output reg  [3:0]  field_sel,       // current field (see localparams below)
+    output reg  [2:0]  byte_idx,        // current data byte, 0-7
+ 
+    output reg         crc_en,          // accumulate this bit into CRC_RG
+    output reg         stuff_en,        // current field is subject to stuffing
+ 
+    output reg         error_detected,  // pulse: bump TEC/REC
+    output reg         flag_type,       // 0 = dominant flag, 1 = recessive flag
+ 
+    output reg         tx_done,
+    output reg         tx_busy,
+    output reg         tx_lost_arb
+);
+
+localparam IDLE = 4'd0;
+localparam SOF = 4'd1;
+localparam ARBITRATION = 4'd2;
+localparam CONTROL = 4'd3;
+localparam DATA = 4'd4;
+localparam CRC = 4'd5;
+localparam ACK = 4'd6;
+localparam EOF = 4'd7;
+localparam INTERMISSION = 4'd8;
+localparam ERROR_FLAG = 4'd9;
+localparam WAIT_RECESSIVE = 4'd10;
+localparam ERROR_DELIM = 4'd11;
+
+localparam ARB_LEN_STD = 5'd12;
+localparam ARB_LEN_EXT = 5'd32;
+localparam CTRL_LEN = 5'd6;
+localparam CRC_LEN = 5'd16;  // 15 CRC bits + 1 delimiter
+localparam ACK_LEN = 5'd2;   // slot + delimiter
+localparam EOF_LEN = 5'd7;
+localparam INTERM_LEN = 5'd3;
+localparam ERR_FLAG_LEN = 5'd6;
+localparam ERR_DELIM_LEN= 5'd7;   // exit bit of WAIT_RECESSIVE = bit 1
+
+
+reg [3:0] present_state,next_state;
+
+reg [4:0] bit_cnt; //general purpose counter for each bit of each state
+reg byte_done; //pulse when the byte itself is done
+reg [2:0] bit_in_byte_counter; // counter for each bit in a byte
+
+
+wire bit_error_occurred = (bit_error && (present_state != ARBITRATION); // simplyfing use later
+wire ack_error_occured =  (!ack_recieved && (present_state == ACK))
+
+always@(posedge clk or negedge rst_n)
+begin
+	if(rst_n)
+	begin
+		present_state <= IDLE;
+	end
+	else
+	begin
+		present_state <= next_state;
+	end
+end
+
+always(*):
+begin
+	case(present_state)
+	IDLE:
+	begin
+		if( tx_req || (can_rx_sync == 1'b0) )
+			next_state = SOF;
+		else
+			next_state = IDLE;
+	end
+
+	SOF:
+	begin
+		next_state = ARBITRATION;
+	end
+
+	ARBITRATION:
+	begin
+		if(bit_cnt == 6'd1)
+			next_state = CONTROL;
+		else
+			next_state = ARBITRATION;
+	end
+
+	CONTROL:
+	begin
+		if(bit_cnt == 6'd1)
+			next_state = (rtr) ? CRC: DATA;
+		else
+	end
+
+	DATA:
+	begin
+
+	end
+
+	CRC:
+	begin
+	
+	end
+
+
+	endcase	
+end
+endmodule
