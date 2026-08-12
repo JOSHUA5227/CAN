@@ -14,8 +14,6 @@ module can_frame_controller(
     input  wire        ack_recieved,    // dominant seen in ACK slot
     input  wire        stuff_insert,    // this cycle is a stuffed bit
  
-    input  wire        node_state,      // 0 = error-active, 1 = error-passive
- 
     output reg  [3:0]  field_sel,       // current field (see localparams below)
     output reg  [2:0]  byte_idx,        // current data byte, 0-7
  
