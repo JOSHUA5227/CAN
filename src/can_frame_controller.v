@@ -13,8 +13,17 @@ module can_frame_controller(
     input  wire        bit_error,       // tx != rx, exceptions already filtered
     input  wire        ack_recieved,    // dominant seen in ACK slot
     input  wire        stuff_insert,    // this cycle is a stuffed bit
- 
+
+    input wire 	       rx_rtr,
+    input wire  [3:0]  rx_dlc,
+    input wire         rx_ide, 
+    input wire	       crc_error,
+    input wire        stuff_error,
+    input wire        form_error,
+    output reg         ack_drive,
+    output reg         is_transmitting, // 0 = listening, 1 = our own frame
     output reg  [3:0]  field_sel,       // current field (see localparams below)
+    output reg  [5:0]  bit_cnt, 	//general purpose counter for each bit of each state
     output reg  [2:0]  byte_idx,        // current data byte, 0-7
  
     output reg         crc_en,          // accumulate this bit into CRC_RG
@@ -34,17 +43,19 @@ localparam DATA           = 4'd4;
 localparam CRC            = 4'd5;
 localparam CRC_DELIM      = 4'd6;
 localparam ACK            = 4'd7;
-localparam EOF            = 4'd8;
-localparam INTERMISSION   = 4'd9;
-localparam ERROR_FLAG     = 4'd10;
-localparam WAIT_RECESSIVE = 4'd11;
-localparam ERROR_DELIM    = 4'd12;
+localparam ACK_DELIM	  = 4'd8;
+localparam EOF            = 4'd9;
+localparam INTERMISSION   = 4'd10;
+localparam ERROR_FLAG     = 4'd11;
+localparam WAIT_RECESSIVE = 4'd12;
+localparam ERROR_DELIM    = 4'd13;
+localparam RX_ONLY = 4'd14;
 
-localparam ARB_LEN_STD = 6'd12;
-localparam ARB_LEN_EXT = 6'd32;
-localparam CTRL_LEN = 6'd6;
-localparam CRC_LEN = 6'd16;  // 15 CRC bits + 1 delimiter
-localparam ACK_LEN = 6'd2;   // slot + delimiter
+localparam ARB_PHASE1_LEN = 6'd13;  // Base ID + RTR/SRR + IDE -- ALWAYS, both formats
+localparam ARB_PHASE2_LEN = 6'd19;  // Extended ID + RTR -- extended only
+localparam CTRL_LEN_STD   = 6'd5;   // r0 + DLC        (IDE already consumed above)
+localparam CTRL_LEN_EXT   = 6'd6;   // r1 + r0 + DLC   (IDE already consumed above)
+localparam CRC_LEN = 6'd15;  // 15 CRC bits 
 localparam EOF_LEN = 6'd7;
 localparam INTERM_LEN = 6'd3;
 localparam ERR_FLAG_LEN = 6'd6;
@@ -53,13 +64,15 @@ localparam ERR_DELIM_LEN= 6'd7;   // exit bit of WAIT_RECESSIVE = bit 1
 localparam BIT_CNT_MIN = 6'd1;
 
 reg [3:0] present_state,next_state;
+reg arb_phase;
 
-reg [5:0] bit_cnt; //general purpose counter for each bit of each state
-reg byte_done; //pulse when the byte itself is done
+wire active_rtr        = is_transmitting ? rtr : rx_rtr;
+wire [3:0] active_dlc  = is_transmitting ? dlc : rx_dlc;
+wire active_ide	       = is_transmitting ? ide : rx_ide;
 
-
-wire bit_error_occured = (bit_error && (present_state != ARBITRATION)); // simplyfing use later
-wire ack_error_occured =  (!ack_recieved && (present_state == ACK));
+wire ide_resolve_cycle = (present_state == ARBITRATION || present_state == RX_ONLY) && (bit_cnt == 6'd1) && (arb_phase == 1'b0) && !stuff_insert;
+wire bit_error_occured = (bit_error && is_transmitting && (present_state != ARBITRATION)); // simplyfing use later
+wire ack_error_occured =  (!ack_recieved && is_transmitting && (present_state == ACK));
 
 always@(posedge clk or negedge rst_n)
 begin
@@ -69,7 +82,10 @@ begin
 	end
 	else
 	begin
-		present_state <= next_state;
+		if(bit_en)
+			present_state <= next_state;
+		else
+			present_state <= present_state;
 	end
 end
 
@@ -77,10 +93,10 @@ end
 // FSM TRANSISTIONS 
 always@(*)
 begin
-	if (bit_error_occured || ack_error_occured)
-    		next_state = ERROR_FLAG;
-	else if (present_state == ARBITRATION && bit_error)
-    		next_state = IDLE; //should make this into a recieve only mode
+	if (bit_error_occured || ack_error_occured || crc_error ||stuff_error || form_error)
+		next_state = ERROR_FLAG;
+	else if (present_state == ARBITRATION && is_transmitting && bit_error)
+    		next_state = RX_ONLY; //should make this into a recieve only mode
 	else
 	begin
 		case(present_state)
@@ -99,23 +115,41 @@ begin
 
 		ARBITRATION:
 		begin
-			if(bit_cnt == 6'd1)
-				next_state = CONTROL;
+
+			if(bit_cnt == 6'd1 && !stuff_insert)
+			begin
+				if(arb_phase == 1'b0)
+					next_state = active_ide ? ARBITRATION : CONTROL;	
+				else
+					next_state = CONTROL;
+			end
 			else
 				next_state = ARBITRATION;
 		end
 
+		RX_ONLY:
+		begin
+			if(bit_cnt == 6'd1 && !stuff_insert)
+                        begin
+                                if(arb_phase == 1'b0)
+                                        next_state = active_ide ? RX_ONLY : CONTROL;
+                                else
+                                        next_state = CONTROL;
+                        end
+                        else
+                                next_state = RX_ONLY;
+		end
 		CONTROL:
 		begin
-			if(bit_cnt == 6'd1)
-				next_state = (rtr || dlc == 0) ? CRC: DATA;
+			if(bit_cnt == 6'd1 && !stuff_insert)
+				next_state = (active_rtr || active_dlc == 0) ? CRC: DATA;
 			else
 				next_state = CONTROL;
 		end
 
 		DATA:
 		begin
-			if(bit_cnt == 6'd1 && (byte_idx == dlc - 6'b1))
+			if(bit_cnt == 6'd1 && (byte_idx == active_dlc - 6'b1) && !stuff_insert)
 				next_state = CRC;
 			else
 				next_state = DATA;
@@ -123,7 +157,7 @@ begin
 
 		CRC:
 		begin
-			if(bit_cnt == 6'd1)
+			if(bit_cnt == 6'd1 && !stuff_insert)
 				next_state = CRC_DELIM;
 			else
 				next_state =  CRC;	
@@ -133,12 +167,15 @@ begin
 		begin
 			next_state = ACK;
 		end
+
 		ACK:
 		begin
-			if(bit_cnt == 6'd1)
-				next_state = EOF;
-			else
-				next_state = ACK;
+			next_state = ACK_DELIM;
+		end
+
+		ACK_DELIM:
+		begin
+			next_state = EOF;
 		end
 
 		EOF:
@@ -188,63 +225,91 @@ begin
 end
 
 
-// LOADING COUNTER VALUES BASED ON THE FRAME LENGTH
 always@(posedge clk or negedge rst_n)
 begin
 	if(!rst_n)
+		is_transmitting <= 0;
+	else if(bit_en)
 	begin
-		bit_cnt <= 6'd1;
-	end
-	else
-	begin
-		if(bit_en)
-		begin
-			if(next_state != present_state)
-			begin
-				case(next_state)
-				ARBITRATION: bit_cnt <= ide ? ARB_LEN_EXT : ARB_LEN_STD;
-				CONTROL: bit_cnt <= CTRL_LEN;
-				DATA: bit_cnt <= 6'd8;
-				CRC: bit_cnt <= CRC_LEN;
-				ACK: bit_cnt <= ACK_LEN;
-				EOF: bit_cnt <= EOF_LEN;
-				INTERMISSION: bit_cnt <= INTERM_LEN;
-				ERROR_FLAG: bit_cnt <= ERR_FLAG_LEN;
-				ERROR_DELIM: bit_cnt <= ERR_DELIM_LEN;
-
-				default: bit_cnt <= 6'd1;
-				endcase
-			end
-			else
-			begin
-				if(!stuff_insert)
-				begin
-					if(bit_cnt == 6'd1)
-						bit_cnt <= bit_cnt;
-					else
-						bit_cnt <= bit_cnt - 1;
-				end
-				else
-				begin
-					bit_cnt <= bit_cnt;
-				end
-				
-			end
-		end
+		if(present_state == IDLE && next_state == SOF)
+			is_transmitting <= tx_request;
 		else
 		begin
-			bit_cnt <= bit_cnt;
+			if(present_state == ARBITRATION && bit_error)
+				is_transmitting <=0;
+			else
+			begin
+				if(next_state == IDLE)
+					is_transmitting <= 0;
+				else
+					is_transmitting <= is_transmitting;
+			end
 		end
 	end
+	else
+		is_transmitting <= is_transmitting;
 end
 
+always @(posedge clk or negedge rst_n) 
+begin
+        if (!rst_n)
+            arb_phase <= 1'b0;
+        else if (bit_en) 
+	begin
+            if (present_state == IDLE && next_state == SOF)
+                arb_phase <= 1'b0;                 // fresh frame
+            else if (ide_resolve_cycle)
+                arb_phase <= active_ide;           // 1 = extended, continue to phase 2
+        end
+end
+
+
+// LOADING COUNTER VALUES BASED ON THE FRAME LENGTH
+always @(posedge clk or negedge rst_n) 
+begin
+        if (!rst_n) 
+	begin
+            bit_cnt <= 6'd1;
+        end 
+	else if (bit_en) 
+	begin
+            if (ide_resolve_cycle && active_ide) 
+	    begin
+                bit_cnt <= bit_cnt + 6'd18;
+            end 
+	    else if (next_state != present_state) 
+	    begin
+                case (next_state)
+                    ARBITRATION:  bit_cnt <= ARB_PHASE1_LEN;         // always 13 now, both roles
+                    RX_ONLY:      bit_cnt <= bit_cnt;                // entering mid-field -- hold
+                    CONTROL:      bit_cnt <= arb_phase ? CTRL_LEN_EXT : CTRL_LEN_STD;
+                    DATA:         bit_cnt <= 6'd8;
+                    CRC:          bit_cnt <= CRC_LEN;
+                    EOF:          bit_cnt <= EOF_LEN;
+                    INTERMISSION: bit_cnt <= INTERM_LEN;
+                    ERROR_FLAG:   bit_cnt <= ERR_FLAG_LEN;
+                    ERROR_DELIM:  bit_cnt <= ERR_DELIM_LEN;
+                    default:      bit_cnt <= 6'd1;
+                endcase
+            end 
+	    else if (!stuff_insert)
+	    begin
+                bit_cnt <= (bit_cnt == 6'd1) ? bit_cnt : (bit_cnt - 6'd1);
+            end
+	    else
+	    begin
+		bit_cnt <= bit_cnt;
+	    end
+        end
+end
+ 
 always@(posedge clk or negedge rst_n)
 begin
 	if(!rst_n)
 	begin
 		byte_idx <= 0;
 	end
-	else
+	else if(bit_en)
 	begin
 		if(present_state != DATA)
 		begin
@@ -258,22 +323,30 @@ begin
 				byte_idx <= byte_idx;
 		end	
 	end
+	else
+		byte_idx <= byte_idx;
 end
 
 // OUTPUT LOGIC
 always@(*)
 begin
  	field_sel      = present_state;
-        tx_busy        = (present_state != IDLE);
+	tx_busy        = (present_state != IDLE);
 
-        if (bit_error_occured || ack_error_occured)
+
+	if (present_state == ACK && !is_transmitting)
+	    	ack_drive = 1'b1;
+    	else
+		ack_drive = 1'b0;
+
+        if (bit_error_occured || ack_error_occured || crc_error || stuff_error || form_error)
         	error_detected = 1'b1;
     	else
 		error_detected = 1'b0;
 
 	case(present_state)
 	
-	SOF, ARBITRATION, CONTROL, DATA:
+	SOF, ARBITRATION,RX_ONLY, CONTROL, DATA:
        	begin
 		crc_en = 1'b1;
 		stuff_en = 1'b1;
@@ -304,7 +377,7 @@ always @(posedge clk or negedge rst_n) begin
 	begin
         	if (present_state == IDLE && next_state == SOF)
             		tx_done <= 1'b0;                          // clear for the new attempt
-        	else if (present_state == EOF && (bit_cnt == 6'd1))
+        	else if (present_state == EOF && (bit_cnt == 6'd1)  && is_transmitting)
             		tx_done <= 1'b1;      		// latch successful completion
 		else
 			tx_done <= tx_done;
