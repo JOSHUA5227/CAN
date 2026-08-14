@@ -12,84 +12,107 @@ module can_stuffer (
 
 reg prev_bit;
 reg [2:0] count;
-reg stuff_pending;
+wire stuff_pending;
 
-always @(posedge clk or negedge rst_n)
+assign stuff_pending = (count == 3'd5) ? 1: 0;
+always@(posedge clk or negedge rst_n)
+begin
+	if(!rst_n)
+		tx_bit_stuffed <= 1'b0;
+	else
+	begin
+		if(bit_en)
+		begin
+			if(stuff_en)
+			begin
+				if(stuff_pending)
+					tx_bit_stuffed <= ~prev_bit;
+				else
+					tx_bit_stuffed <= tx_bit;
+			end
+			else
+			begin
+				tx_bit_stuffed <= tx_bit;
+			end
+		end
+		else
+		begin
+			tx_bit_stuffed <= tx_bit_stuffed;
+		end		
+	end
+end
+
+
+always@(posedge clk or negedge rst_n)
 begin
 	if(!rst_n)
 	begin
 		prev_bit <= 1'b0;
-		count <= 1'b0;
-		stuff_pending <= 1'b0;
 	end
 	else
 	begin
 		if(bit_en)
 		begin
-			if(!stuff_en)
+			if(stuff_en && stuff_pending)
 			begin
-				prev_bit <= 1'b0;
-				count <= 1'b0;
-				stuff_pending <= 1'b0;
+				prev_bit <= ~prev_bit;
 			end
 			else
 			begin
-				if(stuff_pending)
-				begin
-					stuff_pending <= 1'b0;
-					count <= 3'b0;
-				end
-				else
-				begin
-					if(count ==3'd0)
-					begin
-						prev_bit <= tx_bit;
-						count <= 3'd1;
-					end
-					else
-					begin
-						if(tx_bit == prev_bit)
-						begin
-							if(count == 3'd4)
-							begin
-								stuff_pending <= 1'b1;
-							end
-							else
-								stuff_pending <= 1'b0;
-
-							count <= count + 3'd1;
-						end
-						else
-						begin
-							count <= 3'd1;
-							prev_bit <= tx_bit;
-						end
-					end
-				end	
-			end
+				prev_bit <= tx_bit;
+			end	
 		end
 		else
 		begin
 			prev_bit <= prev_bit;
-			count <= count;
-			stuff_pending <= stuff_pending;
+		end	
+	end
+end
+
+always@(posedge clk or negedge rst_n)
+begin
+	if(!rst_n)
+	begin
+		count <= 0;
+	end
+	else
+	begin
+		if(bit_en)
+		begin
+			if(stuff_en)
+			begin
+				if(tx_bit != prev_bit || stuff_pending)
+				begin
+					count <= 3'd1;
+				end
+				else
+				begin
+					count <= count + 1;
+				end
+			end
+			else
+			begin
+				count <= 0;
+			end
+		end
+		else
+		begin
+			count <=  count;
 		end
 	end
 end
 
-
-
-always @(*) begin
-
-    if (stuff_pending) begin
-        tx_bit_stuffed = ~prev_bit;
-        stuff_insert   = 1'b1;
+always @(posedge clk or negedge rst_n)
+begin
+    if(!rst_n)
+        stuff_insert <= 1'b0;
+    else if(bit_en)
+    begin
+        if(stuff_en && stuff_pending)
+            stuff_insert <= 1'b1;
+        else
+            stuff_insert <= 1'b0;
     end
-    else begin
-        // Normal logical bit
-        tx_bit_stuffed = tx_bit;
-        stuff_insert   = 1'b0;
-    end
-
 end
+
 endmodule
