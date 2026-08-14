@@ -11,7 +11,7 @@ module can_frame_controller(
     input  wire [3:0]  dlc,             // data length code
  
     input  wire        bit_error,       // tx != rx, exceptions already filtered
-    input  wire        ack_recieved,    // dominant seen in ACK slot
+    input  wire        ack_received,    // dominant seen in ACK slot
     input  wire        stuff_insert,    // this cycle is a stuffed bit
 
     input wire 	       rx_rtr,
@@ -72,7 +72,7 @@ wire active_ide	       = is_transmitting ? ide : rx_ide;
 
 wire ide_resolve_cycle = (present_state == ARBITRATION || present_state == RX_ONLY) && (bit_cnt == 6'd1) && (arb_phase == 1'b0) && !stuff_insert;
 wire bit_error_occured = (bit_error && is_transmitting && (present_state != ARBITRATION)); // simplyfing use later
-wire ack_error_occured =  (!ack_recieved && is_transmitting && (present_state == ACK));
+wire ack_error_occured =  (!ack_received && is_transmitting && (present_state == ACK));
 
 always@(posedge clk or negedge rst_n)
 begin
@@ -276,7 +276,11 @@ begin
             if (ide_resolve_cycle && active_ide) 
 	    begin
                 bit_cnt <= bit_cnt + 6'd18;
-            end 
+            end
+	    else if(present_state == DATA && bit_cnt == 6'd1 && !stuff_insert && byte_idx != active_dlc - 3'd1)
+ 	    begin
+		bit_cnt <= 6'd8;
+ 	    end 
 	    else if (next_state != present_state) 
 	    begin
                 case (next_state)
