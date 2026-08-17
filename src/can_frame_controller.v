@@ -11,15 +11,17 @@ module can_frame_controller(
     input  wire [3:0]  dlc,             // data length code
  
     input  wire        bit_error,       // tx != rx, exceptions already filtered
+    input  wire	       crc_error,
+    input  wire        stuff_error,
+    input  wire        form_error,
     input  wire        ack_received,    // dominant seen in ACK slot
     input  wire        stuff_insert,    // this cycle is a stuffed bit
+    input  wire        rx_bit_valid,
 
     input wire 	       rx_rtr,
     input wire  [3:0]  rx_dlc,
     input wire         rx_ide, 
-    input wire	       crc_error,
-    input wire        stuff_error,
-    input wire        form_error,
+
     output reg         ack_drive,
     output reg         is_transmitting, // 0 = listening, 1 = our own frame
     output reg  [3:0]  field_sel,       // current field (see localparams below)
@@ -70,9 +72,12 @@ wire active_rtr        = is_transmitting ? rtr : rx_rtr;
 wire [3:0] active_dlc  = is_transmitting ? dlc : rx_dlc;
 wire active_ide	       = is_transmitting ? ide : rx_ide;
 
-wire ide_resolve_cycle = (present_state == ARBITRATION || present_state == RX_ONLY) && (bit_cnt == 6'd1) && (arb_phase == 1'b0) && !stuff_insert;
-wire bit_error_occured = (bit_error && is_transmitting && (present_state != ARBITRATION)); // simplyfing use later
+wire logical_bit_valid = is_transmitting ? !stuff_insert : rx_bit_valid;
+wire ide_resolve_cycle = (present_state == ARBITRATION || present_state == RX_ONLY) &&(bit_cnt == 6'd1) && (arb_phase == 1'b0) && logical_bit_valid;
+wire bit_error_occured = (bit_error && is_transmitting && (present_state != ARBITRATION));
 wire ack_error_occured =  (!ack_received && is_transmitting && (present_state == ACK));
+
+
 
 always@(posedge clk or negedge rst_n)
 begin
@@ -116,7 +121,7 @@ begin
 		ARBITRATION:
 		begin
 
-			if(bit_cnt == 6'd1 && !stuff_insert)
+			if(bit_cnt == 6'd1 && logical_bit_valid)
 			begin
 				if(arb_phase == 1'b0)
 					next_state = active_ide ? ARBITRATION : CONTROL;	
@@ -129,7 +134,7 @@ begin
 
 		RX_ONLY:
 		begin
-			if(bit_cnt == 6'd1 && !stuff_insert)
+			if(bit_cnt == 6'd1 && logical_bit_valid)
                         begin
                                 if(arb_phase == 1'b0)
                                         next_state = active_ide ? RX_ONLY : CONTROL;
@@ -141,7 +146,7 @@ begin
 		end
 		CONTROL:
 		begin
-			if(bit_cnt == 6'd1 && !stuff_insert)
+			if(bit_cnt == 6'd1 && logical_bit_valid)
 				next_state = (active_rtr || active_dlc == 0) ? CRC: DATA;
 			else
 				next_state = CONTROL;
@@ -149,7 +154,7 @@ begin
 
 		DATA:
 		begin
-			if(bit_cnt == 6'd1 && (byte_idx == active_dlc - 6'b1) && !stuff_insert)
+			if(bit_cnt == 6'd1 && (byte_idx == active_dlc - 6'b1) && logical_bit_valid)
 				next_state = CRC;
 			else
 				next_state = DATA;
@@ -157,7 +162,7 @@ begin
 
 		CRC:
 		begin
-			if(bit_cnt == 6'd1 && !stuff_insert)
+			if(bit_cnt == 6'd1 && logical_bit_valid)
 				next_state = CRC_DELIM;
 			else
 				next_state =  CRC;	
@@ -277,7 +282,7 @@ begin
 	    begin
                 bit_cnt <= bit_cnt + 6'd18;
             end
-	    else if(present_state == DATA && bit_cnt == 6'd1 && !stuff_insert && byte_idx != active_dlc - 3'd1)
+	    else if(present_state == DATA && bit_cnt == 6'd1 && logical_bit_valid && byte_idx != active_dlc - 3'd1)
  	    begin
 		bit_cnt <= 6'd8;
  	    end 
@@ -296,7 +301,7 @@ begin
                     default:      bit_cnt <= 6'd1;
                 endcase
             end 
-	    else if (!stuff_insert)
+	    else if (logical_bit_valid)
 	    begin
                 bit_cnt <= (bit_cnt == 6'd1) ? bit_cnt : (bit_cnt - 6'd1);
             end
@@ -321,7 +326,7 @@ begin
 		end
 		else
 		begin
-			if( (bit_cnt == 6'd1) && !stuff_insert)
+			if( (bit_cnt == 6'd1) && logical_bit_valid)
 				byte_idx <= byte_idx + 1;
 			else
 				byte_idx <= byte_idx;
@@ -358,7 +363,7 @@ begin
 
 	CRC:
 	begin
-		crc_en = 1'b0;
+		crc_en = !is_transmitting; // IF 0 means tx should start shifting out data, if 1 means RX should keep calculating to detect error
 		stuff_en = 1'b1;
 	end
 	

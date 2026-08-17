@@ -1,13 +1,13 @@
 module tx_buffer(clk,rst,id,rtr,ide,dlc,data,valid,busy,);
 
 input wire clk,rst;
-input wire [29:0] ide;
+input wire [28:0] ide;
 input wire [3:0] dlc;
 input wire [63:0] data;
 input wire rtr;
 input wire valid,busy;
 
-output reg [29:0] reg_ide;
+output reg [28:0] reg_ide;
 output reg [3:0] reg_dlc;
 output reg [63:0] reg_data;
 output reg reg_rtr;
