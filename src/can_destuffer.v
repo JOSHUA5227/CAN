@@ -3,12 +3,12 @@ module can_destuffer (
     input  wire rst_n,
     input  wire bit_en,
 
-    input  wire rx_bit,          // physical bit from CAN bus
-    input  wire stuff_en,        // stuffing active in this field
+    input  wire rx_bit,              // physical bit from CAN bus
+    input  wire stuff_en,
 
-    output reg  rx_bit_destuffed, // logical/destuffed bit
-    output reg  stuff_remove,     // 1 when a physical stuff bit is discarded
-    output reg  stuff_error       // 1 when expected stuff bit is incorrect
+    output reg  rx_bit_destuffed,   // logical/destuffed bit
+    output wire rx_bit_valid,       // 1 = current physical bit is logical
+    output wire stuff_error         // 1 = expected stuff bit is incorrect
 );
 
 reg prev_bit;
@@ -16,7 +16,11 @@ reg [2:0] count;
 
 wire stuff_pending;
 
-assign stuff_pending = (count == 3'd5) ? 1'b1 : 1'b0;
+assign stuff_pending = stuff_en && (count == 3'd5);
+assign rx_bit_valid = (bit_en) ? !(stuff_en && stuff_pending) : 1'b0;
+
+assign stuff_error =(bit_en && stuff_en && stuff_pending && (rx_bit == prev_bit));
+
 
 always @(posedge clk or negedge rst_n)
 begin
@@ -29,11 +33,12 @@ begin
     begin
         if (stuff_en)
         begin
-               prev_bit <= rx_bit;
-        else
-        begin
-               prev_bit <= prev_bit;
+            prev_bit <= rx_bit;
         end
+	else
+	begin
+	    prev_bit <= prev_bit;
+	end
     end
 end
 
@@ -61,6 +66,7 @@ begin
                 count <= count + 3'd1;
             end
         end
+
         else
         begin
             count <= 3'd0;
@@ -72,60 +78,21 @@ end
 always @(posedge clk or negedge rst_n)
 begin
     if (!rst_n)
-        rx_bit_destuffed <= 1'b0;
-
-    else if (bit_en)
     begin
-        if (stuff_en)
-        begin
-            if (stuff_pending)
-            begin
-                rx_bit_destuffed <= rx_bit_destuffed; // dont sample a new bit
-            end
-            else
-            begin
-                rx_bit_destuffed <= rx_bit;
-            end
-        end
-        else
-        begin
-            rx_bit_destuffed <= rx_bit;
-        end
+        rx_bit_destuffed <= 1'b0;
     end
-end
-
-always @(posedge clk or negedge rst_n)
-begin
-    if (!rst_n)
-        stuff_error <= 1'b0;
 
     else if (bit_en)
     begin
         if (stuff_en && stuff_pending)
         begin
-            if (rx_bit == prev_bit)
-                stuff_error <= 1'b1;
-            else
-                stuff_error <= 1'b0;
+            rx_bit_destuffed <= rx_bit_destuffed;
         end
+
         else
         begin
-            stuff_error <= 1'b0;
+            rx_bit_destuffed <= rx_bit;
         end
-    end
-end
-
-always @(posedge clk or negedge rst_n)
-begin
-    if (!rst_n)
-        stuff_remove <= 1'b0;
-
-    else if (bit_en)
-    begin
-        if (stuff_en && stuff_pending && (rx_bit != prev_bit))
-            stuff_remove <= 1'b1;
-        else
-            stuff_remove <= 1'b0;
     end
 end
 
