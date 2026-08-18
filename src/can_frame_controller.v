@@ -5,16 +5,15 @@ module can_frame_controller(
 
     input  wire        can_rx_sync,     // synchronized bus level
 
+    input  wire        sof_detected,
+
     input  wire        tx_request,      // host has a message pending
     input  wire        rtr,             // 0 = data frame, 1 = remote frame
     input  wire        ide,             // 0 = standard, 1 = extended
     input  wire [3:0]  dlc,             // data length code
  
-    input  wire        bit_error,       // tx != rx, exceptions already filtered
-    input  wire	       crc_error,
-    input  wire        stuff_error,
-    input  wire        form_error,
-    input  wire        ack_received,    // dominant seen in ACK slot
+    input  wire        bit_error,       // tx != rx
+    input  wire        error_event,
     input  wire        stuff_insert,    // this cycle is a stuffed bit
     input  wire        rx_bit_valid,
 
@@ -31,10 +30,9 @@ module can_frame_controller(
     output reg         crc_en,          // accumulate this bit into CRC_RG
     output reg         stuff_en,        // current field is subject to stuffing
  
-    output reg         error_detected,  // pulse: bump TEC/REC
- 
     output reg         tx_done,
-    output reg         tx_busy
+    output reg	       rx_done,
+    output reg         line_busy
 );
 
 localparam IDLE           = 4'd0;
@@ -74,9 +72,6 @@ wire active_ide	       = is_transmitting ? ide : rx_ide;
 
 wire logical_bit_valid = is_transmitting ? !stuff_insert : rx_bit_valid;
 wire ide_resolve_cycle = (present_state == ARBITRATION || present_state == RX_ONLY) &&(bit_cnt == 6'd1) && (arb_phase == 1'b0) && logical_bit_valid;
-wire bit_error_occured = (bit_error && is_transmitting && (present_state != ARBITRATION));
-wire ack_error_occured =  (!ack_received && is_transmitting && (present_state == ACK));
-
 
 
 always@(posedge clk or negedge rst_n)
@@ -98,7 +93,7 @@ end
 // FSM TRANSISTIONS 
 always@(*)
 begin
-	if (bit_error_occured || ack_error_occured || crc_error ||stuff_error || form_error)
+	if (error_event)
 		next_state = ERROR_FLAG;
 	else if (present_state == ARBITRATION && is_transmitting && bit_error)
     		next_state = RX_ONLY; //should make this into a recieve only mode
@@ -107,7 +102,7 @@ begin
 		case(present_state)
 		IDLE:
 		begin
-			if( tx_request || (can_rx_sync == 1'b0) )
+			if (tx_request || sof_detected)
 				next_state = SOF;
 			else
 				next_state = IDLE;
@@ -237,7 +232,12 @@ begin
 	else if(bit_en)
 	begin
 		if(present_state == IDLE && next_state == SOF)
-			is_transmitting <= tx_request;
+		begin
+			if(sof_detected)
+				is_transmitting <= 1'b0;
+			else
+				is_transmitting <= 1'b1;
+		end
 		else
 		begin
 			if(present_state == ARBITRATION && bit_error)
@@ -280,7 +280,7 @@ begin
 	begin
             if (ide_resolve_cycle && active_ide) 
 	    begin
-                bit_cnt <= bit_cnt + 6'd18;
+                bit_cnt <= ARB_PHASE2_LEN;
             end
 	    else if(present_state == DATA && bit_cnt == 6'd1 && logical_bit_valid && byte_idx != active_dlc - 3'd1)
  	    begin
@@ -340,18 +340,13 @@ end
 always@(*)
 begin
  	field_sel      = present_state;
-	tx_busy        = (present_state != IDLE);
+	line_busy        = (present_state != IDLE);
 
 
 	if (present_state == ACK && !is_transmitting)
 	    	ack_drive = 1'b1;
     	else
 		ack_drive = 1'b0;
-
-        if (bit_error_occured || ack_error_occured || crc_error || stuff_error || form_error)
-        	error_detected = 1'b1;
-    	else
-		error_detected = 1'b0;
 
 	case(present_state)
 	
@@ -384,14 +379,26 @@ always @(posedge clk or negedge rst_n) begin
     begin 
     	if (bit_en)
 	begin
-        	if (present_state == IDLE && next_state == SOF)
-            		tx_done <= 1'b0;                          // clear for the new attempt
-        	else if (present_state == EOF && (bit_cnt == 6'd1)  && is_transmitting)
-            		tx_done <= 1'b1;      		// latch successful completion
-		else
-			tx_done <= tx_done;
-   	 end
+		tx_done <= 1'b0;
+
+        	if (present_state == EOF && (bit_cnt == 6'd1)  && is_transmitting)
+            		tx_done <= 1'b1;
+   	end
     end
 end
 
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n)
+        rx_done <= 1'b0;
+    else
+    begin
+        rx_done <= 1'b0;
+
+        if (bit_en)
+        begin
+            if ((present_state == EOF) && (bit_cnt == 6'd1) && !is_transmitting)
+                rx_done <= 1'b1;
+        end
+    end
+end
 endmodule
