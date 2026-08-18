@@ -60,7 +60,7 @@ assign bit_en = tq_en && (tq_count == effective_tq_per_bit - 1);
 
 assign phase_error = (tq_count < sample_point) ? tq_count : ((tq_count > sample_point) ? (tq_per_bit - tq_count) : 0);
 
-assign correction = (phase_error < {6'b0,sjw}) ? phase_error : sjw;
+assign correction = (phase_error < {6'b0,sjw}) ? phase_error[3:0] : sjw;
 
 always @(posedge clk or negedge rst_n)
 begin
@@ -153,10 +153,10 @@ begin
         begin
             phase1_current <= {1'b0,phase_seg1};
 
-            if (phase_seg2 > correction)
+            if (phase_seg2 > {4'b0,correction})
                 phase2_current <= phase_seg2 - correction;
             else
-                phase2_current= 32'd1;
+                phase2_current <= 32'd1;
         end
         else
         begin
