@@ -1,4 +1,4 @@
-module can_crc (
+module crc (
     input  wire        clk,
     input  wire        rst_n,
     input  wire        bit_en,

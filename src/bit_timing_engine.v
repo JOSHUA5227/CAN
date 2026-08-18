@@ -1,4 +1,4 @@
-module can_bit_timing_engine #(
+module bit_timing_engine #(
     parameter CAN_CLK_FREQ = 100_000_000,
     parameter CAN_BIT_RATE = 1_000_000
 )(
@@ -28,10 +28,10 @@ reg [1:0] bte_state;
 reg [1:0] next_bte_state;
 
 reg [31:0] brp_count;
-reg [31:0] tq_count;
+reg [9:0] tq_count;
 
-reg [31:0] phase1_current;
-reg [31:0] phase2_current;
+reg [8:0] phase1_current;
+reg [7:0] phase2_current;
 
 reg can_rx_prev;
 reg sync_done;
@@ -39,12 +39,12 @@ reg sync_done;
 wire falling_edge;
 wire tq_en;
 
-wire [31:0] tq_per_bit;
-wire [31:0] effective_tq_per_bit;
-wire [31:0] sample_point;
+wire [9:0] tq_per_bit;
+wire [9:0] effective_tq_per_bit;
+wire [9:0] sample_point;
 
-wire [31:0] phase_error;
-wire [31:0] correction;
+wire [9:0] phase_error;
+wire [3:0] correction;
 
 assign falling_edge = can_rx_prev && !can_rx_sync;
 
