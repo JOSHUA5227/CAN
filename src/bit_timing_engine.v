@@ -43,7 +43,7 @@ wire [9:0] tq_per_bit;
 wire [9:0] effective_tq_per_bit;
 wire [9:0] sample_point;
 
-wire [9:0] phase_error;
+wire [10:0] phase_error;
 wire [3:0] correction;
 
 assign falling_edge = can_rx_prev && !can_rx_sync;
