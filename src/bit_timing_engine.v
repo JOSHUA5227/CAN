@@ -48,33 +48,19 @@ wire [3:0] correction;
 
 assign falling_edge = can_rx_prev && !can_rx_sync;
 
-assign tq_per_bit =
-    32'd1 + prop_seg + phase_seg1 + phase_seg2;
+assign tq_per_bit = 1 + prop_seg + phase_seg1 + phase_seg2;
 
-assign effective_tq_per_bit =
-    32'd1 + prop_seg + phase1_current + phase2_current;
+assign effective_tq_per_bit = 1 + prop_seg + phase1_current + phase2_current;
 
-assign sample_point =
-    32'd1 + prop_seg + phase1_current;
+assign sample_point = 1 + prop_seg + phase1_current;
 
 assign tq_en = (brp_count == brp - 1);
 
-assign bit_en =
-    tq_en &&
-    (tq_count == effective_tq_per_bit - 1);
+assign bit_en = tq_en && (tq_count == effective_tq_per_bit - 1);
 
-assign phase_error =
-    (tq_count < sample_point) ?
-    tq_count :
-    ((tq_count > sample_point) ?
-    (tq_per_bit - tq_count) :
-    32'd0);
+assign phase_error = (tq_count < sample_point) ? tq_count : ((tq_count > sample_point) ? (tq_per_bit - tq_count) : 0);
 
-assign correction =
-    (phase_error < sjw) ?
-    phase_error :
-    sjw;
-
+assign correction = (phase_error < {6'b0,sjw}) ? phase_error : sjw;
 
 always @(posedge clk or negedge rst_n)
 begin
@@ -84,16 +70,13 @@ begin
         can_rx_prev <= can_rx_sync;
 end
 
-
 always @(posedge clk or negedge rst_n)
 begin
     if (!rst_n)
     begin
         brp_count <= 32'd0;
     end
-    else if (falling_edge &&
-             ((state == IDLE) ||
-              ((bte_state == RUN) && !sync_done)))
+    else if (falling_edge && ((state == IDLE) || ((bte_state == RUN) && !sync_done)))
     begin
         brp_count <= 32'd0;
     end
@@ -114,9 +97,7 @@ begin
     begin
         tq_count <= 32'd0;
     end
-    else if (falling_edge &&
-             ((state == IDLE) ||
-              ((bte_state == RUN) && !sync_done)))
+    else if (falling_edge && ((state == IDLE) || ((bte_state == RUN) && !sync_done)))
     begin
         tq_count <= 32'd0;
     end
@@ -140,9 +121,7 @@ begin
     begin
         sync_done <= 1'b0;
     end
-    else if (falling_edge &&
-             ((state == IDLE) ||
-              (bte_state == RUN)))
+    else if (falling_edge && ((state == IDLE) || (bte_state == RUN)))
     begin
         sync_done <= 1'b1;
     end
@@ -153,12 +132,12 @@ always @(posedge clk or negedge rst_n)
 begin
     if (!rst_n)
     begin
-        phase1_current <= phase_seg1;
+        phase1_current <= {1'b0,phase_seg1};
         phase2_current <= phase_seg2;
     end
     else if (falling_edge && (state == IDLE))
     begin
-        phase1_current <= phase_seg1;
+        phase1_current <= {1'b0,phase_seg1};
         phase2_current <= phase_seg2;
     end
     else if (falling_edge &&
@@ -172,22 +151,22 @@ begin
         end
         else if (tq_count > sample_point)
         begin
-            phase1_current <= phase_seg1;
+            phase1_current <= {1'b0,phase_seg1};
 
             if (phase_seg2 > correction)
                 phase2_current <= phase_seg2 - correction;
             else
-                phase2_current <= 32'd1;
+                phase2_current= 32'd1;
         end
         else
         begin
-            phase1_current <= phase_seg1;
+            phase1_current <= {1'b0,phase_seg1};
             phase2_current <= phase_seg2;
         end
     end
     else if (bit_en)
     begin
-        phase1_current <= phase_seg1;
+        phase1_current <= {1'b0,phase_seg1};
         phase2_current <= phase_seg2;
     end
 end
