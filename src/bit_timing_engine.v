@@ -58,9 +58,9 @@ assign tq_en = (brp_count == brp - 1);
 
 assign bit_en = tq_en && (tq_count == effective_tq_per_bit - 1);
 
-assign phase_error = (tq_count < sample_point) ? tq_count : ((tq_count > sample_point) ? (tq_per_bit - tq_count) : 0);
+assign phase_error = (tq_count < sample_point) ? {1'b0,tq_count} : ((tq_count > sample_point) ? (tq_per_bit - tq_count) : 0);
 
-assign correction = (phase_error < {6'b0,sjw}) ? phase_error[3:0] : sjw;
+assign correction = (phase_error < {7'b0,sjw}) ? phase_error[3:0] : sjw;
 
 always @(posedge clk or negedge rst_n)
 begin
