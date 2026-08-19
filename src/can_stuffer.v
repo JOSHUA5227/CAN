@@ -31,14 +31,8 @@ begin
 					tx_bit_stuffed <= tx_bit;
 			end
 			else
-			begin
 				tx_bit_stuffed <= tx_bit;
-			end
 		end
-		else
-		begin
-			tx_bit_stuffed <= tx_bit_stuffed;
-		end		
 	end
 end
 
@@ -54,18 +48,10 @@ begin
 		if(bit_en)
 		begin
 			if(stuff_en && stuff_pending)
-			begin
 				prev_bit <= ~prev_bit;
-			end
 			else
-			begin
 				prev_bit <= tx_bit;
-			end	
 		end
-		else
-		begin
-			prev_bit <= prev_bit;
-		end	
 	end
 end
 
@@ -82,22 +68,12 @@ begin
 			if(stuff_en)
 			begin
 				if(tx_bit != prev_bit || stuff_pending)
-				begin
 					count <= 3'd1;
-				end
 				else
-				begin
 					count <= count + 1;
-				end
 			end
 			else
-			begin
 				count <= 0;
-			end
-		end
-		else
-		begin
-			count <=  count;
 		end
 	end
 end

@@ -1,15 +1,15 @@
 module bit_error_detector(
-    input  wire clk,
-    input  wire rst_n,
-    input  wire bit_en,
+input wire clk,
+input wire rst_n,
+input wire bit_en,
 
-    input  wire tx_bit,
-    input  wire can_rx_sync,
+input wire tx_bit,
+input wire can_rx_sync,
 
-    output reg bit_error
+output reg bit_error
 );
 
-always @(posedge clk or negedge rst_n)
+always@(posedge clk or negedge rst_n)
 begin
     if(!rst_n)
     begin

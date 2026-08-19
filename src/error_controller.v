@@ -16,7 +16,6 @@ input wire form_error,
 input wire stuff_error,
 input wire crc_error,
 
-
 output reg [8:0] tec,
 output reg [7:0] rec,
 
@@ -24,9 +23,9 @@ output wire [1:0] error_state,
 output reg error_flag_active
 );
 
-localparam ERROR_ACTIVE  = 2'd0;
+localparam ERROR_ACTIVE = 2'd0;
 localparam ERROR_PASSIVE = 2'd1;
-localparam BUS_OFF       = 2'd2;
+localparam BUS_OFF = 2'd2;
 
 reg [1:0] present_state,next_state;
 reg [7:0] bus_off_count;
@@ -136,13 +135,13 @@ begin
 		tec <= 0;
 		rec <= 0;
 	end
-	else if (bit_en)
+	else if(bit_en)
 	begin
 		if(error_event)
 		begin
 			if(is_transmitting)
 			begin
-				if(tec  <= 247)
+				if(tec <= 247)
 					tec <= tec + 8;
 				else
 					tec <= 9'd255;

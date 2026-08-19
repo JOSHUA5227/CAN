@@ -2,6 +2,7 @@ module tx_buffer(
 
 input wire clk,
 input wire rst_n,
+
 input wire ide,
 input wire [28:0] identifier,
 input wire [3:0] dlc,
@@ -36,14 +37,6 @@ begin
 			reg_dlc <= dlc;
 			reg_data <= data;
 			reg_rtr <= rtr;
-		end
-		else
-		begin	
-			reg_ide <= reg_ide;
-			reg_identifier <= reg_identifier;
-			reg_dlc <= reg_dlc;
-			reg_data <= reg_data;
-			reg_rtr <= reg_rtr;
 		end
 	end
 end

@@ -1,46 +1,45 @@
 module tx_datapath(
+input wire clk,
+input wire rst_n,
+input wire bit_en,
 
-    input wire        clk,
-    input wire        rst_n,
-    input wire        bit_en,
+input wire is_transmitting,
+input wire [3:0] state,
+input wire arb_phase,
 
-    input wire        is_transmitting,
-    input wire [3:0]  state,
-    input wire        arb_phase,
+input wire rtr,
+input wire ide,
+input wire [28:0] identifier,
+input wire [3:0] dlc,
+input wire [7:0] data,
 
-    input wire        rtr,
-    input wire        ide,
-    input wire [28:0] identifier,
-    input wire [3:0]  dlc,
-    input wire [7:0]  data,
+input wire [5:0] bit_cnt,
 
-    input wire [5:0]  bit_cnt,
+input wire [1:0] error_mode,
 
-    input wire [1:0]  error_mode,
-
-    output reg        tx_data
+output reg tx_data
 
 );
 
-localparam IDLE           = 4'd0;
-localparam SOF            = 4'd1;
-localparam ARBITRATION    = 4'd2;
-localparam CONTROL        = 4'd3;
-localparam DATA           = 4'd4;
-localparam CRC            = 4'd5;
-localparam CRC_DELIM      = 4'd6;
-localparam ACK            = 4'd7;
-localparam ACK_DELIM      = 4'd8;
-localparam EOF            = 4'd9;
-localparam INTERMISSION   = 4'd10;
-localparam ERROR_FLAG     = 4'd11;
+localparam IDLE = 4'd0;
+localparam SOF = 4'd1;
+localparam ARBITRATION = 4'd2;
+localparam CONTROL = 4'd3;
+localparam DATA = 4'd4;
+localparam CRC = 4'd5;
+localparam CRC_DELIM = 4'd6;
+localparam ACK = 4'd7;
+localparam ACK_DELIM = 4'd8;
+localparam EOF = 4'd9;
+localparam INTERMISSION = 4'd10;
+localparam ERROR_FLAG = 4'd11;
 localparam WAIT_RECESSIVE = 4'd12;
-localparam ERROR_DELIM    = 4'd13;
-localparam RX_ONLY        = 4'd14;
+localparam ERROR_DELIM = 4'd13;
+localparam RX_ONLY = 4'd14;
 
-localparam ERROR_ACTIVE  = 2'd0;
+localparam ERROR_ACTIVE = 2'd0;
 localparam ERROR_PASSIVE = 2'd1;
-localparam BUS_OFF       = 2'd2;
+localparam BUS_OFF = 2'd2;
 
 always @(posedge clk or negedge rst_n)
 begin
@@ -58,17 +57,13 @@ begin
                 tx_data <= 1'b1;
         end
         else if (!is_transmitting)
-        begin
-            tx_data <= 1'b1;
-        end
+                tx_data <= 1'b1;
         else
         begin
             case (state)
 
                 SOF:
-                begin
                     tx_data <= 1'b0;
-                end
 
                 ARBITRATION:
                 begin
@@ -170,11 +165,6 @@ begin
                 DATA:
                 begin
                     tx_data <= data[bit_cnt - 6'd1];
-                end
-
-                CRC:
-                begin
-                    tx_data <= 1'b1;
                 end
 
                 default:

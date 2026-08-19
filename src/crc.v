@@ -1,17 +1,17 @@
 module crc (
-    input  wire        clk,
-    input  wire        rst_n,
-    input  wire        bit_en,
+input wire clk,
+input wire rst_n,
+input wire bit_en,
 
-    input  wire [3:0]  state,
-    input  wire        crc_en,
-    input  wire        data_bit,
+input wire [3:0] state,
+input wire crc_en,
+input wire data_bit,
 
-    input  wire        crc_done,
+input wire crc_done,
 
-    output wire [14:0] crc_value,
-    output wire        crc_out,
-    output reg         crc_error
+output wire [14:0] crc_value,
+output wire crc_out,
+output reg crc_error
 );
 
 localparam SOF = 4'd1;
@@ -30,34 +30,28 @@ assign crc_out = crc_reg[14];
 
 always @(posedge clk or negedge rst_n)
 begin
-	if (!rst_n)
+	if(!rst_n)
 	begin
-	    crc_reg   <= 15'd0;
+	    crc_reg <= 15'd0;
 	    crc_error <= 1'b0;
 	end
 	else if (bit_en)
 	begin
 
-	    if (state == SOF)
+	    if(state == SOF)
 	    begin
-		crc_reg   <= 15'd0;
-		crc_error <= 1'b0;
+          crc_reg <= 15'd0;
+          crc_error <= 1'b0;
 	    end
-
-	    else if (crc_en)
+	    else if(crc_en)
 	    begin
-		crc_reg <= accumulate_nxt;
+          crc_reg <= accumulate_nxt;
 
-		if (crc_done)
-		begin
-		    crc_error <= (accumulate_nxt != 15'd0);
-		end
+          if (crc_done)
+              crc_error <= (accumulate_nxt != 15'd0);
 	    end
-
-	    else if (state == CRC)
-	    begin
-		crc_reg <= shifted;
-	    end
+	    else if(state == CRC)
+              crc_reg <= shifted;
 
 	end
 end
