@@ -30,6 +30,7 @@ module can_frame_controller(
     output reg         crc_en,          // accumulate this bit into CRC_RG
     output reg         stuff_en,        // current field is subject to stuffing
  
+    output wire        bit_error_occured,
     output reg         tx_done,
     output reg	       rx_done,
     output reg         line_busy
@@ -72,7 +73,7 @@ wire active_ide	       = is_transmitting ? ide : rx_ide;
 
 wire logical_bit_valid = is_transmitting ? !stuff_insert : rx_bit_valid;
 wire ide_resolve_cycle = (present_state == ARBITRATION || present_state == RX_ONLY) &&(bit_cnt == 6'd1) && (arb_phase == 1'b0) && logical_bit_valid;
-
+assign bit_error_occured = present_state == ARBITRATION && is_transmitting && bit_error;
 
 always@(posedge clk or negedge rst_n)
 begin
@@ -95,7 +96,7 @@ always@(*)
 begin
 	if (error_event)
 		next_state = ERROR_FLAG;
-	else if (present_state == ARBITRATION && is_transmitting && bit_error)
+	else if (bit_error_occured)
     		next_state = RX_ONLY; //should make this into a recieve only mode
 	else
 	begin
