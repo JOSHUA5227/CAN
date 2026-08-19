@@ -164,7 +164,7 @@ begin
 
                 DATA:
                 begin
-                    tx_data <= data[bit_cnt - 6'd1];
+                    tx_data <= data[bit_cnt - 1];
                 end
 
                 default:
