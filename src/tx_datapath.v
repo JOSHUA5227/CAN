@@ -164,7 +164,17 @@ begin
 
                 DATA:
                 begin
-                    tx_data <= data[bit_cnt - 1];
+                    case (bit_cnt)
+                        6'd8: tx_data <= data[7];
+                        6'd7: tx_data <= data[6];
+                        6'd6: tx_data <= data[5];
+                        6'd5: tx_data <= data[4];
+                        6'd4: tx_data <= data[3];
+                        6'd3: tx_data <= data[2];
+                        6'd2: tx_data <= data[1];
+                        6'd1: tx_data <= data[0];
+                        default: tx_data <= 1'b1;
+                    endcase
                 end
 
                 default:
