@@ -1,7 +1,7 @@
 module can_frame_controller(
     input  wire        clk,
     input  wire        rst_n,
-    input  wire        bit_en,          // one pulse per bit-time
+    input  wire        bit_en,          // one pulse per bit-time/
 
     input  wire        can_rx_sync,     // synchronized bus level
 
@@ -22,6 +22,7 @@ module can_frame_controller(
     input wire         rx_ide, 
 
     output reg         ack_drive,
+    output reg         arb_phase,
     output reg         is_transmitting, // 0 = listening, 1 = our own frame
     output reg  [3:0]  field_sel,       // current field (see localparams below)
     output reg  [5:0]  bit_cnt, 	//general purpose counter for each bit of each state
@@ -65,7 +66,6 @@ localparam ERR_DELIM_LEN= 6'd7;   // exit bit of WAIT_RECESSIVE = bit 1
 localparam BIT_CNT_MIN = 6'd1;
 
 reg [3:0] present_state,next_state;
-reg arb_phase;
 
 wire active_rtr        = is_transmitting ? rtr : rx_rtr;
 wire [3:0] active_dlc  = is_transmitting ? dlc : rx_dlc;

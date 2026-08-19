@@ -20,10 +20,7 @@ input wire crc_error,
 output reg [8:0] tec,
 output reg [7:0] rec,
 
-output reg error_active,
-output reg error_passive,
-output reg bus_off,
-
+output wire [1:0] error_state,
 output reg error_flag_active
 );
 
@@ -38,6 +35,7 @@ reg [3:0] bit_count;
 wire count_en;
 wire error_event;
 
+assign error_state = present_state;
 assign error_event = bit_error || ack_error || stuff_error || crc_error || form_error;
 assign count_en = (present_state == BUS_OFF) ? 1 : 0;
 
