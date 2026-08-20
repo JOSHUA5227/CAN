@@ -63,13 +63,14 @@ localparam INTERM_LEN = 6'd3;
 localparam ERR_FLAG_LEN = 6'd6;
 localparam ERR_DELIM_LEN= 6'd7;   // exit bit of WAIT_RECESSIVE = bit 1
 
-localparam BIT_CNT_MIN = 6'd1;
 
 reg [3:0] present_state,next_state;
 
 wire active_rtr        = is_transmitting ? rtr : rx_rtr;
 wire [3:0] active_dlc  = is_transmitting ? dlc : rx_dlc;
 wire active_ide	       = is_transmitting ? ide : rx_ide;
+
+wire bit_cnt_min = (bit_cnt == 6'd1);
 
 wire logical_bit_valid = is_transmitting ? !stuff_insert : rx_bit_valid;
 wire ide_resolve_cycle = (present_state == ARBITRATION || present_state == RX_ONLY) &&(bit_cnt == 6'd1) && (arb_phase == 1'b0) && logical_bit_valid;
@@ -213,7 +214,7 @@ begin
 
 		ERROR_DELIM:
 		begin
-			if(bit_cnt == BIT_CNT_MIN)
+			if(bit_cnt == 6'd1)
 				next_state = INTERMISSION;
 			else
 				next_state = ERROR_DELIM;
@@ -304,7 +305,8 @@ begin
             end 
 	    else if (logical_bit_valid)
 	    begin
-                 if (bit_cnt == 6'd1)
+                 if (bit_cnt_min)
+
                       bit_cnt <= bit_cnt;
                   else
                       bit_cnt <= bit_cnt-1;
