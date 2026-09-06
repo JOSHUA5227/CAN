@@ -1,410 +1,810 @@
+`timescale 1ns/1ps
+
 module can_frame_controller(
     input  wire        clk,
     input  wire        rst_n,
-    input  wire        bit_en,          // one pulse per bit-time/
-
-    input  wire        can_rx_sync,     // synchronized bus level
-
+    input  wire        bit_en,
+    input  wire        can_rx_sync,
     input  wire        sof_detected,
-
-    input  wire        tx_request,      // host has a message pending
-    input  wire        rtr,             // 0 = data frame, 1 = remote frame
-    input  wire        ide,             // 0 = standard, 1 = extended
-    input  wire [3:0]  dlc,             // data length code
- 
-    input  wire        bit_error,       // tx != rx
+    input  wire        tx_request,
+    input  wire        rtr,
+    input  wire        ide,
+    input  wire [3:0]  dlc,
+    input  wire        bit_error,
     input  wire        error_event,
-    input  wire        stuff_insert,    // this cycle is a stuffed bit
+    input  wire        error_flag_request,
+    input  wire        stuff_insert,
     input  wire        rx_bit_valid,
-
-    input wire 	       rx_rtr,
-    input wire  [3:0]  rx_dlc,
-    input wire         rx_ide, 
+    input  wire        rx_rtr,
+    input  wire [3:0]  rx_dlc,
+    input  wire        rx_ide,
+    input  wire [1:0]  error_state,
 
     output reg         ack_drive,
     output reg         arb_phase,
-    output reg         is_transmitting, // 0 = listening, 1 = our own frame
-    output reg  [3:0]  field_sel,       // current field (see localparams below)
-    output reg  [5:0]  bit_cnt, 	//general purpose counter for each bit of each state
-    output reg  [2:0]  byte_idx,        // current data byte, 0-7
- 
-    output reg         crc_en,          // accumulate this bit into CRC_RG
-    output reg         stuff_en,        // current field is subject to stuffing
- 
+    output reg         is_transmitting,
+    output wire [3:0]  field_sel,
+    output reg  [5:0]  bit_cnt,
+    output reg  [2:0]  byte_idx,
+    output reg         crc_en,
+    output reg         stuff_en,
     output wire        bit_error_occured,
+    output reg         active_ide,
     output reg         tx_done,
-    output reg	       rx_done,
+    output reg         rx_done,
     output reg         line_busy
 );
 
-localparam IDLE           = 4'd0;
-localparam SOF            = 4'd1;
-localparam ARBITRATION    = 4'd2;
-localparam CONTROL        = 4'd3;
-localparam DATA           = 4'd4;
-localparam CRC            = 4'd5;
-localparam CRC_DELIM      = 4'd6;
-localparam ACK            = 4'd7;
-localparam ACK_DELIM	  = 4'd8;
-localparam EOF            = 4'd9;
-localparam INTERMISSION   = 4'd10;
-localparam ERROR_FLAG     = 4'd11;
-localparam WAIT_RECESSIVE = 4'd12;
-localparam ERROR_DELIM    = 4'd13;
-localparam RX_ONLY = 4'd14;
+    localparam IDLE           = 4'd0;
+    localparam SOF            = 4'd1;
+    localparam ARBITRATION    = 4'd2;
+    localparam CONTROL        = 4'd3;
+    localparam DATA           = 4'd4;
+    localparam CRC            = 4'd5;
+    localparam CRC_DELIM      = 4'd6;
+    localparam ACK            = 4'd7;
+    localparam ACK_DELIM      = 4'd8;
+    localparam EOF            = 4'd9;
+    localparam INTERMISSION   = 4'd10;
+    localparam ERROR_FLAG     = 4'd11;
+    localparam WAIT_RECESSIVE = 4'd12;
+    localparam ERROR_DELIM    = 4'd13;
+    localparam RX_ONLY        = 4'd14;
 
-localparam ARB_PHASE1_LEN = 6'd13;  // Base ID + RTR/SRR + IDE -- ALWAYS, both formats
-localparam ARB_PHASE2_LEN = 6'd19;  // Extended ID + RTR -- extended only
-localparam CTRL_LEN_STD   = 6'd5;   // r0 + DLC        (IDE already consumed above)
-localparam CTRL_LEN_EXT   = 6'd6;   // r1 + r0 + DLC   (IDE already consumed above)
-localparam CRC_LEN = 6'd15;  // 15 CRC bits 
-localparam EOF_LEN = 6'd7;
-localparam INTERM_LEN = 6'd3;
-localparam ERR_FLAG_LEN = 6'd6;
-localparam ERR_DELIM_LEN= 6'd7;   // exit bit of WAIT_RECESSIVE = bit 1
+    localparam ERROR_ACTIVE  = 2'd0;
+    localparam ERROR_PASSIVE = 2'd1;
+    localparam BUS_OFF       = 2'd2;
 
+    /*
+     * Restored architecture:
+     *
+     * Phase 0:
+     *   11 identifier bits + RTR/SRR + IDE = 13 logical bits.
+     *
+     * For standard frames, IDE=0 and the next field is CONTROL:
+     *   r0 + DLC = 5 logical bits.
+     *
+     * For extended frames, IDE=1 and phase 1 follows:
+     *   18 extended-ID bits + RTR = 19 logical bits.
+     *
+     * Extended CONTROL then contains:
+     *   r1 + r0 + DLC = 6 logical bits.
+     */
+    localparam ARB_PHASE1_LEN = 6'd13;
+    localparam ARB_PHASE2_LEN = 6'd19;
 
-reg [3:0] present_state,next_state;
+    localparam CTRL_LEN_STD = 6'd5;
+    localparam CTRL_LEN_EXT = 6'd6;
 
-wire active_rtr        = is_transmitting ? rtr : rx_rtr;
-wire [3:0] active_dlc  = is_transmitting ? dlc : rx_dlc;
-wire active_ide	       = is_transmitting ? ide : rx_ide;
+    localparam CRC_LEN          = 6'd15;
+    localparam EOF_LEN          = 6'd7;
+    localparam INTERMISSION_LEN = 6'd3;
+    localparam ERROR_FLAG_LEN   = 6'd6;
+    localparam ERROR_DELIM_LEN  = 6'd8;
 
-wire bit_cnt_min = (bit_cnt == 6'd1);
+    reg [3:0] present_state;
+    reg [3:0] next_state;
+    reg [5:0] next_bit_cnt;
+    reg [2:0] next_byte_idx;
+    reg       next_arb_phase;
+    reg       next_is_transmitting;
+    reg       next_active_ide;
 
-wire logical_bit_valid = is_transmitting ? !stuff_insert : rx_bit_valid;
-wire ide_resolve_cycle = (present_state == ARBITRATION || present_state == RX_ONLY) &&(bit_cnt == 6'd1) && (arb_phase == 1'b0) && logical_bit_valid;
-assign bit_error_occured = present_state == ARBITRATION && is_transmitting && bit_error;
+    assign field_sel = present_state;
 
-always@(posedge clk or negedge rst_n)
+    /*
+     * Arbitration loss is a normal CAN condition, not an error.
+     */
+    wire arbitration_loss;
+    assign arbitration_loss =
+        (present_state == ARBITRATION) &&
+        is_transmitting &&
+        bit_error;
+
+    /*
+     * Genuine transmitter bit error occurs only outside arbitration.
+     */
+    assign bit_error_occured =
+        (present_state != ARBITRATION) &&
+        is_transmitting &&
+        bit_error;
+
+    /*
+     * State register.
+     */
+    always @(posedge clk or negedge rst_n)
+    begin
+        if (!rst_n)
+            present_state <= IDLE;
+        else if (bit_en)
+            present_state <= next_state;
+    end
+
+    /*
+     * Registered control outputs.
+     *
+     * crc_en deliberately means:
+     *   - pre-CRC logical frame fields: enabled
+     *   - CRC field: enabled only for RX
+     *
+     * This is required by the existing crc module:
+     * TX must shift its generated CRC during CRC,
+     * while RX must consume the received CRC bits.
+     */
+    always @(posedge clk or negedge rst_n)
+    begin
+        if (!rst_n)
+        begin
+            bit_cnt         <= 6'd0;
+            byte_idx        <= 3'd0;
+            arb_phase       <= 1'b0;
+            is_transmitting <= 1'b0;
+            active_ide      <= 1'b0;
+            ack_drive       <= 1'b0;
+            crc_en          <= 1'b0;
+            stuff_en        <= 1'b0;
+            tx_done         <= 1'b0;
+            rx_done         <= 1'b0;
+            line_busy       <= 1'b0;
+        end
+        else
+        begin
+            tx_done <= 1'b0;
+            rx_done <= 1'b0;
+
+            /*
+             * ACK is asserted only while the current state is ACK.
+             * Error-passive receivers still participate in ACK.
+             * Bus-off nodes must not drive the bus.
+             */
+            ack_drive <= 1'b0;
+            if ((present_state == ACK) &&
+                !is_transmitting &&
+                (error_state != BUS_OFF))
+            begin
+                ack_drive <= 1'b1;
+            end
+
+            /*
+             * Stuffing is active through CRC, but not through:
+             * CRC delimiter, ACK, ACK delimiter or EOF.
+             */
+            case (present_state)
+                SOF,
+                ARBITRATION,
+                CONTROL,
+                DATA,
+                CRC:
+                    stuff_en <= 1'b1;
+                default:
+                    stuff_en <= 1'b0;
+            endcase
+
+            /*
+             * CRC accumulator:
+             * pre-CRC fields contribute for both TX and RX.
+             * During CRC, only RX consumes the received CRC bits.
+             */
+            case (present_state)
+                SOF,
+                ARBITRATION,
+                CONTROL,
+                DATA:
+                    crc_en <= 1'b1;
+
+                CRC:
+                    crc_en <= !is_transmitting;
+
+                default:
+                    crc_en <= 1'b0;
+            endcase
+
+            /*
+             * Counters/modes change only at bit boundaries.
+             */
+            if (bit_en)
+            begin
+                bit_cnt         <= next_bit_cnt;
+                byte_idx        <= next_byte_idx;
+                arb_phase       <= next_arb_phase;
+                is_transmitting <= next_is_transmitting;
+                active_ide      <= next_active_ide;
+            end
+
+            line_busy <= (present_state != IDLE);
+
+            /*
+             * Completion pulses occur on the final EOF bit.
+             */
+            if (bit_en &&
+                (present_state == EOF) &&
+                (bit_cnt == 6'd1))
+            begin
+                if (is_transmitting)
+                    tx_done <= 1'b1;
+                else
+                    rx_done <= 1'b1;
+            end
+        end
+    end
+
+    /*
+     * Next-state and counter logic.
+     */
+    always @*
+    begin
+        next_state           = present_state;
+        next_bit_cnt         = bit_cnt;
+        next_byte_idx        = byte_idx;
+        next_arb_phase       = arb_phase;
+        next_is_transmitting = is_transmitting;
+        next_active_ide      = active_ide;
+
+        /*
+         * ---------------------------------------------------------
+         * GLOBAL ERROR FLAG REQUEST
+         * ---------------------------------------------------------
+         *
+         * error_flag_request is an explicit request from the
+         * error controller. It is global across normal frame
+         * processing states.
+         *
+         * Do not restart ERROR_FLAG, WAIT_RECESSIVE or ERROR_DELIM.
+         */
+        if ((error_flag_request || error_event) &&
+            (error_state != BUS_OFF) &&
+            (present_state != ERROR_FLAG) &&
+            (present_state != WAIT_RECESSIVE) &&
+            (present_state != ERROR_DELIM))
+        begin
+            next_state           = ERROR_FLAG;
+            next_bit_cnt         = ERROR_FLAG_LEN;
+            next_byte_idx        = 3'd0;
+            next_arb_phase       = 1'b0;
+            next_is_transmitting = 1'b0;
+            next_active_ide      = 1'b0;
+        end
+        else
+        begin
+            case (present_state)
+
+                /* =================================================
+                 * IDLE
+                 * ================================================= */
+IDLE:
 begin
-	if(!rst_n)
-	begin
-		present_state <= IDLE;
-	end
-	else
-	begin
-		if(bit_en)
-			present_state <= next_state;
-		else
-			present_state <= present_state;
-	end
+    next_bit_cnt         = 6'd0;
+    next_byte_idx        = 3'd0;
+    next_arb_phase       = 1'b0;
+    next_is_transmitting = 1'b0;
+    next_active_ide      = 1'b0;
+
+    /*
+     * A received SOF means the SOF bit is already in progress.
+     * The receiver must therefore enter ARBITRATION directly
+     * so that it is aligned for the first arbitration bit.
+     */
+    if (sof_detected || (can_rx_sync == 1'b0))
+    begin
+        next_state           = ARBITRATION;
+        next_bit_cnt         = ARB_PHASE1_LEN;
+        next_is_transmitting = 1'b0;
+        next_active_ide      = 1'b0;
+    end
+    else if (tx_request && (error_state != BUS_OFF))
+    begin
+        /*
+         * Local transmission still starts with SOF.
+         */
+        next_state           = SOF;
+        next_bit_cnt         = 6'd1;
+        next_is_transmitting = 1'b1;
+        next_active_ide      = ide;
+    end
 end
+                /* =================================================
+                 * SOF
+                 * ================================================= */
+                SOF:
+                begin
+                    if (bit_en)
+                    begin
+                        next_state     = ARBITRATION;
+                        next_bit_cnt   = ARB_PHASE1_LEN;
+                        next_arb_phase = 1'b0;
 
+                        if (is_transmitting)
+                            next_active_ide = ide;
+                        else
+                            next_active_ide = 1'b0;
+                    end
+                end
 
-// FSM TRANSISTIONS 
-always@(*)
-begin
-	if (error_event)
-		next_state = ERROR_FLAG;
-	else if (bit_error_occured)
-    		next_state = RX_ONLY; //should make this into a recieve only mode
-	else
-	begin
-		case(present_state)
-		IDLE:
-		begin
-			if (tx_request || sof_detected)
-				next_state = SOF;
-			else
-				next_state = IDLE;
-		end
+                /* =================================================
+                 * ARBITRATION
+                 * ================================================= */
+                ARBITRATION:
+                begin
+                    /*
+                     * A transmitter that sends recessive and observes
+                     * dominant has lost arbitration. It must stop
+                     * transmitting but continue receiving.
+                     */
+                    if (arbitration_loss)
+                    begin
+                        next_is_transmitting = 1'b0;
+                        next_state           = RX_ONLY;
+                        next_bit_cnt         = bit_cnt;
+                    end
 
-		SOF:
-		begin
-			next_state = ARBITRATION;
-		end
+                    /*
+                     * A receiver does not consume a physical stuff bit.
+                     */
+                    else if (!is_transmitting && !rx_bit_valid)
+                    begin
+                        next_state   = ARBITRATION;
+                        next_bit_cnt = bit_cnt;
+                    end
 
-		ARBITRATION:
-		begin
+                    /*
+                     * A transmitter does not consume its inserted
+                     * stuff bit as a logical frame bit.
+                     */
+                    else if (is_transmitting && stuff_insert)
+                    begin
+                        next_state   = ARBITRATION;
+                        next_bit_cnt = bit_cnt;
+                    end
 
-			if(bit_cnt == 6'd1 && logical_bit_valid)
-			begin
-				if(arb_phase == 1'b0)
-					next_state = active_ide ? ARBITRATION : CONTROL;	
-				else
-					next_state = CONTROL;
-			end
-			else
-				next_state = ARBITRATION;
-		end
-
-		RX_ONLY:
-		begin
-			if(bit_cnt == 6'd1 && logical_bit_valid)
+                    else if (bit_en)
+                    begin
+                        if (!arb_phase)
                         begin
-                                if(arb_phase == 1'b0)
-                                        next_state = active_ide ? RX_ONLY : CONTROL;
+                            /*
+                             * Phase 0:
+                             *
+                             * 13 -> 3 : ID[10:0]
+                             * 2      : RTR (standard) / SRR (extended)
+                             * 1      : IDE
+                             *
+                             * We resolve the frame type from the IDE bit.
+                             */
+                            if (bit_cnt > 6'd1)
+                            begin
+                                next_bit_cnt = bit_cnt - 6'd1;
+                            end
+                            else
+                            begin
+                                if (is_transmitting)
+                                begin
+                                    next_active_ide = ide;
+
+                                    if (ide)
+                                    begin
+                                        next_arb_phase = 1'b1;
+                                        next_bit_cnt   = ARB_PHASE2_LEN;
+                                    end
+                                    else
+                                    begin
+                                        next_arb_phase = 1'b0;
+                                        next_state     = CONTROL;
+                                        next_bit_cnt   = CTRL_LEN_STD;
+                                    end
+                                end
                                 else
-                                        next_state = CONTROL;
+                                begin
+                                    /*
+                                     * On the final arbitration bit,
+                                     * can_rx_sync is the current IDE
+                                     * sample. rx_ide may still contain
+                                     * its previous value because the RX
+                                     * datapath updates it on this same
+                                     * clock edge.
+                                     */
+                                    next_active_ide = can_rx_sync;
+
+                                    if (can_rx_sync)
+                                    begin
+                                        next_arb_phase = 1'b1;
+                                        next_bit_cnt   = ARB_PHASE2_LEN;
+                                    end
+                                    else
+                                    begin
+                                        next_arb_phase = 1'b0;
+                                        next_state     = CONTROL;
+                                        next_bit_cnt   = CTRL_LEN_STD;
+                                    end
+                                end
+                            end
                         end
                         else
-                                next_state = RX_ONLY;
-		end
-		CONTROL:
-		begin
-			if(bit_cnt == 6'd1 && logical_bit_valid)
-				next_state = (active_rtr || active_dlc == 0) ? CRC: DATA;
-			else
-				next_state = CONTROL;
-		end
+                        begin
+                            /*
+                             * Phase 1 / extended:
+                             * 19 -> 2 : extended identifier
+                             * 1      : RTR
+                             */
+                            if (bit_cnt > 6'd1)
+                            begin
+                                next_bit_cnt = bit_cnt - 6'd1;
+                            end
+                            else
+                            begin
+                                next_state     = CONTROL;
+                                next_bit_cnt   = CTRL_LEN_EXT;
+                                next_arb_phase = 1'b0;
+                                next_active_ide = 1'b1;
+                            end
+                        end
+                    end
+                end
 
-		DATA:
-		begin
-			if(bit_cnt == 6'd1 && (byte_idx == active_dlc - 6'b1) && logical_bit_valid)
-				next_state = CRC;
-			else
-				next_state = DATA;
-		end
+                /* =================================================
+                 * CONTROL
+                 * ================================================= */
+                CONTROL:
+                begin
+                    /*
+                     * Physical stuff bit: hold logical position.
+                     */
+                    if (!is_transmitting && !rx_bit_valid)
+                    begin
+                        next_state   = CONTROL;
+                        next_bit_cnt = bit_cnt;
+                    end
+                    else if (is_transmitting && stuff_insert)
+                    begin
+                        next_state   = CONTROL;
+                        next_bit_cnt = bit_cnt;
+                    end
+                    else if (bit_en)
+                    begin
+                        if (bit_cnt > 6'd1)
+                        begin
+                            next_bit_cnt = bit_cnt - 6'd1;
+                        end
+                        else
+                        begin
+                            if (is_transmitting)
+                            begin
+                                if (rtr || (dlc == 4'd0))
+                                begin
+                                    next_state   = CRC;
+                                    next_bit_cnt = CRC_LEN;
+                                end
+                                else
+                                begin
+                                    next_state   = DATA;
+                                    next_bit_cnt = 6'd8;
+                                    next_byte_idx = 3'd0;
+                                end
+                            end
+                            else
+                            begin
+                                /*
+                                 * rx_dlc[0] is updated in the RX
+                                 * datapath on this same clock edge,
+                                 * so use the current bus sample for
+                                 * the final DLC bit.
+                                 */
+                                if (rx_rtr ||
+                                    ({rx_dlc[3:1], can_rx_sync} == 4'd0))
+                                begin
+                                    next_state   = CRC;
+                                    next_bit_cnt = CRC_LEN;
+                                end
+                                else
+                                begin
+                                    next_state    = DATA;
+                                    next_bit_cnt  = 6'd8;
+                                    next_byte_idx = 3'd0;
+                                end
+                            end
+                        end
+                    end
+                end
 
-		CRC:
-		begin
-			if(bit_cnt == 6'd1 && logical_bit_valid)
-				next_state = CRC_DELIM;
-			else
-				next_state =  CRC;	
-		end
-		
-		CRC_DELIM:
-		begin
-			next_state = ACK;
-		end
+                /* =================================================
+                 * DATA
+                 * ================================================= */
+                DATA:
+                begin
+                    if (!is_transmitting && !rx_bit_valid)
+                    begin
+                        next_state   = DATA;
+                        next_bit_cnt = bit_cnt;
+                    end
+                    else if (is_transmitting && stuff_insert)
+                    begin
+                        next_state   = DATA;
+                        next_bit_cnt = bit_cnt;
+                    end
+                    else if (bit_en)
+                    begin
+                        if (bit_cnt > 6'd1)
+                        begin
+                            next_bit_cnt = bit_cnt - 6'd1;
+                        end
+                        else
+                        begin
+                            if (is_transmitting)
+                            begin
+                                if ((byte_idx + 3'd1) >= dlc)
+                                begin
+                                    next_state   = CRC;
+                                    next_bit_cnt = CRC_LEN;
+                                end
+                                else
+                                begin
+                                    next_state    = DATA;
+                                    next_bit_cnt  = 6'd8;
+                                    next_byte_idx = byte_idx + 3'd1;
+                                end
+                            end
+                            else
+                            begin
+                                if ((byte_idx + 3'd1) >= rx_dlc)
+                                begin
+                                    next_state   = CRC;
+                                    next_bit_cnt = CRC_LEN;
+                                end
+                                else
+                                begin
+                                    next_state    = DATA;
+                                    next_bit_cnt  = 6'd8;
+                                    next_byte_idx = byte_idx + 3'd1;
+                                end
+                            end
+                        end
+                    end
+                end
 
-		ACK:
-		begin
-			next_state = ACK_DELIM;
-		end
+                /* =================================================
+                 * CRC
+                 * ================================================= */
+                CRC:
+                begin
+                    /*
+                     * CRC field is itself stuffed.
+                     * Stuff bits do not consume one of the 15 CRC
+                     * logical positions.
+                     */
+                    if (!is_transmitting && !rx_bit_valid)
+                    begin
+                        next_state   = CRC;
+                        next_bit_cnt = bit_cnt;
+                    end
+                    else if (is_transmitting && stuff_insert)
+                    begin
+                        next_state   = CRC;
+                        next_bit_cnt = bit_cnt;
+                    end
+                    else if (bit_en)
+                    begin
+                        if (bit_cnt > 6'd1)
+                        begin
+                            next_bit_cnt = bit_cnt - 6'd1;
+                        end
+                        else
+                        begin
+                            next_state   = CRC_DELIM;
+                            next_bit_cnt = 6'd1;
+                        end
+                    end
+                end
 
-		ACK_DELIM:
-		begin
-			next_state = EOF;
-		end
+                /* =================================================
+                 * CRC DELIMITER
+                 * ================================================= */
+                CRC_DELIM:
+                begin
+                    if (bit_en)
+                    begin
+                        next_state   = ACK;
+                        next_bit_cnt = 6'd1;
+                    end
+                end
 
-		EOF:
-		begin
-			if(bit_cnt == 6'd1)
-				next_state = INTERMISSION;
-			else
-				next_state = EOF;
-		end
+                /* =================================================
+                 * ACK
+                 * ================================================= */
+                ACK:
+                begin
+                    if (bit_en)
+                    begin
+                        next_state   = ACK_DELIM;
+                        next_bit_cnt = 6'd1;
+                    end
+                end
 
-		INTERMISSION:
-		begin
-			if(bit_cnt == 6'd1)
-				next_state = IDLE;
-			else
-				next_state = INTERMISSION;
-		end
+                /* =================================================
+                 * ACK DELIMITER
+                 * ================================================= */
+                ACK_DELIM:
+                begin
+                    if (bit_en)
+                    begin
+                        next_state   = EOF;
+                        next_bit_cnt = EOF_LEN;
+                    end
+                end
 
-		ERROR_FLAG:
-		begin
-			if(bit_cnt == 6'd1)
-				next_state = WAIT_RECESSIVE;
-			else
-				next_state = ERROR_FLAG;
-		end
+                /* =================================================
+                 * EOF
+                 * ================================================= */
+                EOF:
+                begin
+                    if (bit_en)
+                    begin
+                        if (bit_cnt > 6'd1)
+                            next_bit_cnt = bit_cnt - 6'd1;
+                        else
+                        begin
+                            next_state   = INTERMISSION;
+                            next_bit_cnt = INTERMISSION_LEN;
+                        end
+                    end
+                end
 
-		WAIT_RECESSIVE:
-		begin
-			if(can_rx_sync == 6'd1)
-				next_state = ERROR_DELIM;
-			else
-				next_state = WAIT_RECESSIVE;
-		end
+                /* =================================================
+                 * INTERMISSION
+                 * ================================================= */
+                INTERMISSION:
+                begin
+                    if (bit_en)
+                    begin
+                        if (bit_cnt > 6'd1)
+                            next_bit_cnt = bit_cnt - 6'd1;
+                        else
+                        begin
+                            next_state           = IDLE;
+                            next_bit_cnt         = 6'd0;
+                            next_byte_idx        = 3'd0;
+                            next_arb_phase       = 1'b0;
+                            next_is_transmitting = 1'b0;
+                            next_active_ide      = 1'b0;
+                        end
+                    end
+                end
 
-		ERROR_DELIM:
-		begin
-			if(bit_cnt == 6'd1)
-				next_state = INTERMISSION;
-			else
-				next_state = ERROR_DELIM;
-		end
+                /* =================================================
+                 * ERROR FLAG
+                 * ================================================= */
+                ERROR_FLAG:
+                begin
+                    if (bit_en)
+                    begin
+                        if (bit_cnt > 6'd1)
+                            next_bit_cnt = bit_cnt - 6'd1;
+                        else
+                        begin
+                            next_state   = WAIT_RECESSIVE;
+                            next_bit_cnt = 6'd1;
+                        end
+                    end
+                end
 
-		default:
-			next_state = IDLE;
-		endcase	
-	end
-end
+                /* =================================================
+                 * WAIT RECESSIVE
+                 * ================================================= */
+                WAIT_RECESSIVE:
+                begin
+                    /*
+                     * Stay here while the bus is dominant.
+                     * Do not generate another error flag merely
+                     * because the current bit is still dominant.
+                     */
+                    if (can_rx_sync == 1'b0)
+                    begin
+                        next_state   = WAIT_RECESSIVE;
+                        next_bit_cnt = 6'd1;
+                    end
+                    else if (bit_en)
+                    begin
+                        next_state   = ERROR_DELIM;
+                        next_bit_cnt = ERROR_DELIM_LEN;
+                    end
+                end
 
+                /* =================================================
+                 * ERROR DELIMITER
+                 * ================================================= */
+                ERROR_DELIM:
+                begin
+                    if (bit_en)
+                    begin
+                        if (bit_cnt > 6'd1)
+                            next_bit_cnt = bit_cnt - 6'd1;
+                        else
+                        begin
+                            next_state   = INTERMISSION;
+                            next_bit_cnt = INTERMISSION_LEN;
+                        end
+                    end
+                end
 
-always@(posedge clk or negedge rst_n)
-begin
-	if(!rst_n)
-		is_transmitting <= 0;
-	else if(bit_en)
-	begin
-		if(present_state == IDLE && next_state == SOF)
-		begin
-			if(sof_detected)
-				is_transmitting <= 1'b0;
-			else
-				is_transmitting <= 1'b1;
-		end
-		else
-		begin
-			if(present_state == ARBITRATION && bit_error)
-				is_transmitting <=0;
-			else
-			begin
-				if(next_state == IDLE)
-					is_transmitting <= 0;
-				else
-					is_transmitting <= is_transmitting;
-			end
-		end
-	end
-	else
-		is_transmitting <= is_transmitting;
-end
+                /* =================================================
+                 * RX ONLY
+                 * ================================================= */
+                RX_ONLY:
+                begin
+                    /*
+                     * Arbitration loser remains a receiver and
+                     * follows the remainder of the frame.
+                     *
+                     * RX_ONLY uses the exact same logical-bit
+                     * accounting as ARBITRATION, including:
+                     *   - stuff-bit hold
+                     *   - phase 0 IDE resolution
+                     *   - extended phase 1
+                     */
+                    next_is_transmitting = 1'b0;
 
-always @(posedge clk or negedge rst_n) 
-begin
-        if (!rst_n)
-            arb_phase <= 1'b0;
-        else if (bit_en) 
-	begin
-            if (present_state == IDLE && next_state == SOF)
-                arb_phase <= 1'b0;                 // fresh frame
-            else if (ide_resolve_cycle)
-                arb_phase <= active_ide;           // 1 = extended, continue to phase 2
+                    if (!rx_bit_valid)
+                    begin
+                        next_state   = RX_ONLY;
+                        next_bit_cnt = bit_cnt;
+                    end
+                    else if (bit_en)
+                    begin
+                        if (!arb_phase)
+                        begin
+                            if (bit_cnt > 6'd1)
+                            begin
+                                next_bit_cnt = bit_cnt - 6'd1;
+                            end
+                            else
+                            begin
+                                /*
+                                 * IDE is the final phase-0 bit.
+                                 * Use the current sampled bus value,
+                                 * not stale rx_ide.
+                                 */
+                                next_active_ide = can_rx_sync;
+
+                                if (can_rx_sync)
+                                begin
+                                    next_arb_phase = 1'b1;
+                                    next_bit_cnt   = ARB_PHASE2_LEN;
+                                end
+                                else
+                                begin
+                                    next_arb_phase = 1'b0;
+                                    next_state     = CONTROL;
+                                    next_bit_cnt   = CTRL_LEN_STD;
+                                end
+                            end
+                        end
+                        else
+                        begin
+                            if (bit_cnt > 6'd1)
+                            begin
+                                next_bit_cnt = bit_cnt - 6'd1;
+                            end
+                            else
+                            begin
+                                next_state      = CONTROL;
+                                next_bit_cnt    = CTRL_LEN_EXT;
+                                next_arb_phase  = 1'b0;
+                                next_active_ide = 1'b1;
+                            end
+                        end
+                    end
+                end
+
+                default:
+                begin
+                    next_state           = IDLE;
+                    next_bit_cnt         = 6'd0;
+                    next_byte_idx        = 3'd0;
+                    next_arb_phase       = 1'b0;
+                    next_is_transmitting = 1'b0;
+                    next_active_ide      = 1'b0;
+                end
+
+            endcase
         end
-end
-
-
-// LOADING COUNTER VALUES BASED ON THE FRAME LENGTH
-always @(posedge clk or negedge rst_n) 
-begin
-        if (!rst_n) 
-	begin
-            bit_cnt <= 6'd1;
-        end 
-	else if (bit_en) 
-	begin
-            if (ide_resolve_cycle && active_ide) 
-	    begin
-                bit_cnt <= ARB_PHASE2_LEN;
-            end
-	    else if(present_state == DATA && bit_cnt == 6'd1 && logical_bit_valid && byte_idx != active_dlc - 3'd1)
- 	    begin
-		bit_cnt <= 6'd8;
- 	    end 
-	    else if (next_state != present_state) 
-	    begin
-                case (next_state)
-                    ARBITRATION:  bit_cnt <= ARB_PHASE1_LEN;         // always 13 now, both roles
-                    RX_ONLY:      bit_cnt <= bit_cnt;                // entering mid-field -- hold
-                    CONTROL:      bit_cnt <= arb_phase ? CTRL_LEN_EXT : CTRL_LEN_STD;
-                    DATA:         bit_cnt <= 6'd8;
-                    CRC:          bit_cnt <= CRC_LEN;
-                    EOF:          bit_cnt <= EOF_LEN;
-                    INTERMISSION: bit_cnt <= INTERM_LEN;
-                    ERROR_FLAG:   bit_cnt <= ERR_FLAG_LEN;
-                    ERROR_DELIM:  bit_cnt <= ERR_DELIM_LEN;
-                    default:      bit_cnt <= 6'd1;
-                endcase
-            end 
-	    else if (logical_bit_valid)
-	    begin
-                 if (bit_cnt_min)
-
-                      bit_cnt <= bit_cnt;
-                  else
-                      bit_cnt <= bit_cnt-1;
-            end
-	    else
-	    begin
-		bit_cnt <= bit_cnt;
-	    end
-        end
-end
- 
-always@(posedge clk or negedge rst_n)
-begin
-	if(!rst_n)
-	begin
-		byte_idx <= 0;
-	end
-	else if(bit_en)
-	begin
-		if(present_state != DATA)
-		begin
-			byte_idx <= 0;
-		end
-		else
-		begin
-			if( (bit_cnt == 6'd1) && logical_bit_valid)
-				byte_idx <= byte_idx + 1;
-			else
-				byte_idx <= byte_idx;
-		end	
-	end
-	else
-		byte_idx <= byte_idx;
-end
-
-// OUTPUT LOGIC
-always@(*)
-begin
- 	field_sel      = present_state;
-	line_busy        = (present_state != IDLE);
-
-
-	if (present_state == ACK && !is_transmitting)
-	    	ack_drive = 1'b1;
-    	else
-		ack_drive = 1'b0;
-
-	case(present_state)
-	
-	SOF, ARBITRATION,RX_ONLY, CONTROL, DATA:
-       	begin
-		crc_en = 1'b1;
-		stuff_en = 1'b1;
-	end
-
-	CRC:
-	begin
-		crc_en = !is_transmitting; // IF 0 means tx should start shifting out data, if 1 means RX should keep calculating to detect error
-		stuff_en = 1'b1;
-	end
-	
-	default:
-	begin
-		crc_en = 1'b0;
-		stuff_en = 1'b0;
-	end
-
-	endcase	
- 
-end
-
-always @(posedge clk or negedge rst_n) begin
-    if (!rst_n)
-        tx_done <= 1'b0;
-    else
-    begin 
-    	if (bit_en)
-	begin
-		tx_done <= 1'b0;
-
-        	if (present_state == EOF && (bit_cnt == 6'd1)  && is_transmitting)
-            		tx_done <= 1'b1;
-   	end
     end
-end
 
-always @(posedge clk or negedge rst_n) begin
-    if (!rst_n)
-        rx_done <= 1'b0;
-    else
-    begin
-        rx_done <= 1'b0;
-
-        if (bit_en)
-        begin
-            if ((present_state == EOF) && (bit_cnt == 6'd1) && !is_transmitting)
-                rx_done <= 1'b1;
-        end
-    end
-end
 endmodule
+

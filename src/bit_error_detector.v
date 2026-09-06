@@ -1,30 +1,23 @@
 module bit_error_detector(
-input wire clk,
-input wire rst_n,
-input wire bit_en,
+    input wire clk,
+    input wire rst_n,
+    input wire bit_en,
 
-input wire tx_bit,
-input wire can_rx_sync,
+    input wire tx_bit,
+    input wire can_rx_sync,
 
-output reg bit_error
+    input wire is_transmitting,
+    input wire [3:0] state,
+
+    output wire bit_error
 );
 
-always@(posedge clk or negedge rst_n)
-begin
-    if(!rst_n)
-    begin
-        bit_error <= 1'b0;
-    end
-    else
-    begin
-        bit_error <= 1'b0;
+localparam ACK = 4'd7;
 
-        if(bit_en)
-        begin
-            if(tx_bit != can_rx_sync)
-                bit_error <= 1'b1;
-        end
-    end
-end
+assign bit_error =
+       bit_en &&
+       is_transmitting &&
+       (state != ACK) &&
+       (tx_bit != can_rx_sync);
 
 endmodule
