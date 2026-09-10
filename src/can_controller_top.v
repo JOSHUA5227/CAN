@@ -107,6 +107,7 @@ module can_controller_top #(
     wire        tx_done;
     wire        rx_done;
     wire        line_busy;
+    wire        is_transmitting;
 
     wire [8:0]  tec;
     wire [7:0]  rec;
@@ -233,6 +234,7 @@ module can_controller_top #(
         .crc_error          (crc_error),
         .form_error         (form_error),
         .ack_error          (ack_error),
+        .arbitration_lost   (arbitration_lost),
 
         .last_error_valid   (can_last_error_valid),
         .last_error_type    (can_last_error_type),
@@ -468,19 +470,21 @@ module can_controller_top #(
     can_acceptance_filter #(
         .ID_WIDTH(29)
     ) u_acceptance_filter (
-        .rx_identifier (rx_identifier_can),
-        .rx_ide        (rx_ide_can),
-        .rx_frame_valid(rx_frame_valid_can),
+        .rx_identifier  (rx_identifier_can),
+        .rx_ide         (rx_ide_can),
+        .rx_frame_valid (rx_frame_valid_can),
 
-        .filter0_id    (filter0_id_can),
-        .filter0_mask  (filter0_mask_can),
-        .filter0_ide   (filter0_ide_can),
+        .filter0_id     (filter0_id_can),
+        .filter0_mask   (filter0_mask_can),
+        .filter0_enable (filter0_enable_can),
+        .filter0_ide    (filter0_ide_can),
 
-        .filter1_id    (filter1_id_can),
-        .filter1_mask  (filter1_mask_can),
-        .filter1_ide   (filter1_ide_can),
+        .filter1_id     (filter1_id_can),
+        .filter1_mask   (filter1_mask_can),
+        .filter1_enable (filter1_enable_can),
+        .filter1_ide    (filter1_ide_can),
 
-        .frame_accepted(rx_frame_accepted)
+        .frame_accepted (rx_frame_accepted)
     );
 
 
@@ -492,21 +496,21 @@ module can_controller_top #(
         .FIFO_DEPTH(FIFO_DEPTH)
     ) u_rx_fifo_bridge (
         /* CAN DOMAIN */
-        .can_clk        (can_clk),
-        .can_rst_n      (can_rst_sync),
+        .can_clk          (can_clk),
+        .can_rst_n        (can_rst_sync),
 
-        .rx_frame_valid (rx_frame_accepted),
-        .rx_identifier  (rx_identifier_can),
-        .rx_ide         (rx_ide_can),
-        .rx_rtr         (rx_rtr_can),
-        .rx_dlc         (rx_dlc_can),
-        .rx_data        (rx_data_can),
+        .rx_frame_valid   (rx_frame_accepted),
+        .rx_identifier    (rx_identifier_can),
+        .rx_ide           (rx_ide_can),
+        .rx_rtr           (rx_rtr_can),
+        .rx_dlc           (rx_dlc_can),
+        .rx_data          (rx_data_can),
 
         /* PCLK DOMAIN */
-        .pclk           (pclk),
-        .p_rst_n        (p_rst_sync),
+        .pclk             (pclk),
+        .p_rst_n          (p_rst_sync),
 
-        .rx_pop         (rx_pop_p),
+        .rx_pop           (rx_pop_p),
 
         .rx_identifier_out(rx_identifier_p),
         .rx_ide_out       (rx_ide_p),
@@ -517,7 +521,10 @@ module can_controller_top #(
         .fifo_count       (rx_fifo_count),
         .fifo_empty       (rx_fifo_empty),
         .fifo_full        (rx_fifo_full),
-        .fifo_overflow    (rx_fifo_overflow)
+        .fifo_overflow    (rx_fifo_overflow),
+
+        .is_transmitting  (is_transmitting),
+        .loopback         (loopback_can)
     );
 
 
@@ -582,10 +589,12 @@ module can_controller_top #(
         .can_state      (can_state),
 
         /* DEBUG / TIMING */
-        .bit_en         (bit_en),
-        .sample_en      (sample_en),
-        .can_rx_sync    (can_rx_sync),
-        .can_rx_sample  (can_rx_sample)
+        .bit_en          (bit_en),
+        .sample_en       (sample_en),
+        .can_rx_sync     (can_rx_sync),
+        .can_rx_sample   (can_rx_sample),
+
+        .is_transmitting (is_transmitting)
     );
 
 endmodule
