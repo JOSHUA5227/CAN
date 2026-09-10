@@ -1,6 +1,4 @@
 module bit_error_detector(
-    input wire clk,
-    input wire rst_n,
     input wire bit_en,
 
     input wire tx_bit,

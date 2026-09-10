@@ -52,6 +52,20 @@ module can_rx_datapath(
 
 
     /* =============================================================
+     * SAFE ARRAY INDEXES
+     * ============================================================= */
+
+    wire [3:0] arb_base_id_index;
+    wire [4:0] arb_extended_id_index;
+
+    assign arb_base_id_index =
+        bit_cnt[3:0] - 4'd3;
+
+    assign arb_extended_id_index =
+        bit_cnt[4:0] - 5'd1;
+
+
+    /* =============================================================
      * RX SEQUENTIAL LOGIC
      * ============================================================= */
 
@@ -81,6 +95,7 @@ module can_rx_datapath(
              * event for the FIFO so that the FIFO does not miss
              * the final frame write.
              */
+
             rx_frame_valid <= 1'b0;
 
 
@@ -103,8 +118,7 @@ module can_rx_datapath(
                  * Do NOT clear rx_data here.
                  *
                  * This preserves the previous RX data value for
-                 * DLC=0 frames and avoids destroying valid data
-                 * unnecessarily.
+                 * DLC=0 frames.
                  */
             end
 
@@ -167,7 +181,7 @@ module can_rx_datapath(
                             if((bit_cnt >= 6'd3) &&
                                (bit_cnt <= 6'd13))
                             begin
-                                arb_base_id[bit_cnt - 6'd3]
+                                arb_base_id[arb_base_id_index]
                                     <= rx_bit_destuffed;
                             end
 
@@ -242,7 +256,7 @@ module can_rx_datapath(
                             if((bit_cnt >= 6'd1) &&
                                (bit_cnt <= 6'd18))
                             begin
-                                arb_extended_id[bit_cnt - 6'd1]
+                                arb_extended_id[arb_extended_id_index]
                                     <= rx_bit_destuffed;
                             end
 
@@ -318,6 +332,12 @@ module can_rx_datapath(
                          * DLC=8:
                          *
                          *       XXXXXXXX_XXXXXXXX
+                         *
+                         * The first data bit starts with a clean
+                         * register for DLC 1..8.
+                         *
+                         * DLC=0 does not enter the data field and
+                         * therefore preserves rx_data.
                          */
 
                         case(rx_dlc)
@@ -334,12 +354,11 @@ module can_rx_datapath(
 
                             4'd1:
                             begin
-
                                 if((byte_idx == 3'd0) &&
                                    (bit_cnt == 6'd8))
                                 begin
                                     rx_data <=
-                                        {56'd0, rx_bit_destuffed};
+                                        {63'd0, rx_bit_destuffed};
                                 end
                                 else
                                 begin
@@ -347,86 +366,130 @@ module can_rx_datapath(
                                         {rx_data[62:0],
                                          rx_bit_destuffed};
                                 end
-
                             end
 
 
                             4'd2:
                             begin
-
-                                rx_data <=
-                                    {rx_data[62:0],
-                                     rx_bit_destuffed};
-
+                                if((byte_idx == 3'd0) &&
+                                   (bit_cnt == 6'd8))
+                                begin
+                                    rx_data <=
+                                        {63'd0, rx_bit_destuffed};
+                                end
+                                else
+                                begin
+                                    rx_data <=
+                                        {rx_data[62:0],
+                                         rx_bit_destuffed};
+                                end
                             end
 
 
                             4'd3:
                             begin
-
-                                rx_data <=
-                                    {rx_data[62:0],
-                                     rx_bit_destuffed};
-
+                                if((byte_idx == 3'd0) &&
+                                   (bit_cnt == 6'd8))
+                                begin
+                                    rx_data <=
+                                        {63'd0, rx_bit_destuffed};
+                                end
+                                else
+                                begin
+                                    rx_data <=
+                                        {rx_data[62:0],
+                                         rx_bit_destuffed};
+                                end
                             end
 
 
                             4'd4:
                             begin
-
-                                rx_data <=
-                                    {rx_data[62:0],
-                                     rx_bit_destuffed};
-
+                                if((byte_idx == 3'd0) &&
+                                   (bit_cnt == 6'd8))
+                                begin
+                                    rx_data <=
+                                        {63'd0, rx_bit_destuffed};
+                                end
+                                else
+                                begin
+                                    rx_data <=
+                                        {rx_data[62:0],
+                                         rx_bit_destuffed};
+                                end
                             end
 
 
                             4'd5:
                             begin
-
-                                rx_data <=
-                                    {rx_data[62:0],
-                                     rx_bit_destuffed};
-
+                                if((byte_idx == 3'd0) &&
+                                   (bit_cnt == 6'd8))
+                                begin
+                                    rx_data <=
+                                        {63'd0, rx_bit_destuffed};
+                                end
+                                else
+                                begin
+                                    rx_data <=
+                                        {rx_data[62:0],
+                                         rx_bit_destuffed};
+                                end
                             end
 
 
                             4'd6:
                             begin
-
-                                rx_data <=
-                                    {rx_data[62:0],
-                                     rx_bit_destuffed};
-
+                                if((byte_idx == 3'd0) &&
+                                   (bit_cnt == 6'd8))
+                                begin
+                                    rx_data <=
+                                        {63'd0, rx_bit_destuffed};
+                                end
+                                else
+                                begin
+                                    rx_data <=
+                                        {rx_data[62:0],
+                                         rx_bit_destuffed};
+                                end
                             end
 
 
                             4'd7:
                             begin
-
-                                rx_data <=
-                                    {rx_data[62:0],
-                                     rx_bit_destuffed};
-
+                                if((byte_idx == 3'd0) &&
+                                   (bit_cnt == 6'd8))
+                                begin
+                                    rx_data <=
+                                        {63'd0, rx_bit_destuffed};
+                                end
+                                else
+                                begin
+                                    rx_data <=
+                                        {rx_data[62:0],
+                                         rx_bit_destuffed};
+                                end
                             end
 
 
                             4'd8:
                             begin
-
-                                rx_data <=
-                                    {rx_data[62:0],
-                                     rx_bit_destuffed};
-
+                                if((byte_idx == 3'd0) &&
+                                   (bit_cnt == 6'd8))
+                                begin
+                                    rx_data <=
+                                        {63'd0, rx_bit_destuffed};
+                                end
+                                else
+                                begin
+                                    rx_data <=
+                                        {rx_data[62:0],
+                                         rx_bit_destuffed};
+                                end
                             end
 
 
                             default:
                             begin
-                                /*
-                                 * Invalid DLC values are not expected
-                                 * because CAN 2.0B permits DLC 0..8.
-                                 */
                                 rx_data <=
                                     {rx_data[62:0],
                                      rx_bit_destuffed};

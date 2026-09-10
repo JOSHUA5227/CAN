@@ -61,12 +61,12 @@ module can_controller #(
     localparam SOF            = 4'd1;
     localparam ARBITRATION    = 4'd2;
     localparam CONTROL        = 4'd3;
-    localparam DATA           = 4'd4;
-    localparam CRC            = 4'd5;
+    localparam DATA            = 4'd4;
+    localparam CRC             = 4'd5;
     localparam CRC_DELIM      = 4'd6;
-    localparam ACK            = 4'd7;
+    localparam ACK             = 4'd7;
     localparam ACK_DELIM      = 4'd8;
-    localparam EOF            = 4'd9;
+    localparam EOF             = 4'd9;
     localparam INTERMISSION   = 4'd10;
     localparam ERROR_FLAG     = 4'd11;
     localparam WAIT_RECESSIVE = 4'd12;
@@ -125,6 +125,9 @@ module can_controller #(
     wire sof_request;
 
     wire tx_identifier_reg_unused;
+
+    /* Recovery status from error controller. */
+    wire recovery_active;
 
     reg tx_pending;
     reg sof_pending;
@@ -292,9 +295,6 @@ module can_controller #(
      * ============================================================= */
 
     tx_datapath u_tx_datapath(
-        .clk(clk),
-        .rst_n(rst_n),
-        .bit_en(bit_en),
         .is_transmitting(is_transmitting),
         .state(field_sel),
         .arb_phase(arb_phase),
@@ -435,8 +435,6 @@ module can_controller #(
         is_transmitting ? tx_bus_bit : can_rx_sample;
 
     bit_error_detector u_bit_error_detector(
-        .clk(clk),
-        .rst_n(rst_n),
         .bit_en(bit_en),
         .tx_bit(bit_error_compare_bit),
         .can_rx_sync(can_rx_sample),
@@ -487,7 +485,8 @@ module can_controller #(
         .rec(rec),
         .error_state(error_state),
         .error_flag_active(error_flag_active),
-        .error_flag_request(error_flag_request)
+        .error_flag_request(error_flag_request),
+        .recovery_active(recovery_active)
     );
 
 
