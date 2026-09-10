@@ -1,7 +1,4 @@
-`timescale 1ns/1ps
-
 module can_rx_datapath(
-
     input wire        clk,
     input wire        rst_n,
 
@@ -9,6 +6,7 @@ module can_rx_datapath(
 
     input wire [3:0]  state,
     input wire [5:0]  bit_cnt,
+    input wire [2:0]  byte_idx,
     input wire        arb_phase,
     input wire        active_ide,
 
@@ -24,11 +22,9 @@ module can_rx_datapath(
 );
 
 
-    /*
-     * =========================================================
+    /* =============================================================
      * CAN FRAME STATES
-     * =========================================================
-     */
+     * ============================================================= */
 
     localparam IDLE           = 4'd0;
     localparam SOF            = 4'd1;
@@ -47,157 +43,120 @@ module can_rx_datapath(
     localparam RX_ONLY        = 4'd14;
 
 
-    /*
-     * =========================================================
+    /* =============================================================
      * ARBITRATION STORAGE
-     * =========================================================
-     *
-     * PHASE 0:
-     *
-     *   bit 13 ... 3 = 11-bit base identifier
-     *   bit 2        = RTR (standard) / SRR (extended)
-     *   bit 1        = IDE
-     *
-     * PHASE 1 (extended only):
-     *
-     *   bit 19 ... 2 = extended identifier [17:0]
-     *   bit 1        = RTR
-     */
+     * ============================================================= */
 
     reg [10:0] arb_base_id;
     reg [17:0] arb_extended_id;
 
 
-    /*
-     * =========================================================
-     * RX DATA BYTE INDEX
-     * =========================================================
-     */
-
-    reg [2:0] rx_byte_idx;
-
-
-    /*
-     * =========================================================
+    /* =============================================================
      * RX SEQUENTIAL LOGIC
-     * =========================================================
-     */
+     * ============================================================= */
 
     always @(posedge clk or negedge rst_n)
     begin
-
-        if (!rst_n)
+        if(!rst_n)
         begin
-            arb_base_id    <= 11'd0;
+            arb_base_id     <= 11'd0;
             arb_extended_id <= 18'd0;
 
-            rx_byte_idx <= 3'd0;
+            rx_identifier   <= 29'd0;
+            rx_rtr          <= 1'b0;
+            rx_ide          <= 1'b0;
+            rx_dlc          <= 4'd0;
 
-            rx_identifier <= 29'd0;
-            rx_rtr        <= 1'b0;
-            rx_ide        <= 1'b0;
-            rx_dlc        <= 4'd0;
+            rx_data         <= 64'd0;
 
-            rx_data <= 64'd0;
-
-            rx_frame_valid <= 1'b0;
+            rx_frame_valid  <= 1'b0;
         end
-
         else
         begin
 
             /*
-             * One-clock pulse.
+             * rx_frame_valid is a one-clock registered pulse.
+             *
+             * can_controller also generates a combinational EOF
+             * event for the FIFO so that the FIFO does not miss
+             * the final frame write.
              */
-
             rx_frame_valid <= 1'b0;
 
 
-            /*
-             * =================================================
+            /* =====================================================
              * SOF
-             * =================================================
-             */
+             * ===================================================== */
 
-            if (bit_en && (state == SOF))
+            if(bit_en &&
+               (state == SOF))
             begin
-
                 arb_base_id     <= 11'd0;
                 arb_extended_id <= 18'd0;
 
-                rx_byte_idx <= 3'd0;
+                rx_identifier   <= 29'd0;
+                rx_rtr          <= 1'b0;
+                rx_ide          <= 1'b0;
+                rx_dlc          <= 4'd0;
 
-                rx_identifier <= 29'd0;
-                rx_rtr        <= 1'b0;
-                rx_ide        <= 1'b0;
-                rx_dlc        <= 4'd0;
-
-                rx_data <= 64'd0;
-
+                /*
+                 * Do NOT clear rx_data here.
+                 *
+                 * This preserves the previous RX data value for
+                 * DLC=0 frames and avoids destroying valid data
+                 * unnecessarily.
+                 */
             end
 
 
-            /*
-             * =================================================
+            /* =====================================================
              * EOF
-             * =================================================
-             *
-             * EOF is not stuffed.
-             */
+             * ===================================================== */
 
-            else if (bit_en &&
-                     (state == EOF) &&
-                     (bit_cnt == 6'd1))
+            else if(bit_en &&
+                    (state == EOF) &&
+                    (bit_cnt == 6'd1))
             begin
                 rx_frame_valid <= 1'b1;
             end
 
 
-            /*
-             * =================================================
+            /* =====================================================
              * LOGICAL RX BIT
-             * =================================================
-             *
-             * A stuff bit has rx_bit_valid = 0 and therefore
-             * does not enter the RX datapath.
-             */
+             * ===================================================== */
 
-            else if (bit_en && rx_bit_valid)
+            else if(bit_en &&
+                    rx_bit_valid)
             begin
 
-                case (state)
+                case(state)
 
 
-                    /*
-                     * =================================================
-                     * ARBITRATION
-                     * =================================================
-                     */
+                    /* =================================================
+                     * ARBITRATION / RX_ONLY
+                     * ================================================= */
 
                     ARBITRATION,
                     RX_ONLY:
                     begin
 
                         /*
-                         * -----------------------------------------
+                         * -------------------------------------------------
                          * PHASE 0
-                         * -----------------------------------------
+                         * -------------------------------------------------
                          *
-                         * bit 13 ... 3 = base identifier
-                         * bit 2        = RTR / SRR
+                         * Standard frame:
+                         *
+                         * bit 13 ... 3 = Base ID
+                         * bit 2        = RTR
                          * bit 1        = IDE
-                         *
-                         * We do NOT use active_ide to decide where
-                         * these first 11 bits go.
-                         *
-                         * IDE has not been received yet.
                          */
 
-                        if (!arb_phase)
+                        if(!arb_phase)
                         begin
 
                             /*
-                             * Base identifier
+                             * Base identifier.
                              *
                              * bit_cnt 13 -> ID[10]
                              * bit_cnt 12 -> ID[9]
@@ -205,78 +164,60 @@ module can_rx_datapath(
                              * bit_cnt 3  -> ID[0]
                              */
 
-                            if ((bit_cnt >= 6'd3) &&
-                                (bit_cnt <= 6'd13))
+                            if((bit_cnt >= 6'd3) &&
+                               (bit_cnt <= 6'd13))
                             begin
-
-                                arb_base_id[
-                                    bit_cnt - 6'd3
-                                ] <= rx_bit_destuffed;
-
+                                arb_base_id[bit_cnt - 6'd3]
+                                    <= rx_bit_destuffed;
                             end
 
 
                             /*
-                             * Standard RTR
-                             *
                              * bit_cnt = 2
                              *
-                             * For an extended frame this is SRR,
-                             * so it must not become rx_rtr.
+                             * RTR for standard frame.
                              *
-                             * active_ide is still the previous
-                             * frame-format indication here, but
-                             * for a normal receiver entering a new
-                             * frame it is 0. The definitive frame
-                             * format is established by IDE below.
+                             * For extended frame this is SRR,
+                             * therefore do not store it as RTR.
                              */
 
-                            if ((bit_cnt == 6'd2) &&
-                                !active_ide)
+                            else if(bit_cnt == 6'd2)
                             begin
-                                rx_rtr <= rx_bit_destuffed;
+                                if(!active_ide)
+                                begin
+                                    rx_rtr <= rx_bit_destuffed;
+                                end
                             end
 
 
                             /*
-                             * IDE
-                             *
                              * bit_cnt = 1
                              *
-                             * This is the bit that determines
-                             * standard vs extended format.
+                             * IDE determines standard vs extended.
                              */
 
-                            if (bit_cnt == 6'd1)
+                            else if(bit_cnt == 6'd1)
                             begin
-
                                 rx_ide <= rx_bit_destuffed;
 
+
                                 /*
-                                 * Standard frame:
-                                 *
-                                 * The complete identifier is
-                                 * already in arb_base_id.
+                                 * STANDARD FRAME
                                  */
 
-                                if (!rx_bit_destuffed)
+                                if(!rx_bit_destuffed)
                                 begin
                                     rx_identifier <=
                                         {18'd0, arb_base_id};
                                 end
 
-                                /*
-                                 * Extended frame:
-                                 *
-                                 * The base ID becomes bits [28:18].
-                                 * The lower 18 bits arrive in phase 1.
-                                 */
 
-                                else
-                                begin
-                                    rx_identifier <=
-                                        {arb_base_id, 18'd0};
-                                end
+                                /*
+                                 * EXTENDED FRAME
+                                 *
+                                 * The extended identifier is completed
+                                 * during the extended arbitration phase.
+                                 */
 
                             end
 
@@ -284,56 +225,25 @@ module can_rx_datapath(
 
 
                         /*
-                         * -----------------------------------------
-                         * PHASE 1 - EXTENDED ID
-                         * -----------------------------------------
-                         *
-                         * bit 19 ... 2 = ID[17:0]
-                         * bit 1        = RTR
+                         * -------------------------------------------------
+                         * EXTENDED ARBITRATION PHASE
+                         * -------------------------------------------------
                          */
 
                         else
                         begin
 
                             /*
-                             * Extended identifier
+                             * Extended ID bits.
                              *
-                             * bit_cnt 19 -> ID[17]
-                             * ...
-                             * bit_cnt 2  -> ID[0]
+                             * bit 18 ... 1 -> EXT_ID[17:0]
                              */
 
-                            if ((bit_cnt >= 6'd2) &&
-                                (bit_cnt <= 6'd19))
+                            if((bit_cnt >= 6'd1) &&
+                               (bit_cnt <= 6'd18))
                             begin
-
-                                arb_extended_id[
-                                    bit_cnt - 6'd2
-                                ] <= rx_bit_destuffed;
-
-                            end
-
-
-                            /*
-                             * Extended RTR
-                             *
-                             * bit_cnt = 1
-                             *
-                             * The lower 18 ID bits have all already
-                             * been received.
-                             */
-
-                            if (bit_cnt == 6'd1)
-                            begin
-
-                                rx_rtr <= rx_bit_destuffed;
-
-                                rx_identifier <=
-                                    {
-                                        arb_base_id,
-                                        arb_extended_id
-                                    };
-
+                                arb_extended_id[bit_cnt - 6'd1]
+                                    <= rx_bit_destuffed;
                             end
 
                         end
@@ -341,55 +251,185 @@ module can_rx_datapath(
                     end
 
 
-                    /*
-                     * =================================================
+                    /* =================================================
                      * CONTROL
-                     * =================================================
-                     *
-                     * STANDARD:
-                     *
-                     *   5 -> r0
-                     *   4 -> DLC[3]
-                     *   3 -> DLC[2]
-                     *   2 -> DLC[1]
-                     *   1 -> DLC[0]
-                     *
-                     * EXTENDED:
-                     *
-                     *   6 -> r1
-                     *   5 -> r0
-                     *   4 -> DLC[3]
-                     *   3 -> DLC[2]
-                     *   2 -> DLC[1]
-                     *   1 -> DLC[0]
-                     */
+                     * ================================================= */
 
                     CONTROL:
                     begin
 
-                        case (bit_cnt)
+                        /*
+                         * DLC occupies four bits.
+                         *
+                         * DLC bit order:
+                         *
+                         * bit_cnt 4 -> DLC[3]
+                         * bit_cnt 3 -> DLC[2]
+                         * bit_cnt 2 -> DLC[1]
+                         * bit_cnt 1 -> DLC[0]
+                         */
 
-                            6'd4:
-                                rx_dlc[3] <= rx_bit_destuffed;
+                        if(bit_cnt == 6'd4)
+                        begin
+                            rx_dlc[3] <= rx_bit_destuffed;
+                        end
 
-                            6'd3:
-                                rx_dlc[2] <= rx_bit_destuffed;
+                        else if(bit_cnt == 6'd3)
+                        begin
+                            rx_dlc[2] <= rx_bit_destuffed;
+                        end
 
-                            6'd2:
-                                rx_dlc[1] <= rx_bit_destuffed;
+                        else if(bit_cnt == 6'd2)
+                        begin
+                            rx_dlc[1] <= rx_bit_destuffed;
+                        end
 
-                            6'd1:
-                                rx_dlc[0] <= rx_bit_destuffed;
+                        else if(bit_cnt == 6'd1)
+                        begin
+                            rx_dlc[0] <= rx_bit_destuffed;
+                        end
+
+                    end
+
+
+                    /* =================================================
+                     * DATA
+                     * ================================================= */
+
+                    DATA:
+                    begin
+
+                        /*
+                         * Data is received MSB first.
+                         *
+                         * The active payload is right-aligned in
+                         * the 64-bit RX register.
+                         *
+                         * DLC=1:
+                         *
+                         *       00000000_000000XX
+                         *
+                         * DLC=2:
+                         *
+                         *       00000000_0000XXXX
+                         *
+                         * ...
+                         *
+                         * DLC=8:
+                         *
+                         *       XXXXXXXX_XXXXXXXX
+                         */
+
+                        case(rx_dlc)
+
+                            4'd0:
+                            begin
+                                /*
+                                 * No data field.
+                                 *
+                                 * Preserve rx_data.
+                                 */
+                            end
+
+
+                            4'd1:
+                            begin
+
+                                if((byte_idx == 3'd0) &&
+                                   (bit_cnt == 6'd8))
+                                begin
+                                    rx_data <=
+                                        {56'd0, rx_bit_destuffed};
+                                end
+                                else
+                                begin
+                                    rx_data <=
+                                        {rx_data[62:0],
+                                         rx_bit_destuffed};
+                                end
+
+                            end
+
+
+                            4'd2:
+                            begin
+
+                                rx_data <=
+                                    {rx_data[62:0],
+                                     rx_bit_destuffed};
+
+                            end
+
+
+                            4'd3:
+                            begin
+
+                                rx_data <=
+                                    {rx_data[62:0],
+                                     rx_bit_destuffed};
+
+                            end
+
+
+                            4'd4:
+                            begin
+
+                                rx_data <=
+                                    {rx_data[62:0],
+                                     rx_bit_destuffed};
+
+                            end
+
+
+                            4'd5:
+                            begin
+
+                                rx_data <=
+                                    {rx_data[62:0],
+                                     rx_bit_destuffed};
+
+                            end
+
+
+                            4'd6:
+                            begin
+
+                                rx_data <=
+                                    {rx_data[62:0],
+                                     rx_bit_destuffed};
+
+                            end
+
+
+                            4'd7:
+                            begin
+
+                                rx_data <=
+                                    {rx_data[62:0],
+                                     rx_bit_destuffed};
+
+                            end
+
+
+                            4'd8:
+                            begin
+
+                                rx_data <=
+                                    {rx_data[62:0],
+                                     rx_bit_destuffed};
+
+                            end
+
 
                             default:
                             begin
                                 /*
-                                 * bit 5 = r0
-                                 *
-                                 * bit 6 = r1 for extended frames.
-                                 *
-                                 * Reserved bits are not stored.
+                                 * Invalid DLC values are not expected
+                                 * because CAN 2.0B permits DLC 0..8.
                                  */
+                                rx_data <=
+                                    {rx_data[62:0],
+                                     rx_bit_destuffed};
                             end
 
                         endcase
@@ -397,91 +437,11 @@ module can_rx_datapath(
                     end
 
 
-                    /*
-                     * =================================================
-                     * DATA
-                     * =================================================
-                     *
-                     * MSB first.
-                     */
-
-                    DATA:
-                    begin
-
-                        if (rx_byte_idx <= 3'd7)
-                        begin
-
-                            case (bit_cnt)
-
-                                6'd8:
-                                    rx_data[
-                                        63 - (rx_byte_idx * 8) - 0
-                                    ] <= rx_bit_destuffed;
-
-                                6'd7:
-                                    rx_data[
-                                        63 - (rx_byte_idx * 8) - 1
-                                    ] <= rx_bit_destuffed;
-
-                                6'd6:
-                                    rx_data[
-                                        63 - (rx_byte_idx * 8) - 2
-                                    ] <= rx_bit_destuffed;
-
-                                6'd5:
-                                    rx_data[
-                                        63 - (rx_byte_idx * 8) - 3
-                                    ] <= rx_bit_destuffed;
-
-                                6'd4:
-                                    rx_data[
-                                        63 - (rx_byte_idx * 8) - 4
-                                    ] <= rx_bit_destuffed;
-
-                                6'd3:
-                                    rx_data[
-                                        63 - (rx_byte_idx * 8) - 5
-                                    ] <= rx_bit_destuffed;
-
-                                6'd2:
-                                    rx_data[
-                                        63 - (rx_byte_idx * 8) - 6
-                                    ] <= rx_bit_destuffed;
-
-                                6'd1:
-                                    rx_data[
-                                        63 - (rx_byte_idx * 8) - 7
-                                    ] <= rx_bit_destuffed;
-
-                                default:
-                                begin
-                                end
-
-                            endcase
-
-
-                            /*
-                             * Last bit of this byte.
-                             */
-
-                            if (bit_cnt == 6'd1)
-                            begin
-                                rx_byte_idx <= rx_byte_idx + 3'd1;
-                            end
-
-                        end
-
-                    end
-
-
-                    /*
-                     * =================================================
-                     * OTHER STATES
-                     * =================================================
-                     */
-
                     default:
                     begin
+                        /*
+                         * No RX payload operation in this field.
+                         */
                     end
 
                 endcase

@@ -25,7 +25,8 @@ output reg [8:0] tec,
 output reg [7:0] rec,
 output wire [1:0] error_state,
 output reg error_flag_active,
-output wire error_flag_request
+output wire error_flag_request,
+output wire recovery_active
 );
 
 localparam IDLE = 4'd0;
@@ -77,26 +78,94 @@ wire dominant_error_plus8;
 
 assign error_state = present_state;
 
-assign error_event = bit_error_occured || ack_error || form_error || stuff_error || crc_error;
+assign recovery_active = (present_state == BUS_OFF);
 
-assign error_flag_request = error_event && (present_state != BUS_OFF) && (state != ERROR_FLAG) && (state != WAIT_RECESSIVE);
+assign error_event =
+       bit_error_occured ||
+       ack_error ||
+       form_error ||
+       stuff_error ||
+       crc_error;
 
-assign error_flag_start = bit_en && error_flag_request;
+assign error_flag_request =
+       error_event &&
+       (present_state != BUS_OFF) &&
+       (state != ERROR_FLAG) &&
+       (state != WAIT_RECESSIVE);
 
-assign transmitter_error = error_event && is_transmitting;
-assign receiver_error = error_event && !is_transmitting;
+assign error_flag_start =
+       bit_en &&
+       error_flag_request;
 
-assign ack_error_exception = ack_error && is_transmitting && (present_state == ERROR_PASSIVE) && (state == ACK);
+assign transmitter_error =
+       error_event &&
+       is_transmitting;
 
-assign stuff_before_rtr = (!arb_phase && active_ide) || (!arb_phase && !active_ide && (bit_cnt > 6'd2)) || (arb_phase && (bit_cnt > 6'd1));
+assign receiver_error =
+       error_event &&
+       !is_transmitting;
 
-assign arbitration_stuff_exception = stuff_error && is_transmitting && (state == ARBITRATION) && stuff_before_rtr && (tx_bit == 1'b1) && (bit_error == 1'b1);
+assign ack_error_exception =
+       ack_error &&
+       is_transmitting &&
+       (present_state == ERROR_PASSIVE) &&
+       (state == ACK);
 
-assign first_dominant_after_flag = bit_en && error_flag_sent && !error_flag_error_seen && !can_rx_sync;
+assign stuff_before_rtr =
+       (!arb_phase && active_ide) ||
+       (!arb_phase && !active_ide && (bit_cnt > 6'd2)) ||
+       (arb_phase && (bit_cnt > 6'd1));
 
-assign dominant_error_plus8 = bit_en && !can_rx_sync && ((error_flag_active_reg && ((dominant_count == 5'd13) || ((dominant_count > 5'd13) && (dominant_count[2:0] == 3'd5)))) || (!error_flag_active_reg && ((dominant_count == 5'd7) || ((dominant_count > 5'd7) && (dominant_count[2:0] == 3'd7)))));
+assign arbitration_stuff_exception =
+       stuff_error &&
+       is_transmitting &&
+       (state == ARBITRATION) &&
+       stuff_before_rtr &&
+       (tx_bit == 1'b1) &&
+       (bit_error == 1'b1);
 
-assign bus_off_recovery = (present_state == BUS_OFF) && bit_en && (recovery_bit_count == 4'd10) && (recovery_sequence_count == 7'd127);
+assign first_dominant_after_flag =
+       bit_en &&
+       error_flag_sent &&
+       !error_flag_error_seen &&
+       !can_rx_sync;
+
+assign dominant_error_plus8 =
+       bit_en &&
+       !can_rx_sync &&
+       (
+           (
+               error_flag_active_reg &&
+               (
+                   (dominant_count == 5'd13) ||
+                   (
+                       (dominant_count > 5'd13) &&
+                       (dominant_count[2:0] == 3'd5)
+                   )
+               )
+           ) ||
+           (
+               !error_flag_active_reg &&
+               (
+                   (dominant_count == 5'd7) ||
+                   (
+                       (dominant_count > 5'd7) &&
+                       (dominant_count[2:0] == 3'd7)
+                   )
+               )
+           )
+       );
+
+assign bus_off_recovery =
+       (present_state == BUS_OFF) &&
+       bit_en &&
+       (recovery_bit_count == 4'd10) &&
+       (recovery_sequence_count == 7'd127);
+
+
+/* ============================================================
+ * ERROR STATE REGISTER
+ * ============================================================ */
 
 always @(posedge clk or negedge rst_n)
 begin
@@ -106,11 +175,17 @@ begin
         present_state <= next_state;
 end
 
+
+/* ============================================================
+ * ERROR STATE TRANSITIONS
+ * ============================================================ */
+
 always @(*)
 begin
     next_state = present_state;
 
     case (present_state)
+
         ERROR_ACTIVE:
         begin
             if (tec >= 9'd256)
@@ -125,7 +200,7 @@ begin
         begin
             if (tec >= 9'd256)
                 next_state = BUS_OFF;
-            else if ((tec <= 9'd127) && (rec <= 8'd127))
+            else if ((tec <= 8'd127) && (rec <= 8'd127))
                 next_state = ERROR_ACTIVE;
             else
                 next_state = ERROR_PASSIVE;
@@ -141,8 +216,14 @@ begin
 
         default:
             next_state = ERROR_ACTIVE;
+
     endcase
 end
+
+
+/* ============================================================
+ * ERROR FLAG TYPE
+ * ============================================================ */
 
 always @(posedge clk or negedge rst_n)
 begin
@@ -156,6 +237,11 @@ always @(*)
 begin
     error_flag_active = error_flag_active_reg;
 end
+
+
+/* ============================================================
+ * ERROR FLAG TRACKING
+ * ============================================================ */
 
 always @(posedge clk or negedge rst_n)
 begin
@@ -179,6 +265,11 @@ begin
     end
 end
 
+
+/* ============================================================
+ * DOMINANT ERROR FLAG COUNTING
+ * ============================================================ */
+
 always @(posedge clk or negedge rst_n)
 begin
     if (!rst_n)
@@ -193,6 +284,13 @@ begin
             dominant_count <= dominant_count + 5'd1;
     end
 end
+
+
+/* ============================================================
+ * BUS-OFF RECOVERY
+ *
+ * 128 sequences of 11 consecutive recessive bits.
+ * ============================================================ */
 
 always @(posedge clk or negedge rst_n)
 begin
@@ -212,13 +310,17 @@ begin
                     recovery_bit_count <= 4'd0;
 
                     if (recovery_sequence_count != 7'd127)
-                        recovery_sequence_count <= recovery_sequence_count + 7'd1;
+                        recovery_sequence_count <=
+                            recovery_sequence_count + 7'd1;
                 end
                 else
-                    recovery_bit_count <= recovery_bit_count + 4'd1;
+                    recovery_bit_count <=
+                        recovery_bit_count + 4'd1;
             end
             else
+            begin
                 recovery_bit_count <= 4'd0;
+            end
         end
     end
     else
@@ -227,6 +329,11 @@ begin
         recovery_sequence_count <= 7'd0;
     end
 end
+
+
+/* ============================================================
+ * TEC / REC
+ * ============================================================ */
 
 always @(posedge clk or negedge rst_n)
 begin
@@ -237,14 +344,31 @@ begin
     end
     else if (bit_en)
     begin
+
+        /* ----------------------------------------------------
+         * BUS-OFF RECOVERY COMPLETE
+         * ---------------------------------------------------- */
+
         if (bus_off_recovery)
         begin
             tec <= 9'd0;
             rec <= 8'd0;
         end
-        else
+
+        /* ----------------------------------------------------
+         * ERROR OCCURRED
+         * ---------------------------------------------------- */
+
+        else if (error_event)
         begin
-            if (transmitter_error && !ack_error_exception && !arbitration_stuff_exception)
+
+            /* -----------------------------------------------
+             * TRANSMITTER ERROR
+             * ----------------------------------------------- */
+
+            if (transmitter_error &&
+                !ack_error_exception &&
+                !arbitration_stuff_exception)
             begin
                 if (tec >= 9'd504)
                     tec <= 9'd511;
@@ -252,11 +376,22 @@ begin
                     tec <= tec + 9'd8;
             end
 
-            if (receiver_error && !(bit_error_occured && (state == ERROR_FLAG) && error_flag_active_reg))
+            /* -----------------------------------------------
+             * RECEIVER ERROR
+             * ----------------------------------------------- */
+
+            else if (receiver_error &&
+                     !(bit_error_occured &&
+                       (state == ERROR_FLAG) &&
+                       error_flag_active_reg))
             begin
                 if (rec != 8'd255)
                     rec <= rec + 8'd1;
             end
+
+            /* -----------------------------------------------
+             * FIRST DOMINANT BIT AFTER ERROR FLAG
+             * ----------------------------------------------- */
 
             if (first_dominant_after_flag)
             begin
@@ -265,6 +400,10 @@ begin
                 else
                     rec <= rec + 8'd8;
             end
+
+            /* -----------------------------------------------
+             * DOMINANT ERROR FLAG EXTENSION
+             * ----------------------------------------------- */
 
             if (dominant_error_plus8)
             begin
@@ -283,23 +422,32 @@ begin
                         rec <= rec + 8'd8;
                 end
             end
-
-            if (tx_done && !error_event)
-            begin
-                if (tec != 9'd0)
-                    tec <= tec - 9'd1;
-            end
-
-            if (rx_done && !error_event)
-            begin
-                if (rec == 8'd0)
-                    rec <= 8'd0;
-                else if (rec <= 8'd127)
-                    rec <= rec - 8'd1;
-                else
-                    rec <= 8'd127;
-            end
         end
+
+        /* ----------------------------------------------------
+         * SUCCESSFUL TRANSMISSION
+         * ---------------------------------------------------- */
+
+        else if (tx_done)
+        begin
+            if (tec != 9'd0)
+                tec <= tec - 9'd1;
+        end
+
+        /* ----------------------------------------------------
+         * SUCCESSFUL RECEPTION
+         * ---------------------------------------------------- */
+
+        else if (rx_done)
+        begin
+            if (rec == 8'd0)
+                rec <= 8'd0;
+            else if (rec <= 8'd127)
+                rec <= rec - 8'd1;
+            else
+                rec <= 8'd127;
+        end
+
     end
 end
 
