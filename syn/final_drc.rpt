@@ -1,0 +1,15 @@
+ 
+****************************************
+Report : constraint
+        -all_violators
+        -max_capacitance
+        -max_fanout
+        -max_transition
+Design : can_controller_top
+Version: S-2021.06-SP4
+Date   : Fri Sep 11 22:22:34 2026
+****************************************
+
+This design has no violated constraints.
+
+1

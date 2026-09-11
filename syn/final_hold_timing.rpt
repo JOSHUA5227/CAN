@@ -1,0 +1,1525 @@
+ 
+****************************************
+Report : timing
+        -path full
+        -delay min
+        -max_paths 20
+Design : can_controller_top
+Version: S-2021.06-SP4
+Date   : Fri Sep 11 22:21:10 2026
+****************************************
+
+Operating Conditions: ss0p75v25c   Library: saed32lvt_ss0p75v25c
+Wire Load Model Mode: enclosed
+
+  Startpoint: u_rx_fifo_bridge/fifo_overflow_reg
+              (rising edge-triggered flip-flop clocked by can_clk)
+  Endpoint: u_rx_fifo_bridge/fifo_overflow_reg
+            (rising edge-triggered flip-flop clocked by can_clk)
+  Path Group: can_clk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_controller_top 35000                 saed32lvt_ss0p75v25c
+  can_rx_fifo_bridge_FIFO_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_rx_fifo_bridge/fifo_overflow_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_rx_fifo_bridge/fifo_overflow_reg/QN (DFFARX1_LVT)     0.14       0.14 r
+  u_rx_fifo_bridge/U9/Y (NAND2X0_LVT)                     0.03       0.17 f
+  u_rx_fifo_bridge/fifo_overflow_reg/D (DFFARX1_LVT)      0.00       0.17 f
+  data arrival time                                                  0.17
+
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.20       0.20
+  u_rx_fifo_bridge/fifo_overflow_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.20 r
+  library hold time                                      -0.03       0.17
+  data required time                                                 0.17
+  --------------------------------------------------------------------------
+  data required time                                                 0.17
+  data arrival time                                                 -0.17
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.00
+
+
+  Startpoint: u_error_latch/last_error_valid_reg
+              (rising edge-triggered flip-flop clocked by can_clk)
+  Endpoint: u_error_latch/last_error_valid_reg
+            (rising edge-triggered flip-flop clocked by can_clk)
+  Path Group: can_clk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_error_latch    ForQA                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_error_latch/last_error_valid_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_error_latch/last_error_valid_reg/QN (DFFARX1_LVT)     0.14       0.14 r
+  u_error_latch/U15/Y (NAND2X0_LVT)                       0.04       0.18 f
+  u_error_latch/last_error_valid_reg/D (DFFARX1_LVT)      0.00       0.18 f
+  data arrival time                                                  0.18
+
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.20       0.20
+  u_error_latch/last_error_valid_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.20 r
+  library hold time                                      -0.04       0.16
+  data required time                                                 0.16
+  --------------------------------------------------------------------------
+  data required time                                                 0.16
+  data arrival time                                                 -0.18
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.02
+
+
+  Startpoint: u_tx_cdc/tx_req_sync1_can_reg
+              (rising edge-triggered flip-flop clocked by can_clk)
+  Endpoint: u_tx_cdc/tx_req_sync2_can_reg
+            (rising edge-triggered flip-flop clocked by can_clk)
+  Path Group: can_clk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_tx_cdc         8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_tx_cdc/tx_req_sync1_can_reg/CLK (DFFARX1_LVT)         0.00       0.00 r
+  u_tx_cdc/tx_req_sync1_can_reg/Q (DFFARX1_LVT)           0.19       0.19 f
+  u_tx_cdc/tx_req_sync2_can_reg/D (DFFARX1_LVT)           0.00       0.19 f
+  data arrival time                                                  0.19
+
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.20       0.20
+  u_tx_cdc/tx_req_sync2_can_reg/CLK (DFFARX1_LVT)         0.00       0.20 r
+  library hold time                                      -0.03       0.17
+  data required time                                                 0.17
+  --------------------------------------------------------------------------
+  data required time                                                 0.17
+  data arrival time                                                 -0.19
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.02
+
+
+  Startpoint: u_config_cdc/config_req_sync1_can_reg
+              (rising edge-triggered flip-flop clocked by can_clk)
+  Endpoint: u_config_cdc/config_req_sync2_can_reg
+            (rising edge-triggered flip-flop clocked by can_clk)
+  Path Group: can_clk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_config_cdc     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_config_cdc/config_req_sync1_can_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_config_cdc/config_req_sync1_can_reg/Q (DFFARX1_LVT)
+                                                          0.19       0.19 f
+  u_config_cdc/config_req_sync2_can_reg/D (DFFARX1_LVT)
+                                                          0.00       0.19 f
+  data arrival time                                                  0.19
+
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.20       0.20
+  u_config_cdc/config_req_sync2_can_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.20 r
+  library hold time                                      -0.03       0.17
+  data required time                                                 0.17
+  --------------------------------------------------------------------------
+  data required time                                                 0.17
+  data arrival time                                                 -0.19
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.02
+
+
+  Startpoint: u_canclk_reset_sync/sync1_reg/CLK
+              (internal path startpoint clocked by can_clk)
+  Endpoint: u_canclk_reset_sync/sync2_reg
+            (rising edge-triggered flip-flop clocked by can_clk)
+  Path Group: can_clk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_controller_top 35000                 saed32lvt_ss0p75v25c
+  reset_sync_1       ForQA                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    0.00       0.00 r
+  u_canclk_reset_sync/sync1_reg/CLK (DFFARX1_LVT)         0.00       0.00 r
+  u_canclk_reset_sync/sync1_reg/Q (DFFARX1_LVT)           0.19       0.19 f
+  u_canclk_reset_sync/sync2_reg/D (DFFARX1_LVT)           0.00       0.19 f
+  data arrival time                                                  0.19
+
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.20       0.20
+  u_canclk_reset_sync/sync2_reg/CLK (DFFARX1_LVT)         0.00       0.20 r
+  library hold time                                      -0.03       0.17
+  data required time                                                 0.17
+  --------------------------------------------------------------------------
+  data required time                                                 0.17
+  data arrival time                                                 -0.19
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.03
+
+
+  Startpoint: u_rx_fifo_bridge/rx_fifo/sync_r/q_reg[0][3]
+              (rising edge-triggered flip-flop clocked by can_clk)
+  Endpoint: u_rx_fifo_bridge/rx_fifo/sync_r/q_reg[1][3]
+            (rising edge-triggered flip-flop clocked by can_clk)
+  Path Group: can_clk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  sync_multi_WIDTH4_0
+                     ForQA                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_rx_fifo_bridge/rx_fifo/sync_r/q_reg[0][3]/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_rx_fifo_bridge/rx_fifo/sync_r/q_reg[0][3]/Q (DFFARX1_LVT)
+                                                          0.19       0.19 f
+  u_rx_fifo_bridge/rx_fifo/sync_r/q_reg[1][3]/D (DFFARX1_LVT)
+                                                          0.00       0.19 f
+  data arrival time                                                  0.19
+
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.20       0.20
+  u_rx_fifo_bridge/rx_fifo/sync_r/q_reg[1][3]/CLK (DFFARX1_LVT)
+                                                          0.00       0.20 r
+  library hold time                                      -0.03       0.17
+  data required time                                                 0.17
+  --------------------------------------------------------------------------
+  data required time                                                 0.17
+  data arrival time                                                 -0.19
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.03
+
+
+  Startpoint: u_rx_fifo_bridge/rx_fifo/sync_r/q_reg[0][2]
+              (rising edge-triggered flip-flop clocked by can_clk)
+  Endpoint: u_rx_fifo_bridge/rx_fifo/sync_r/q_reg[1][2]
+            (rising edge-triggered flip-flop clocked by can_clk)
+  Path Group: can_clk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  sync_multi_WIDTH4_0
+                     ForQA                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_rx_fifo_bridge/rx_fifo/sync_r/q_reg[0][2]/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_rx_fifo_bridge/rx_fifo/sync_r/q_reg[0][2]/Q (DFFARX1_LVT)
+                                                          0.19       0.19 f
+  u_rx_fifo_bridge/rx_fifo/sync_r/q_reg[1][2]/D (DFFARX1_LVT)
+                                                          0.00       0.19 f
+  data arrival time                                                  0.19
+
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.20       0.20
+  u_rx_fifo_bridge/rx_fifo/sync_r/q_reg[1][2]/CLK (DFFARX1_LVT)
+                                                          0.00       0.20 r
+  library hold time                                      -0.03       0.17
+  data required time                                                 0.17
+  --------------------------------------------------------------------------
+  data required time                                                 0.17
+  data arrival time                                                 -0.19
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.03
+
+
+  Startpoint: u_rx_fifo_bridge/rx_fifo/sync_r/q_reg[0][1]
+              (rising edge-triggered flip-flop clocked by can_clk)
+  Endpoint: u_rx_fifo_bridge/rx_fifo/sync_r/q_reg[1][1]
+            (rising edge-triggered flip-flop clocked by can_clk)
+  Path Group: can_clk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  sync_multi_WIDTH4_0
+                     ForQA                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_rx_fifo_bridge/rx_fifo/sync_r/q_reg[0][1]/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_rx_fifo_bridge/rx_fifo/sync_r/q_reg[0][1]/Q (DFFARX1_LVT)
+                                                          0.19       0.19 f
+  u_rx_fifo_bridge/rx_fifo/sync_r/q_reg[1][1]/D (DFFARX1_LVT)
+                                                          0.00       0.19 f
+  data arrival time                                                  0.19
+
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.20       0.20
+  u_rx_fifo_bridge/rx_fifo/sync_r/q_reg[1][1]/CLK (DFFARX1_LVT)
+                                                          0.00       0.20 r
+  library hold time                                      -0.03       0.17
+  data required time                                                 0.17
+  --------------------------------------------------------------------------
+  data required time                                                 0.17
+  data arrival time                                                 -0.19
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.03
+
+
+  Startpoint: u_rx_fifo_bridge/rx_fifo/sync_r/q_reg[0][0]
+              (rising edge-triggered flip-flop clocked by can_clk)
+  Endpoint: u_rx_fifo_bridge/rx_fifo/sync_r/q_reg[1][0]
+            (rising edge-triggered flip-flop clocked by can_clk)
+  Path Group: can_clk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  sync_multi_WIDTH4_0
+                     ForQA                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_rx_fifo_bridge/rx_fifo/sync_r/q_reg[0][0]/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_rx_fifo_bridge/rx_fifo/sync_r/q_reg[0][0]/Q (DFFARX1_LVT)
+                                                          0.19       0.19 f
+  u_rx_fifo_bridge/rx_fifo/sync_r/q_reg[1][0]/D (DFFARX1_LVT)
+                                                          0.00       0.19 f
+  data arrival time                                                  0.19
+
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.20       0.20
+  u_rx_fifo_bridge/rx_fifo/sync_r/q_reg[1][0]/CLK (DFFARX1_LVT)
+                                                          0.00       0.20 r
+  library hold time                                      -0.03       0.17
+  data required time                                                 0.17
+  --------------------------------------------------------------------------
+  data required time                                                 0.17
+  data arrival time                                                 -0.19
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.03
+
+
+  Startpoint: u_can_controller/u_rx_sync/q0_reg
+              (rising edge-triggered flip-flop clocked by can_clk)
+  Endpoint: u_can_controller/u_rx_sync/q1_reg
+            (rising edge-triggered flip-flop clocked by can_clk)
+  Path Group: can_clk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_controller_CAN_CLK_FREQ100000000_CAN_BIT_RATE1000000
+                     16000                 saed32lvt_ss0p75v25c
+  can_rx_sync        ForQA                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_can_controller/u_rx_sync/q0_reg/CLK (DFFASX1_LVT)     0.00       0.00 r
+  u_can_controller/u_rx_sync/q0_reg/Q (DFFASX1_LVT)       0.20       0.20 f
+  u_can_controller/u_rx_sync/q1_reg/D (DFFASX1_LVT)       0.00       0.20 f
+  data arrival time                                                  0.20
+
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.20       0.20
+  u_can_controller/u_rx_sync/q1_reg/CLK (DFFASX1_LVT)     0.00       0.20 r
+  library hold time                                      -0.03       0.17
+  data required time                                                 0.17
+  --------------------------------------------------------------------------
+  data required time                                                 0.17
+  data arrival time                                                 -0.20
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.03
+
+
+  Startpoint: u_error_status_cdc/tx_done_toggle_can_reg
+              (rising edge-triggered flip-flop clocked by can_clk)
+  Endpoint: u_error_status_cdc/tx_done_toggle_can_reg
+            (rising edge-triggered flip-flop clocked by can_clk)
+  Path Group: can_clk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_error_status_cdc
+                     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_error_status_cdc/tx_done_toggle_can_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_error_status_cdc/tx_done_toggle_can_reg/QN (DFFARX1_LVT)
+                                                          0.12       0.12 f
+  u_error_status_cdc/U53/Y (XOR2X1_LVT)                   0.08       0.20 r
+  u_error_status_cdc/tx_done_toggle_can_reg/D (DFFARX1_LVT)
+                                                          0.00       0.20 r
+  data arrival time                                                  0.20
+
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.20       0.20
+  u_error_status_cdc/tx_done_toggle_can_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.20 r
+  library hold time                                      -0.04       0.16
+  data required time                                                 0.16
+  --------------------------------------------------------------------------
+  data required time                                                 0.16
+  data arrival time                                                 -0.20
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.04
+
+
+  Startpoint: u_can_controller/u_rx_sync/q1_reg
+              (rising edge-triggered flip-flop clocked by can_clk)
+  Endpoint: u_can_controller/u_bte/can_rx_prev_reg
+            (rising edge-triggered flip-flop clocked by can_clk)
+  Path Group: can_clk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_controller_CAN_CLK_FREQ100000000_CAN_BIT_RATE1000000
+                     16000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_can_controller/u_rx_sync/q1_reg/CLK (DFFASX1_LVT)     0.00       0.00 r
+  u_can_controller/u_rx_sync/q1_reg/Q (DFFASX1_LVT)       0.20       0.20 f
+  u_can_controller/u_rx_sync/rx_sync (can_rx_sync)        0.00       0.20 f
+  u_can_controller/u_bte/can_rx_sync (bit_timing_engine_CAN_CLK_FREQ100000000_CAN_BIT_RATE1000000)
+                                                          0.00       0.20 f
+  u_can_controller/u_bte/can_rx_prev_reg/D (DFFASX1_LVT)
+                                                          0.00       0.20 f
+  data arrival time                                                  0.20
+
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.20       0.20
+  u_can_controller/u_bte/can_rx_prev_reg/CLK (DFFASX1_LVT)
+                                                          0.00       0.20 r
+  library hold time                                      -0.04       0.16
+  data required time                                                 0.16
+  --------------------------------------------------------------------------
+  data required time                                                 0.16
+  data arrival time                                                 -0.20
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.04
+
+
+  Startpoint: u_config_cdc/config_req_sync2_can_reg
+              (rising edge-triggered flip-flop clocked by can_clk)
+  Endpoint: u_config_cdc/config_req_seen_can_reg
+            (rising edge-triggered flip-flop clocked by can_clk)
+  Path Group: can_clk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_config_cdc     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_config_cdc/config_req_sync2_can_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_config_cdc/config_req_sync2_can_reg/Q (DFFARX1_LVT)
+                                                          0.20       0.20 f
+  u_config_cdc/config_req_seen_can_reg/D (DFFARX1_LVT)
+                                                          0.00       0.20 f
+  data arrival time                                                  0.20
+
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.20       0.20
+  u_config_cdc/config_req_seen_can_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.20 r
+  library hold time                                      -0.04       0.16
+  data required time                                                 0.16
+  --------------------------------------------------------------------------
+  data required time                                                 0.16
+  data arrival time                                                 -0.20
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.04
+
+
+  Startpoint: u_can_controller/u_ack_detector/ack_received_reg
+              (rising edge-triggered flip-flop clocked by can_clk)
+  Endpoint: u_error_status_cdc/can_ack_received_seen_reg
+            (rising edge-triggered flip-flop clocked by can_clk)
+  Path Group: can_clk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_controller_CAN_CLK_FREQ100000000_CAN_BIT_RATE1000000
+                     16000                 saed32lvt_ss0p75v25c
+  can_controller_top 35000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_can_controller/u_ack_detector/ack_received_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_can_controller/u_ack_detector/ack_received_reg/Q (DFFARX1_LVT)
+                                                          0.20       0.20 f
+  u_can_controller/u_ack_detector/ack_received (can_ack_detector)
+                                                          0.00       0.20 f
+  u_can_controller/ack_received (can_controller_CAN_CLK_FREQ100000000_CAN_BIT_RATE1000000)
+                                                          0.00       0.20 f
+  u_error_status_cdc/can_ack_received (can_error_status_cdc)
+                                                          0.00       0.20 f
+  u_error_status_cdc/can_ack_received_seen_reg/D (DFFARX1_LVT)
+                                                          0.00       0.20 f
+  data arrival time                                                  0.20
+
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.20       0.20
+  u_error_status_cdc/can_ack_received_seen_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.20 r
+  library hold time                                      -0.04       0.16
+  data required time                                                 0.16
+  --------------------------------------------------------------------------
+  data required time                                                 0.16
+  data arrival time                                                 -0.20
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.04
+
+
+  Startpoint: u_error_latch/error_event_toggle_reg
+              (rising edge-triggered flip-flop clocked by can_clk)
+  Endpoint: u_error_status_cdc/error_event_toggle_seen_can_reg
+            (rising edge-triggered flip-flop clocked by can_clk)
+  Path Group: can_clk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_error_latch    ForQA                 saed32lvt_ss0p75v25c
+  can_controller_top 35000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_error_latch/error_event_toggle_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_error_latch/error_event_toggle_reg/Q (DFFARX1_LVT)
+                                                          0.20       0.20 f
+  u_error_latch/error_event_toggle (can_error_latch)      0.00       0.20 f
+  u_error_status_cdc/error_event_toggle (can_error_status_cdc)
+                                                          0.00       0.20 f
+  u_error_status_cdc/error_event_toggle_seen_can_reg/D (DFFARX1_LVT)
+                                                          0.00       0.20 f
+  data arrival time                                                  0.20
+
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.20       0.20
+  u_error_status_cdc/error_event_toggle_seen_can_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.20 r
+  library hold time                                      -0.04       0.16
+  data required time                                                 0.16
+  --------------------------------------------------------------------------
+  data required time                                                 0.16
+  data arrival time                                                 -0.20
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.04
+
+
+  Startpoint: u_can_controller/u_error_controller/tec_reg[8]
+              (rising edge-triggered flip-flop clocked by can_clk)
+  Endpoint: u_can_controller/u_error_controller/present_state_reg[0]
+            (rising edge-triggered flip-flop clocked by can_clk)
+  Path Group: can_clk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  error_controller   8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_can_controller/u_error_controller/tec_reg[8]/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_can_controller/u_error_controller/tec_reg[8]/QN (DFFARX1_LVT)
+                                                          0.12       0.12 f
+  u_can_controller/u_error_controller/U13/Y (AND3X1_LVT)
+                                                          0.09       0.21 f
+  u_can_controller/u_error_controller/present_state_reg[0]/D (DFFARX1_LVT)
+                                                          0.00       0.21 f
+  data arrival time                                                  0.21
+
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.20       0.20
+  u_can_controller/u_error_controller/present_state_reg[0]/CLK (DFFARX1_LVT)
+                                                          0.00       0.20 r
+  library hold time                                      -0.03       0.17
+  data required time                                                 0.17
+  --------------------------------------------------------------------------
+  data required time                                                 0.17
+  data arrival time                                                 -0.21
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.04
+
+
+  Startpoint: u_can_controller/u_frame_controller/tx_done_reg
+              (rising edge-triggered flip-flop clocked by can_clk)
+  Endpoint: u_error_status_cdc/can_tx_done_seen_reg
+            (rising edge-triggered flip-flop clocked by can_clk)
+  Path Group: can_clk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_frame_controller
+                     8000                  saed32lvt_ss0p75v25c
+  can_controller_top 35000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_can_controller/u_frame_controller/tx_done_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_can_controller/u_frame_controller/tx_done_reg/Q (DFFARX1_LVT)
+                                                          0.21       0.21 f
+  u_can_controller/u_frame_controller/tx_done (can_frame_controller)
+                                                          0.00       0.21 f
+  u_can_controller/tx_done (can_controller_CAN_CLK_FREQ100000000_CAN_BIT_RATE1000000)
+                                                          0.00       0.21 f
+  u_error_status_cdc/can_tx_done (can_error_status_cdc)
+                                                          0.00       0.21 f
+  u_error_status_cdc/can_tx_done_seen_reg/D (DFFARX1_LVT)
+                                                          0.00       0.21 f
+  data arrival time                                                  0.21
+
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.20       0.20
+  u_error_status_cdc/can_tx_done_seen_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.20 r
+  library hold time                                      -0.04       0.16
+  data required time                                                 0.16
+  --------------------------------------------------------------------------
+  data required time                                                 0.16
+  data arrival time                                                 -0.21
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.05
+
+
+  Startpoint: u_error_latch/error_event_toggle_reg
+              (rising edge-triggered flip-flop clocked by can_clk)
+  Endpoint: u_error_latch/error_event_toggle_reg
+            (rising edge-triggered flip-flop clocked by can_clk)
+  Path Group: can_clk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_error_latch    ForQA                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_error_latch/error_event_toggle_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_error_latch/error_event_toggle_reg/QN (DFFARX1_LVT)
+                                                          0.13       0.13 f
+  u_error_latch/U14/Y (XOR2X1_LVT)                        0.08       0.21 r
+  u_error_latch/error_event_toggle_reg/D (DFFARX1_LVT)
+                                                          0.00       0.21 r
+  data arrival time                                                  0.21
+
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.20       0.20
+  u_error_latch/error_event_toggle_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.20 r
+  library hold time                                      -0.04       0.16
+  data required time                                                 0.16
+  --------------------------------------------------------------------------
+  data required time                                                 0.16
+  data arrival time                                                 -0.21
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.05
+
+
+  Startpoint: u_error_status_cdc/arb_toggle_can_reg
+              (rising edge-triggered flip-flop clocked by can_clk)
+  Endpoint: u_error_status_cdc/arb_toggle_can_reg
+            (rising edge-triggered flip-flop clocked by can_clk)
+  Path Group: can_clk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_error_status_cdc
+                     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_error_status_cdc/arb_toggle_can_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_error_status_cdc/arb_toggle_can_reg/QN (DFFARX1_LVT)
+                                                          0.12       0.12 f
+  u_error_status_cdc/U55/Y (XOR2X1_LVT)                   0.09       0.22 r
+  u_error_status_cdc/arb_toggle_can_reg/D (DFFARX1_LVT)
+                                                          0.00       0.22 r
+  data arrival time                                                  0.22
+
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.20       0.20
+  u_error_status_cdc/arb_toggle_can_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.20 r
+  library hold time                                      -0.04       0.16
+  data required time                                                 0.16
+  --------------------------------------------------------------------------
+  data required time                                                 0.16
+  data arrival time                                                 -0.22
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.05
+
+
+  Startpoint: u_error_status_cdc/ack_toggle_can_reg
+              (rising edge-triggered flip-flop clocked by can_clk)
+  Endpoint: u_error_status_cdc/ack_toggle_can_reg
+            (rising edge-triggered flip-flop clocked by can_clk)
+  Path Group: can_clk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_error_status_cdc
+                     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_error_status_cdc/ack_toggle_can_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_error_status_cdc/ack_toggle_can_reg/QN (DFFARX1_LVT)
+                                                          0.12       0.12 f
+  u_error_status_cdc/U57/Y (XOR2X1_LVT)                   0.09       0.22 r
+  u_error_status_cdc/ack_toggle_can_reg/D (DFFARX1_LVT)
+                                                          0.00       0.22 r
+  data arrival time                                                  0.22
+
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.20       0.20
+  u_error_status_cdc/ack_toggle_can_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.20 r
+  library hold time                                      -0.04       0.16
+  data required time                                                 0.16
+  --------------------------------------------------------------------------
+  data required time                                                 0.16
+  data arrival time                                                 -0.22
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.05
+
+
+  Startpoint: u_error_status_cdc/arb_toggle_sync1_reg
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_error_status_cdc/arb_toggle_sync2_reg
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_error_status_cdc
+                     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_error_status_cdc/arb_toggle_sync1_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_error_status_cdc/arb_toggle_sync1_reg/Q (DFFARX1_LVT)
+                                                          0.19       0.19 f
+  u_error_status_cdc/arb_toggle_sync2_reg/D (DFFARX1_LVT)
+                                                          0.00       0.19 f
+  data arrival time                                                  0.19
+
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.10       0.10
+  u_error_status_cdc/arb_toggle_sync2_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.10 r
+  library hold time                                      -0.03       0.07
+  data required time                                                 0.07
+  --------------------------------------------------------------------------
+  data required time                                                 0.07
+  data arrival time                                                 -0.19
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.12
+
+
+  Startpoint: u_error_status_cdc/ack_toggle_sync1_reg
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_error_status_cdc/ack_toggle_sync2_reg
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_error_status_cdc
+                     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_error_status_cdc/ack_toggle_sync1_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_error_status_cdc/ack_toggle_sync1_reg/Q (DFFARX1_LVT)
+                                                          0.19       0.19 f
+  u_error_status_cdc/ack_toggle_sync2_reg/D (DFFARX1_LVT)
+                                                          0.00       0.19 f
+  data arrival time                                                  0.19
+
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.10       0.10
+  u_error_status_cdc/ack_toggle_sync2_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.10 r
+  library hold time                                      -0.03       0.07
+  data required time                                                 0.07
+  --------------------------------------------------------------------------
+  data required time                                                 0.07
+  data arrival time                                                 -0.19
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.12
+
+
+  Startpoint: u_error_status_cdc/tx_done_toggle_sync1_reg
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_error_status_cdc/tx_done_toggle_sync2_reg
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_error_status_cdc
+                     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_error_status_cdc/tx_done_toggle_sync1_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_error_status_cdc/tx_done_toggle_sync1_reg/Q (DFFARX1_LVT)
+                                                          0.19       0.19 f
+  u_error_status_cdc/tx_done_toggle_sync2_reg/D (DFFARX1_LVT)
+                                                          0.00       0.19 f
+  data arrival time                                                  0.19
+
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.10       0.10
+  u_error_status_cdc/tx_done_toggle_sync2_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.10 r
+  library hold time                                      -0.03       0.07
+  data required time                                                 0.07
+  --------------------------------------------------------------------------
+  data required time                                                 0.07
+  data arrival time                                                 -0.19
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.12
+
+
+  Startpoint: u_error_status_cdc/status_toggle_sync1_reg
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_error_status_cdc/status_toggle_sync2_reg
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_error_status_cdc
+                     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_error_status_cdc/status_toggle_sync1_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_error_status_cdc/status_toggle_sync1_reg/Q (DFFARX1_LVT)
+                                                          0.19       0.19 f
+  u_error_status_cdc/status_toggle_sync2_reg/D (DFFARX1_LVT)
+                                                          0.00       0.19 f
+  data arrival time                                                  0.19
+
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.10       0.10
+  u_error_status_cdc/status_toggle_sync2_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.10 r
+  library hold time                                      -0.03       0.07
+  data required time                                                 0.07
+  --------------------------------------------------------------------------
+  data required time                                                 0.07
+  data arrival time                                                 -0.19
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.12
+
+
+  Startpoint: u_error_status_cdc/is_transmitting_sync1_reg
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_error_status_cdc/is_transmitting_sync2_reg
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_error_status_cdc
+                     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_error_status_cdc/is_transmitting_sync1_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_error_status_cdc/is_transmitting_sync1_reg/Q (DFFARX1_LVT)
+                                                          0.19       0.19 f
+  u_error_status_cdc/is_transmitting_sync2_reg/D (DFFARX1_LVT)
+                                                          0.00       0.19 f
+  data arrival time                                                  0.19
+
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.10       0.10
+  u_error_status_cdc/is_transmitting_sync2_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.10 r
+  library hold time                                      -0.03       0.07
+  data required time                                                 0.07
+  --------------------------------------------------------------------------
+  data required time                                                 0.07
+  data arrival time                                                 -0.19
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.12
+
+
+  Startpoint: u_error_status_cdc/recovery_active_sync1_reg
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_error_status_cdc/recovery_active_sync2_reg
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_error_status_cdc
+                     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_error_status_cdc/recovery_active_sync1_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_error_status_cdc/recovery_active_sync1_reg/Q (DFFARX1_LVT)
+                                                          0.19       0.19 f
+  u_error_status_cdc/recovery_active_sync2_reg/D (DFFARX1_LVT)
+                                                          0.00       0.19 f
+  data arrival time                                                  0.19
+
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.10       0.10
+  u_error_status_cdc/recovery_active_sync2_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.10 r
+  library hold time                                      -0.03       0.07
+  data required time                                                 0.07
+  --------------------------------------------------------------------------
+  data required time                                                 0.07
+  data arrival time                                                 -0.19
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.12
+
+
+  Startpoint: u_error_status_cdc/error_event_toggle_sync1_reg
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_error_status_cdc/error_event_toggle_sync2_reg
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_error_status_cdc
+                     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_error_status_cdc/error_event_toggle_sync1_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_error_status_cdc/error_event_toggle_sync1_reg/Q (DFFARX1_LVT)
+                                                          0.19       0.19 f
+  u_error_status_cdc/error_event_toggle_sync2_reg/D (DFFARX1_LVT)
+                                                          0.00       0.19 f
+  data arrival time                                                  0.19
+
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.10       0.10
+  u_error_status_cdc/error_event_toggle_sync2_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.10 r
+  library hold time                                      -0.03       0.07
+  data required time                                                 0.07
+  --------------------------------------------------------------------------
+  data required time                                                 0.07
+  data arrival time                                                 -0.19
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.12
+
+
+  Startpoint: u_error_status_cdc/line_busy_sync1_reg
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_error_status_cdc/line_busy_sync2_reg
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_error_status_cdc
+                     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_error_status_cdc/line_busy_sync1_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_error_status_cdc/line_busy_sync1_reg/Q (DFFARX1_LVT)
+                                                          0.19       0.19 f
+  u_error_status_cdc/line_busy_sync2_reg/D (DFFARX1_LVT)
+                                                          0.00       0.19 f
+  data arrival time                                                  0.19
+
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.10       0.10
+  u_error_status_cdc/line_busy_sync2_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.10 r
+  library hold time                                      -0.03       0.07
+  data required time                                                 0.07
+  --------------------------------------------------------------------------
+  data required time                                                 0.07
+  data arrival time                                                 -0.19
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.12
+
+
+  Startpoint: u_error_status_cdc/line_busy_sync2_reg
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_error_status_cdc/line_busy_reg
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_error_status_cdc
+                     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_error_status_cdc/line_busy_sync2_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_error_status_cdc/line_busy_sync2_reg/Q (DFFARX1_LVT)
+                                                          0.19       0.19 f
+  u_error_status_cdc/line_busy_reg/D (DFFARX1_LVT)        0.00       0.19 f
+  data arrival time                                                  0.19
+
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.10       0.10
+  u_error_status_cdc/line_busy_reg/CLK (DFFARX1_LVT)      0.00       0.10 r
+  library hold time                                      -0.03       0.07
+  data required time                                                 0.07
+  --------------------------------------------------------------------------
+  data required time                                                 0.07
+  data arrival time                                                 -0.19
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.12
+
+
+  Startpoint: u_error_status_cdc/is_transmitting_sync2_reg
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_error_status_cdc/is_transmitting_reg
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_error_status_cdc
+                     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_error_status_cdc/is_transmitting_sync2_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_error_status_cdc/is_transmitting_sync2_reg/Q (DFFARX1_LVT)
+                                                          0.19       0.19 f
+  u_error_status_cdc/is_transmitting_reg/D (DFFARX1_LVT)
+                                                          0.00       0.19 f
+  data arrival time                                                  0.19
+
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.10       0.10
+  u_error_status_cdc/is_transmitting_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.10 r
+  library hold time                                      -0.03       0.07
+  data required time                                                 0.07
+  --------------------------------------------------------------------------
+  data required time                                                 0.07
+  data arrival time                                                 -0.19
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.12
+
+
+  Startpoint: u_error_status_cdc/recovery_active_sync2_reg
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_error_status_cdc/recovery_active_reg
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_error_status_cdc
+                     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_error_status_cdc/recovery_active_sync2_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_error_status_cdc/recovery_active_sync2_reg/Q (DFFARX1_LVT)
+                                                          0.19       0.19 f
+  u_error_status_cdc/recovery_active_reg/D (DFFARX1_LVT)
+                                                          0.00       0.19 f
+  data arrival time                                                  0.19
+
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.10       0.10
+  u_error_status_cdc/recovery_active_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.10 r
+  library hold time                                      -0.03       0.07
+  data required time                                                 0.07
+  --------------------------------------------------------------------------
+  data required time                                                 0.07
+  data arrival time                                                 -0.19
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.12
+
+
+  Startpoint: u_tx_cdc/tx_ack_sync1_p_reg
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_tx_cdc/tx_ack_sync2_p_reg
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_tx_cdc         8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_tx_cdc/tx_ack_sync1_p_reg/CLK (DFFARX1_LVT)           0.00       0.00 r
+  u_tx_cdc/tx_ack_sync1_p_reg/Q (DFFARX1_LVT)             0.19       0.19 f
+  u_tx_cdc/tx_ack_sync2_p_reg/D (DFFARX1_LVT)             0.00       0.19 f
+  data arrival time                                                  0.19
+
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.10       0.10
+  u_tx_cdc/tx_ack_sync2_p_reg/CLK (DFFARX1_LVT)           0.00       0.10 r
+  library hold time                                      -0.03       0.07
+  data required time                                                 0.07
+  --------------------------------------------------------------------------
+  data required time                                                 0.07
+  data arrival time                                                 -0.19
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.12
+
+
+  Startpoint: u_config_cdc/config_ack_sync1_p_reg
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_config_cdc/config_ack_sync2_p_reg
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_config_cdc     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_config_cdc/config_ack_sync1_p_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_config_cdc/config_ack_sync1_p_reg/Q (DFFARX1_LVT)     0.19       0.19 f
+  u_config_cdc/config_ack_sync2_p_reg/D (DFFARX1_LVT)     0.00       0.19 f
+  data arrival time                                                  0.19
+
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.10       0.10
+  u_config_cdc/config_ack_sync2_p_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.10 r
+  library hold time                                      -0.03       0.07
+  data required time                                                 0.07
+  --------------------------------------------------------------------------
+  data required time                                                 0.07
+  data arrival time                                                 -0.19
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.12
+
+
+  Startpoint: u_apb_slave/rx_overflow_sync1_reg
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_apb_slave/rx_overflow_sync2_reg
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_apb_slave_ADDR_WIDTH12
+                     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_apb_slave/rx_overflow_sync1_reg/CLK (DFFARX1_LVT)     0.00       0.00 r
+  u_apb_slave/rx_overflow_sync1_reg/Q (DFFARX1_LVT)       0.19       0.19 f
+  u_apb_slave/rx_overflow_sync2_reg/D (DFFARX1_LVT)       0.00       0.19 f
+  data arrival time                                                  0.19
+
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.10       0.10
+  u_apb_slave/rx_overflow_sync2_reg/CLK (DFFARX1_LVT)     0.00       0.10 r
+  library hold time                                      -0.03       0.07
+  data required time                                                 0.07
+  --------------------------------------------------------------------------
+  data required time                                                 0.07
+  data arrival time                                                 -0.19
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.12
+
+
+  Startpoint: u_pclk_reset_sync/sync1_reg/CLK
+              (internal path startpoint clocked by pclk)
+  Endpoint: u_pclk_reset_sync/sync2_reg
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_controller_top 35000                 saed32lvt_ss0p75v25c
+  reset_sync_0       ForQA                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    0.00       0.00 r
+  u_pclk_reset_sync/sync1_reg/CLK (DFFARX1_LVT)           0.00       0.00 r
+  u_pclk_reset_sync/sync1_reg/Q (DFFARX1_LVT)             0.19       0.19 f
+  u_pclk_reset_sync/sync2_reg/D (DFFARX1_LVT)             0.00       0.19 f
+  data arrival time                                                  0.19
+
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.10       0.10
+  u_pclk_reset_sync/sync2_reg/CLK (DFFARX1_LVT)           0.00       0.10 r
+  library hold time                                      -0.03       0.07
+  data required time                                                 0.07
+  --------------------------------------------------------------------------
+  data required time                                                 0.07
+  data arrival time                                                 -0.19
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.13
+
+
+  Startpoint: u_rx_fifo_bridge/rx_fifo/sync_w/q_reg[0][3]
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_rx_fifo_bridge/rx_fifo/sync_w/q_reg[1][3]
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  sync_multi_WIDTH4_1
+                     ForQA                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_rx_fifo_bridge/rx_fifo/sync_w/q_reg[0][3]/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_rx_fifo_bridge/rx_fifo/sync_w/q_reg[0][3]/Q (DFFARX1_LVT)
+                                                          0.19       0.19 f
+  u_rx_fifo_bridge/rx_fifo/sync_w/q_reg[1][3]/D (DFFARX1_LVT)
+                                                          0.00       0.19 f
+  data arrival time                                                  0.19
+
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.10       0.10
+  u_rx_fifo_bridge/rx_fifo/sync_w/q_reg[1][3]/CLK (DFFARX1_LVT)
+                                                          0.00       0.10 r
+  library hold time                                      -0.03       0.07
+  data required time                                                 0.07
+  --------------------------------------------------------------------------
+  data required time                                                 0.07
+  data arrival time                                                 -0.19
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.13
+
+
+  Startpoint: u_rx_fifo_bridge/rx_fifo/sync_w/q_reg[0][2]
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_rx_fifo_bridge/rx_fifo/sync_w/q_reg[1][2]
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  sync_multi_WIDTH4_1
+                     ForQA                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_rx_fifo_bridge/rx_fifo/sync_w/q_reg[0][2]/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_rx_fifo_bridge/rx_fifo/sync_w/q_reg[0][2]/Q (DFFARX1_LVT)
+                                                          0.19       0.19 f
+  u_rx_fifo_bridge/rx_fifo/sync_w/q_reg[1][2]/D (DFFARX1_LVT)
+                                                          0.00       0.19 f
+  data arrival time                                                  0.19
+
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.10       0.10
+  u_rx_fifo_bridge/rx_fifo/sync_w/q_reg[1][2]/CLK (DFFARX1_LVT)
+                                                          0.00       0.10 r
+  library hold time                                      -0.03       0.07
+  data required time                                                 0.07
+  --------------------------------------------------------------------------
+  data required time                                                 0.07
+  data arrival time                                                 -0.19
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.13
+
+
+  Startpoint: u_rx_fifo_bridge/rx_fifo/sync_w/q_reg[0][1]
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_rx_fifo_bridge/rx_fifo/sync_w/q_reg[1][1]
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  sync_multi_WIDTH4_1
+                     ForQA                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_rx_fifo_bridge/rx_fifo/sync_w/q_reg[0][1]/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_rx_fifo_bridge/rx_fifo/sync_w/q_reg[0][1]/Q (DFFARX1_LVT)
+                                                          0.19       0.19 f
+  u_rx_fifo_bridge/rx_fifo/sync_w/q_reg[1][1]/D (DFFARX1_LVT)
+                                                          0.00       0.19 f
+  data arrival time                                                  0.19
+
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.10       0.10
+  u_rx_fifo_bridge/rx_fifo/sync_w/q_reg[1][1]/CLK (DFFARX1_LVT)
+                                                          0.00       0.10 r
+  library hold time                                      -0.03       0.07
+  data required time                                                 0.07
+  --------------------------------------------------------------------------
+  data required time                                                 0.07
+  data arrival time                                                 -0.19
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.13
+
+
+  Startpoint: u_rx_fifo_bridge/rx_fifo/sync_w/q_reg[0][0]
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_rx_fifo_bridge/rx_fifo/sync_w/q_reg[1][0]
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  sync_multi_WIDTH4_1
+                     ForQA                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_rx_fifo_bridge/rx_fifo/sync_w/q_reg[0][0]/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_rx_fifo_bridge/rx_fifo/sync_w/q_reg[0][0]/Q (DFFARX1_LVT)
+                                                          0.19       0.19 f
+  u_rx_fifo_bridge/rx_fifo/sync_w/q_reg[1][0]/D (DFFARX1_LVT)
+                                                          0.00       0.19 f
+  data arrival time                                                  0.19
+
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.10       0.10
+  u_rx_fifo_bridge/rx_fifo/sync_w/q_reg[1][0]/CLK (DFFARX1_LVT)
+                                                          0.00       0.10 r
+  library hold time                                      -0.03       0.07
+  data required time                                                 0.07
+  --------------------------------------------------------------------------
+  data required time                                                 0.07
+  data arrival time                                                 -0.19
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.13
+
+
+  Startpoint: u_error_status_cdc/ack_toggle_sync2_reg
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_error_status_cdc/ack_toggle_seen_reg
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_error_status_cdc
+                     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_error_status_cdc/ack_toggle_sync2_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_error_status_cdc/ack_toggle_sync2_reg/Q (DFFARX1_LVT)
+                                                          0.20       0.20 f
+  u_error_status_cdc/ack_toggle_seen_reg/D (DFFARX1_LVT)
+                                                          0.00       0.20 f
+  data arrival time                                                  0.20
+
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.10       0.10
+  u_error_status_cdc/ack_toggle_seen_reg/CLK (DFFARX1_LVT)
+                                                          0.00       0.10 r
+  library hold time                                      -0.04       0.06
+  data required time                                                 0.06
+  --------------------------------------------------------------------------
+  data required time                                                 0.06
+  data arrival time                                                 -0.20
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.13
+
+
+1

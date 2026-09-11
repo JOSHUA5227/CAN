@@ -1,0 +1,1957 @@
+ 
+****************************************
+Report : timing
+        -path full
+        -delay max
+        -max_paths 20
+Design : can_controller_top
+Version: S-2021.06-SP4
+Date   : Fri Sep 11 22:21:04 2026
+****************************************
+
+Operating Conditions: ss0p75v25c   Library: saed32lvt_ss0p75v25c
+Wire Load Model Mode: enclosed
+
+  Startpoint: PADDR[5] (input port clocked by can_clk)
+  Endpoint: PRDATA[5] (output port clocked by can_clk)
+  Path Group: can_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_controller_top 35000                 saed32lvt_ss0p75v25c
+  can_apb_slave_ADDR_WIDTH12
+                     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    5.00       5.00 f
+  PADDR[5] (in)                                           0.00       5.00 f
+  u_apb_slave/PADDR[5] (can_apb_slave_ADDR_WIDTH12)       0.00       5.00 f
+  u_apb_slave/U709/Y (INVX0_LVT)                          0.02       5.02 r
+  u_apb_slave/U708/Y (AND2X1_LVT)                         0.10       5.12 r
+  u_apb_slave/U685/Y (NAND3X0_LVT)                        0.13       5.25 f
+  u_apb_slave/U8/Y (INVX2_LVT)                            0.17       5.43 r
+  u_apb_slave/U488/Y (AO222X1_LVT)                        0.17       5.60 r
+  u_apb_slave/U487/Y (AO221X1_LVT)                        0.09       5.69 r
+  u_apb_slave/U480/Y (NOR4X0_LVT)                         0.13       5.82 f
+  u_apb_slave/U479/Y (NOR2X0_LVT)                         0.10       5.92 r
+  u_apb_slave/PRDATA[5] (can_apb_slave_ADDR_WIDTH12)      0.00       5.92 r
+  PRDATA[5] (out)                                         0.00       5.92 r
+  data arrival time                                                  5.92
+
+  clock can_clk (rise edge)                              10.00      10.00
+  clock network delay (ideal)                             0.00      10.00
+  output external delay                                  -5.00       5.00
+  data required time                                                 5.00
+  --------------------------------------------------------------------------
+  data required time                                                 5.00
+  data arrival time                                                 -5.92
+  --------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -0.92
+
+
+  Startpoint: PADDR[5] (input port clocked by can_clk)
+  Endpoint: PRDATA[4] (output port clocked by can_clk)
+  Path Group: can_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_controller_top 35000                 saed32lvt_ss0p75v25c
+  can_apb_slave_ADDR_WIDTH12
+                     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    5.00       5.00 f
+  PADDR[5] (in)                                           0.00       5.00 f
+  u_apb_slave/PADDR[5] (can_apb_slave_ADDR_WIDTH12)       0.00       5.00 f
+  u_apb_slave/U709/Y (INVX0_LVT)                          0.02       5.02 r
+  u_apb_slave/U708/Y (AND2X1_LVT)                         0.10       5.12 r
+  u_apb_slave/U685/Y (NAND3X0_LVT)                        0.13       5.25 f
+  u_apb_slave/U8/Y (INVX2_LVT)                            0.17       5.43 r
+  u_apb_slave/U498/Y (AO222X1_LVT)                        0.17       5.60 r
+  u_apb_slave/U497/Y (AO221X1_LVT)                        0.09       5.69 r
+  u_apb_slave/U490/Y (NOR4X0_LVT)                         0.13       5.82 f
+  u_apb_slave/U489/Y (NOR2X0_LVT)                         0.10       5.92 r
+  u_apb_slave/PRDATA[4] (can_apb_slave_ADDR_WIDTH12)      0.00       5.92 r
+  PRDATA[4] (out)                                         0.00       5.92 r
+  data arrival time                                                  5.92
+
+  clock can_clk (rise edge)                              10.00      10.00
+  clock network delay (ideal)                             0.00      10.00
+  output external delay                                  -5.00       5.00
+  data required time                                                 5.00
+  --------------------------------------------------------------------------
+  data required time                                                 5.00
+  data arrival time                                                 -5.92
+  --------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -0.92
+
+
+  Startpoint: PADDR[5] (input port clocked by can_clk)
+  Endpoint: PRDATA[7] (output port clocked by can_clk)
+  Path Group: can_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_controller_top 35000                 saed32lvt_ss0p75v25c
+  can_apb_slave_ADDR_WIDTH12
+                     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    5.00       5.00 f
+  PADDR[5] (in)                                           0.00       5.00 f
+  u_apb_slave/PADDR[5] (can_apb_slave_ADDR_WIDTH12)       0.00       5.00 f
+  u_apb_slave/U709/Y (INVX0_LVT)                          0.02       5.02 r
+  u_apb_slave/U708/Y (AND2X1_LVT)                         0.10       5.12 r
+  u_apb_slave/U685/Y (NAND3X0_LVT)                        0.13       5.25 f
+  u_apb_slave/U8/Y (INVX2_LVT)                            0.17       5.43 r
+  u_apb_slave/U464/Y (AO222X1_LVT)                        0.17       5.60 r
+  u_apb_slave/U463/Y (AO221X1_LVT)                        0.10       5.69 r
+  u_apb_slave/U460/Y (OR4X1_LVT)                          0.14       5.83 r
+  u_apb_slave/U459/Y (AND2X1_LVT)                         0.05       5.89 r
+  u_apb_slave/PRDATA[7] (can_apb_slave_ADDR_WIDTH12)      0.00       5.89 r
+  PRDATA[7] (out)                                         0.00       5.89 r
+  data arrival time                                                  5.89
+
+  clock can_clk (rise edge)                              10.00      10.00
+  clock network delay (ideal)                             0.00      10.00
+  output external delay                                  -5.00       5.00
+  data required time                                                 5.00
+  --------------------------------------------------------------------------
+  data required time                                                 5.00
+  data arrival time                                                 -5.89
+  --------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -0.89
+
+
+  Startpoint: PADDR[5] (input port clocked by can_clk)
+  Endpoint: PRDATA[6] (output port clocked by can_clk)
+  Path Group: can_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_controller_top 35000                 saed32lvt_ss0p75v25c
+  can_apb_slave_ADDR_WIDTH12
+                     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    5.00       5.00 f
+  PADDR[5] (in)                                           0.00       5.00 f
+  u_apb_slave/PADDR[5] (can_apb_slave_ADDR_WIDTH12)       0.00       5.00 f
+  u_apb_slave/U709/Y (INVX0_LVT)                          0.02       5.02 r
+  u_apb_slave/U708/Y (AND2X1_LVT)                         0.10       5.12 r
+  u_apb_slave/U685/Y (NAND3X0_LVT)                        0.13       5.25 f
+  u_apb_slave/U8/Y (INVX2_LVT)                            0.17       5.43 r
+  u_apb_slave/U474/Y (AO222X1_LVT)                        0.17       5.60 r
+  u_apb_slave/U473/Y (AO221X1_LVT)                        0.10       5.69 r
+  u_apb_slave/U470/Y (OR4X1_LVT)                          0.14       5.83 r
+  u_apb_slave/U469/Y (AND2X1_LVT)                         0.05       5.89 r
+  u_apb_slave/PRDATA[6] (can_apb_slave_ADDR_WIDTH12)      0.00       5.89 r
+  PRDATA[6] (out)                                         0.00       5.89 r
+  data arrival time                                                  5.89
+
+  clock can_clk (rise edge)                              10.00      10.00
+  clock network delay (ideal)                             0.00      10.00
+  output external delay                                  -5.00       5.00
+  data required time                                                 5.00
+  --------------------------------------------------------------------------
+  data required time                                                 5.00
+  data arrival time                                                 -5.89
+  --------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -0.89
+
+
+  Startpoint: PADDR[6] (input port clocked by can_clk)
+  Endpoint: PRDATA[10] (output port clocked by can_clk)
+  Path Group: can_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_controller_top 35000                 saed32lvt_ss0p75v25c
+  can_apb_slave_ADDR_WIDTH12
+                     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    5.00       5.00 r
+  PADDR[6] (in)                                           0.00       5.00 r
+  u_apb_slave/PADDR[6] (can_apb_slave_ADDR_WIDTH12)       0.00       5.00 r
+  u_apb_slave/U705/Y (INVX0_LVT)                          0.02       5.02 f
+  u_apb_slave/U689/Y (AND3X1_LVT)                         0.10       5.13 f
+  u_apb_slave/U688/Y (NAND2X0_LVT)                        0.12       5.24 r
+  u_apb_slave/U14/Y (INVX2_LVT)                           0.10       5.34 f
+  u_apb_slave/U655/Y (AO22X1_LVT)                         0.16       5.50 f
+  u_apb_slave/U654/Y (AO221X1_LVT)                        0.09       5.59 f
+  u_apb_slave/U652/Y (OR4X1_LVT)                          0.19       5.77 f
+  u_apb_slave/U651/Y (AND2X1_LVT)                         0.06       5.83 f
+  u_apb_slave/PRDATA[10] (can_apb_slave_ADDR_WIDTH12)     0.00       5.83 f
+  PRDATA[10] (out)                                        0.00       5.83 f
+  data arrival time                                                  5.83
+
+  clock can_clk (rise edge)                              10.00      10.00
+  clock network delay (ideal)                             0.00      10.00
+  output external delay                                  -5.00       5.00
+  data required time                                                 5.00
+  --------------------------------------------------------------------------
+  data required time                                                 5.00
+  data arrival time                                                 -5.83
+  --------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -0.83
+
+
+  Startpoint: PADDR[4] (input port clocked by can_clk)
+  Endpoint: PRDATA[1] (output port clocked by can_clk)
+  Path Group: can_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_controller_top 35000                 saed32lvt_ss0p75v25c
+  can_apb_slave_ADDR_WIDTH12
+                     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    5.00       5.00 r
+  PADDR[4] (in)                                           0.00       5.00 r
+  u_apb_slave/PADDR[4] (can_apb_slave_ADDR_WIDTH12)       0.00       5.00 r
+  u_apb_slave/U712/Y (INVX0_LVT)                          0.02       5.02 f
+  u_apb_slave/U711/Y (AND2X1_LVT)                         0.08       5.10 f
+  u_apb_slave/U676/Y (AND2X1_LVT)                         0.08       5.18 f
+  u_apb_slave/U16/Y (AND2X2_LVT)                          0.15       5.33 f
+  u_apb_slave/U587/Y (AO222X1_LVT)                        0.19       5.52 f
+  u_apb_slave/U585/Y (OR4X1_LVT)                          0.19       5.71 f
+  u_apb_slave/U584/Y (OA21X1_LVT)                         0.08       5.78 f
+  u_apb_slave/PRDATA[1] (can_apb_slave_ADDR_WIDTH12)      0.00       5.78 f
+  PRDATA[1] (out)                                         0.00       5.78 f
+  data arrival time                                                  5.78
+
+  clock can_clk (rise edge)                              10.00      10.00
+  clock network delay (ideal)                             0.00      10.00
+  output external delay                                  -5.00       5.00
+  data required time                                                 5.00
+  --------------------------------------------------------------------------
+  data required time                                                 5.00
+  data arrival time                                                 -5.78
+  --------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -0.78
+
+
+  Startpoint: PADDR[4] (input port clocked by can_clk)
+  Endpoint: PRDATA[0] (output port clocked by can_clk)
+  Path Group: can_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_controller_top 35000                 saed32lvt_ss0p75v25c
+  can_apb_slave_ADDR_WIDTH12
+                     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    5.00       5.00 r
+  PADDR[4] (in)                                           0.00       5.00 r
+  u_apb_slave/PADDR[4] (can_apb_slave_ADDR_WIDTH12)       0.00       5.00 r
+  u_apb_slave/U712/Y (INVX0_LVT)                          0.02       5.02 f
+  u_apb_slave/U711/Y (AND2X1_LVT)                         0.08       5.10 f
+  u_apb_slave/U676/Y (AND2X1_LVT)                         0.08       5.18 f
+  u_apb_slave/U16/Y (AND2X2_LVT)                          0.15       5.33 f
+  u_apb_slave/U666/Y (AO222X1_LVT)                        0.19       5.52 f
+  u_apb_slave/U662/Y (OR4X1_LVT)                          0.19       5.71 f
+  u_apb_slave/U659/Y (OA21X1_LVT)                         0.08       5.78 f
+  u_apb_slave/PRDATA[0] (can_apb_slave_ADDR_WIDTH12)      0.00       5.78 f
+  PRDATA[0] (out)                                         0.00       5.78 f
+  data arrival time                                                  5.78
+
+  clock can_clk (rise edge)                              10.00      10.00
+  clock network delay (ideal)                             0.00      10.00
+  output external delay                                  -5.00       5.00
+  data required time                                                 5.00
+  --------------------------------------------------------------------------
+  data required time                                                 5.00
+  data arrival time                                                 -5.78
+  --------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -0.78
+
+
+  Startpoint: PADDR[5] (input port clocked by can_clk)
+  Endpoint: PRDATA[13] (output port clocked by can_clk)
+  Path Group: can_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_controller_top 35000                 saed32lvt_ss0p75v25c
+  can_apb_slave_ADDR_WIDTH12
+                     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    5.00       5.00 f
+  PADDR[5] (in)                                           0.00       5.00 f
+  u_apb_slave/PADDR[5] (can_apb_slave_ADDR_WIDTH12)       0.00       5.00 f
+  u_apb_slave/U709/Y (INVX0_LVT)                          0.02       5.02 r
+  u_apb_slave/U708/Y (AND2X1_LVT)                         0.10       5.12 r
+  u_apb_slave/U685/Y (NAND3X0_LVT)                        0.13       5.25 f
+  u_apb_slave/U8/Y (INVX2_LVT)                            0.17       5.43 r
+  u_apb_slave/U635/Y (AOI22X1_LVT)                        0.15       5.58 f
+  u_apb_slave/U633/Y (NAND4X0_LVT)                        0.06       5.64 r
+  u_apb_slave/U632/Y (OR3X1_LVT)                          0.09       5.72 r
+  u_apb_slave/U631/Y (AND2X1_LVT)                         0.06       5.78 r
+  u_apb_slave/PRDATA[13] (can_apb_slave_ADDR_WIDTH12)     0.00       5.78 r
+  PRDATA[13] (out)                                        0.00       5.78 r
+  data arrival time                                                  5.78
+
+  clock can_clk (rise edge)                              10.00      10.00
+  clock network delay (ideal)                             0.00      10.00
+  output external delay                                  -5.00       5.00
+  data required time                                                 5.00
+  --------------------------------------------------------------------------
+  data required time                                                 5.00
+  data arrival time                                                 -5.78
+  --------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -0.78
+
+
+  Startpoint: PADDR[6] (input port clocked by can_clk)
+  Endpoint: PRDATA[3] (output port clocked by can_clk)
+  Path Group: can_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_controller_top 35000                 saed32lvt_ss0p75v25c
+  can_apb_slave_ADDR_WIDTH12
+                     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    5.00       5.00 r
+  PADDR[6] (in)                                           0.00       5.00 r
+  u_apb_slave/PADDR[6] (can_apb_slave_ADDR_WIDTH12)       0.00       5.00 r
+  u_apb_slave/U705/Y (INVX0_LVT)                          0.02       5.02 f
+  u_apb_slave/U689/Y (AND3X1_LVT)                         0.10       5.13 f
+  u_apb_slave/U688/Y (NAND2X0_LVT)                        0.12       5.24 r
+  u_apb_slave/U14/Y (INVX2_LVT)                           0.10       5.34 f
+  u_apb_slave/U506/Y (AOI222X1_LVT)                       0.23       5.58 r
+  u_apb_slave/U505/Y (NAND4X0_LVT)                        0.07       5.64 f
+  u_apb_slave/U499/Y (OA21X1_LVT)                         0.11       5.76 f
+  u_apb_slave/PRDATA[3] (can_apb_slave_ADDR_WIDTH12)      0.00       5.76 f
+  PRDATA[3] (out)                                         0.00       5.76 f
+  data arrival time                                                  5.76
+
+  clock can_clk (rise edge)                              10.00      10.00
+  clock network delay (ideal)                             0.00      10.00
+  output external delay                                  -5.00       5.00
+  data required time                                                 5.00
+  --------------------------------------------------------------------------
+  data required time                                                 5.00
+  data arrival time                                                 -5.76
+  --------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -0.76
+
+
+  Startpoint: PADDR[6] (input port clocked by can_clk)
+  Endpoint: PRDATA[2] (output port clocked by can_clk)
+  Path Group: can_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_controller_top 35000                 saed32lvt_ss0p75v25c
+  can_apb_slave_ADDR_WIDTH12
+                     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    5.00       5.00 r
+  PADDR[6] (in)                                           0.00       5.00 r
+  u_apb_slave/PADDR[6] (can_apb_slave_ADDR_WIDTH12)       0.00       5.00 r
+  u_apb_slave/U705/Y (INVX0_LVT)                          0.02       5.02 f
+  u_apb_slave/U689/Y (AND3X1_LVT)                         0.10       5.13 f
+  u_apb_slave/U688/Y (NAND2X0_LVT)                        0.12       5.24 r
+  u_apb_slave/U14/Y (INVX2_LVT)                           0.10       5.34 f
+  u_apb_slave/U523/Y (AOI222X1_LVT)                       0.23       5.58 r
+  u_apb_slave/U522/Y (NAND4X0_LVT)                        0.07       5.64 f
+  u_apb_slave/U516/Y (OA21X1_LVT)                         0.11       5.76 f
+  u_apb_slave/PRDATA[2] (can_apb_slave_ADDR_WIDTH12)      0.00       5.76 f
+  PRDATA[2] (out)                                         0.00       5.76 f
+  data arrival time                                                  5.76
+
+  clock can_clk (rise edge)                              10.00      10.00
+  clock network delay (ideal)                             0.00      10.00
+  output external delay                                  -5.00       5.00
+  data required time                                                 5.00
+  --------------------------------------------------------------------------
+  data required time                                                 5.00
+  data arrival time                                                 -5.76
+  --------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -0.76
+
+
+  Startpoint: PADDR[3] (input port clocked by can_clk)
+  Endpoint: PRDATA[8] (output port clocked by can_clk)
+  Path Group: can_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_controller_top 35000                 saed32lvt_ss0p75v25c
+  can_apb_slave_ADDR_WIDTH12
+                     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    5.00       5.00 r
+  PADDR[3] (in)                                           0.00       5.00 r
+  u_apb_slave/PADDR[3] (can_apb_slave_ADDR_WIDTH12)       0.00       5.00 r
+  u_apb_slave/U704/Y (INVX0_LVT)                          0.03       5.03 f
+  u_apb_slave/U700/Y (AND3X1_LVT)                         0.10       5.13 f
+  u_apb_slave/U699/Y (NAND2X0_LVT)                        0.13       5.26 r
+  u_apb_slave/U15/Y (INVX4_LVT)                           0.07       5.33 f
+  u_apb_slave/U454/Y (AO22X1_LVT)                         0.15       5.48 f
+  u_apb_slave/U453/Y (AOI221X1_LVT)                       0.11       5.59 r
+  u_apb_slave/U450/Y (NAND4X0_LVT)                        0.06       5.66 f
+  u_apb_slave/U449/Y (AND2X1_LVT)                         0.08       5.74 f
+  u_apb_slave/PRDATA[8] (can_apb_slave_ADDR_WIDTH12)      0.00       5.74 f
+  PRDATA[8] (out)                                         0.00       5.74 f
+  data arrival time                                                  5.74
+
+  clock can_clk (rise edge)                              10.00      10.00
+  clock network delay (ideal)                             0.00      10.00
+  output external delay                                  -5.00       5.00
+  data required time                                                 5.00
+  --------------------------------------------------------------------------
+  data required time                                                 5.00
+  data arrival time                                                 -5.74
+  --------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -0.74
+
+
+  Startpoint: PADDR[5] (input port clocked by can_clk)
+  Endpoint: PRDATA[28] (output port clocked by can_clk)
+  Path Group: can_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_controller_top 35000                 saed32lvt_ss0p75v25c
+  can_apb_slave_ADDR_WIDTH12
+                     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    5.00       5.00 f
+  PADDR[5] (in)                                           0.00       5.00 f
+  u_apb_slave/PADDR[5] (can_apb_slave_ADDR_WIDTH12)       0.00       5.00 f
+  u_apb_slave/U709/Y (INVX0_LVT)                          0.02       5.02 r
+  u_apb_slave/U708/Y (AND2X1_LVT)                         0.10       5.12 r
+  u_apb_slave/U684/Y (NAND3X0_LVT)                        0.13       5.25 f
+  u_apb_slave/U7/Y (INVX2_LVT)                            0.17       5.42 r
+  u_apb_slave/U534/Y (AOI222X1_LVT)                       0.18       5.60 f
+  u_apb_slave/U533/Y (NAND2X0_LVT)                        0.06       5.65 r
+  u_apb_slave/U530/Y (OA21X1_LVT)                         0.08       5.74 r
+  u_apb_slave/PRDATA[28] (can_apb_slave_ADDR_WIDTH12)     0.00       5.74 r
+  PRDATA[28] (out)                                        0.00       5.74 r
+  data arrival time                                                  5.74
+
+  clock can_clk (rise edge)                              10.00      10.00
+  clock network delay (ideal)                             0.00      10.00
+  output external delay                                  -5.00       5.00
+  data required time                                                 5.00
+  --------------------------------------------------------------------------
+  data required time                                                 5.00
+  data arrival time                                                 -5.74
+  --------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -0.74
+
+
+  Startpoint: PADDR[5] (input port clocked by can_clk)
+  Endpoint: PRDATA[27] (output port clocked by can_clk)
+  Path Group: can_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_controller_top 35000                 saed32lvt_ss0p75v25c
+  can_apb_slave_ADDR_WIDTH12
+                     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    5.00       5.00 f
+  PADDR[5] (in)                                           0.00       5.00 f
+  u_apb_slave/PADDR[5] (can_apb_slave_ADDR_WIDTH12)       0.00       5.00 f
+  u_apb_slave/U709/Y (INVX0_LVT)                          0.02       5.02 r
+  u_apb_slave/U708/Y (AND2X1_LVT)                         0.10       5.12 r
+  u_apb_slave/U684/Y (NAND3X0_LVT)                        0.13       5.25 f
+  u_apb_slave/U7/Y (INVX2_LVT)                            0.17       5.42 r
+  u_apb_slave/U540/Y (AOI222X1_LVT)                       0.18       5.60 f
+  u_apb_slave/U539/Y (NAND2X0_LVT)                        0.06       5.65 r
+  u_apb_slave/U536/Y (OA21X1_LVT)                         0.08       5.74 r
+  u_apb_slave/PRDATA[27] (can_apb_slave_ADDR_WIDTH12)     0.00       5.74 r
+  PRDATA[27] (out)                                        0.00       5.74 r
+  data arrival time                                                  5.74
+
+  clock can_clk (rise edge)                              10.00      10.00
+  clock network delay (ideal)                             0.00      10.00
+  output external delay                                  -5.00       5.00
+  data required time                                                 5.00
+  --------------------------------------------------------------------------
+  data required time                                                 5.00
+  data arrival time                                                 -5.74
+  --------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -0.74
+
+
+  Startpoint: PADDR[5] (input port clocked by can_clk)
+  Endpoint: PRDATA[26] (output port clocked by can_clk)
+  Path Group: can_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_controller_top 35000                 saed32lvt_ss0p75v25c
+  can_apb_slave_ADDR_WIDTH12
+                     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    5.00       5.00 f
+  PADDR[5] (in)                                           0.00       5.00 f
+  u_apb_slave/PADDR[5] (can_apb_slave_ADDR_WIDTH12)       0.00       5.00 f
+  u_apb_slave/U709/Y (INVX0_LVT)                          0.02       5.02 r
+  u_apb_slave/U708/Y (AND2X1_LVT)                         0.10       5.12 r
+  u_apb_slave/U684/Y (NAND3X0_LVT)                        0.13       5.25 f
+  u_apb_slave/U7/Y (INVX2_LVT)                            0.17       5.42 r
+  u_apb_slave/U546/Y (AOI222X1_LVT)                       0.18       5.60 f
+  u_apb_slave/U545/Y (NAND2X0_LVT)                        0.06       5.65 r
+  u_apb_slave/U542/Y (OA21X1_LVT)                         0.08       5.74 r
+  u_apb_slave/PRDATA[26] (can_apb_slave_ADDR_WIDTH12)     0.00       5.74 r
+  PRDATA[26] (out)                                        0.00       5.74 r
+  data arrival time                                                  5.74
+
+  clock can_clk (rise edge)                              10.00      10.00
+  clock network delay (ideal)                             0.00      10.00
+  output external delay                                  -5.00       5.00
+  data required time                                                 5.00
+  --------------------------------------------------------------------------
+  data required time                                                 5.00
+  data arrival time                                                 -5.74
+  --------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -0.74
+
+
+  Startpoint: PADDR[5] (input port clocked by can_clk)
+  Endpoint: PRDATA[25] (output port clocked by can_clk)
+  Path Group: can_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_controller_top 35000                 saed32lvt_ss0p75v25c
+  can_apb_slave_ADDR_WIDTH12
+                     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    5.00       5.00 f
+  PADDR[5] (in)                                           0.00       5.00 f
+  u_apb_slave/PADDR[5] (can_apb_slave_ADDR_WIDTH12)       0.00       5.00 f
+  u_apb_slave/U709/Y (INVX0_LVT)                          0.02       5.02 r
+  u_apb_slave/U708/Y (AND2X1_LVT)                         0.10       5.12 r
+  u_apb_slave/U684/Y (NAND3X0_LVT)                        0.13       5.25 f
+  u_apb_slave/U7/Y (INVX2_LVT)                            0.17       5.42 r
+  u_apb_slave/U552/Y (AOI222X1_LVT)                       0.18       5.60 f
+  u_apb_slave/U551/Y (NAND2X0_LVT)                        0.06       5.65 r
+  u_apb_slave/U548/Y (OA21X1_LVT)                         0.08       5.74 r
+  u_apb_slave/PRDATA[25] (can_apb_slave_ADDR_WIDTH12)     0.00       5.74 r
+  PRDATA[25] (out)                                        0.00       5.74 r
+  data arrival time                                                  5.74
+
+  clock can_clk (rise edge)                              10.00      10.00
+  clock network delay (ideal)                             0.00      10.00
+  output external delay                                  -5.00       5.00
+  data required time                                                 5.00
+  --------------------------------------------------------------------------
+  data required time                                                 5.00
+  data arrival time                                                 -5.74
+  --------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -0.74
+
+
+  Startpoint: PADDR[5] (input port clocked by can_clk)
+  Endpoint: PRDATA[16] (output port clocked by can_clk)
+  Path Group: can_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_controller_top 35000                 saed32lvt_ss0p75v25c
+  can_apb_slave_ADDR_WIDTH12
+                     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    5.00       5.00 f
+  PADDR[5] (in)                                           0.00       5.00 f
+  u_apb_slave/PADDR[5] (can_apb_slave_ADDR_WIDTH12)       0.00       5.00 f
+  u_apb_slave/U709/Y (INVX0_LVT)                          0.02       5.02 r
+  u_apb_slave/U708/Y (AND2X1_LVT)                         0.10       5.12 r
+  u_apb_slave/U684/Y (NAND3X0_LVT)                        0.13       5.25 f
+  u_apb_slave/U7/Y (INVX2_LVT)                            0.17       5.42 r
+  u_apb_slave/U615/Y (AOI222X1_LVT)                       0.18       5.60 f
+  u_apb_slave/U614/Y (NAND4X0_LVT)                        0.07       5.67 r
+  u_apb_slave/U613/Y (AND2X1_LVT)                         0.07       5.73 r
+  u_apb_slave/PRDATA[16] (can_apb_slave_ADDR_WIDTH12)     0.00       5.73 r
+  PRDATA[16] (out)                                        0.00       5.73 r
+  data arrival time                                                  5.73
+
+  clock can_clk (rise edge)                              10.00      10.00
+  clock network delay (ideal)                             0.00      10.00
+  output external delay                                  -5.00       5.00
+  data required time                                                 5.00
+  --------------------------------------------------------------------------
+  data required time                                                 5.00
+  data arrival time                                                 -5.73
+  --------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -0.73
+
+
+  Startpoint: PADDR[5] (input port clocked by can_clk)
+  Endpoint: PRDATA[15] (output port clocked by can_clk)
+  Path Group: can_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_controller_top 35000                 saed32lvt_ss0p75v25c
+  can_apb_slave_ADDR_WIDTH12
+                     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    5.00       5.00 f
+  PADDR[5] (in)                                           0.00       5.00 f
+  u_apb_slave/PADDR[5] (can_apb_slave_ADDR_WIDTH12)       0.00       5.00 f
+  u_apb_slave/U709/Y (INVX0_LVT)                          0.02       5.02 r
+  u_apb_slave/U708/Y (AND2X1_LVT)                         0.10       5.12 r
+  u_apb_slave/U684/Y (NAND3X0_LVT)                        0.13       5.25 f
+  u_apb_slave/U7/Y (INVX2_LVT)                            0.17       5.42 r
+  u_apb_slave/U621/Y (AOI222X1_LVT)                       0.18       5.60 f
+  u_apb_slave/U620/Y (NAND4X0_LVT)                        0.07       5.67 r
+  u_apb_slave/U619/Y (AND2X1_LVT)                         0.07       5.73 r
+  u_apb_slave/PRDATA[15] (can_apb_slave_ADDR_WIDTH12)     0.00       5.73 r
+  PRDATA[15] (out)                                        0.00       5.73 r
+  data arrival time                                                  5.73
+
+  clock can_clk (rise edge)                              10.00      10.00
+  clock network delay (ideal)                             0.00      10.00
+  output external delay                                  -5.00       5.00
+  data required time                                                 5.00
+  --------------------------------------------------------------------------
+  data required time                                                 5.00
+  data arrival time                                                 -5.73
+  --------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -0.73
+
+
+  Startpoint: PADDR[5] (input port clocked by can_clk)
+  Endpoint: PRDATA[14] (output port clocked by can_clk)
+  Path Group: can_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_controller_top 35000                 saed32lvt_ss0p75v25c
+  can_apb_slave_ADDR_WIDTH12
+                     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    5.00       5.00 f
+  PADDR[5] (in)                                           0.00       5.00 f
+  u_apb_slave/PADDR[5] (can_apb_slave_ADDR_WIDTH12)       0.00       5.00 f
+  u_apb_slave/U709/Y (INVX0_LVT)                          0.02       5.02 r
+  u_apb_slave/U708/Y (AND2X1_LVT)                         0.10       5.12 r
+  u_apb_slave/U684/Y (NAND3X0_LVT)                        0.13       5.25 f
+  u_apb_slave/U7/Y (INVX2_LVT)                            0.17       5.42 r
+  u_apb_slave/U627/Y (AOI222X1_LVT)                       0.18       5.60 f
+  u_apb_slave/U626/Y (NAND4X0_LVT)                        0.07       5.67 r
+  u_apb_slave/U625/Y (AND2X1_LVT)                         0.07       5.73 r
+  u_apb_slave/PRDATA[14] (can_apb_slave_ADDR_WIDTH12)     0.00       5.73 r
+  PRDATA[14] (out)                                        0.00       5.73 r
+  data arrival time                                                  5.73
+
+  clock can_clk (rise edge)                              10.00      10.00
+  clock network delay (ideal)                             0.00      10.00
+  output external delay                                  -5.00       5.00
+  data required time                                                 5.00
+  --------------------------------------------------------------------------
+  data required time                                                 5.00
+  data arrival time                                                 -5.73
+  --------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -0.73
+
+
+  Startpoint: PADDR[5] (input port clocked by can_clk)
+  Endpoint: PRDATA[12] (output port clocked by can_clk)
+  Path Group: can_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_controller_top 35000                 saed32lvt_ss0p75v25c
+  can_apb_slave_ADDR_WIDTH12
+                     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    5.00       5.00 f
+  PADDR[5] (in)                                           0.00       5.00 f
+  u_apb_slave/PADDR[5] (can_apb_slave_ADDR_WIDTH12)       0.00       5.00 f
+  u_apb_slave/U709/Y (INVX0_LVT)                          0.02       5.02 r
+  u_apb_slave/U708/Y (AND2X1_LVT)                         0.10       5.12 r
+  u_apb_slave/U684/Y (NAND3X0_LVT)                        0.13       5.25 f
+  u_apb_slave/U7/Y (INVX2_LVT)                            0.17       5.42 r
+  u_apb_slave/U641/Y (AOI222X1_LVT)                       0.18       5.60 f
+  u_apb_slave/U640/Y (NAND4X0_LVT)                        0.07       5.67 r
+  u_apb_slave/U639/Y (AND2X1_LVT)                         0.07       5.73 r
+  u_apb_slave/PRDATA[12] (can_apb_slave_ADDR_WIDTH12)     0.00       5.73 r
+  PRDATA[12] (out)                                        0.00       5.73 r
+  data arrival time                                                  5.73
+
+  clock can_clk (rise edge)                              10.00      10.00
+  clock network delay (ideal)                             0.00      10.00
+  output external delay                                  -5.00       5.00
+  data required time                                                 5.00
+  --------------------------------------------------------------------------
+  data required time                                                 5.00
+  data arrival time                                                 -5.73
+  --------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -0.73
+
+
+  Startpoint: PADDR[5] (input port clocked by can_clk)
+  Endpoint: PRDATA[11] (output port clocked by can_clk)
+  Path Group: can_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_controller_top 35000                 saed32lvt_ss0p75v25c
+  can_apb_slave_ADDR_WIDTH12
+                     8000                  saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock can_clk (rise edge)                               0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    5.00       5.00 f
+  PADDR[5] (in)                                           0.00       5.00 f
+  u_apb_slave/PADDR[5] (can_apb_slave_ADDR_WIDTH12)       0.00       5.00 f
+  u_apb_slave/U709/Y (INVX0_LVT)                          0.02       5.02 r
+  u_apb_slave/U708/Y (AND2X1_LVT)                         0.10       5.12 r
+  u_apb_slave/U684/Y (NAND3X0_LVT)                        0.13       5.25 f
+  u_apb_slave/U7/Y (INVX2_LVT)                            0.17       5.42 r
+  u_apb_slave/U647/Y (AOI222X1_LVT)                       0.18       5.60 f
+  u_apb_slave/U646/Y (NAND4X0_LVT)                        0.07       5.67 r
+  u_apb_slave/U645/Y (AND2X1_LVT)                         0.07       5.73 r
+  u_apb_slave/PRDATA[11] (can_apb_slave_ADDR_WIDTH12)     0.00       5.73 r
+  PRDATA[11] (out)                                        0.00       5.73 r
+  data arrival time                                                  5.73
+
+  clock can_clk (rise edge)                              10.00      10.00
+  clock network delay (ideal)                             0.00      10.00
+  output external delay                                  -5.00       5.00
+  data required time                                                 5.00
+  --------------------------------------------------------------------------
+  data required time                                                 5.00
+  data arrival time                                                 -5.73
+  --------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -0.73
+
+
+  Startpoint: u_rx_fifo_bridge/rx_fifo/sync_w/q_reg[1][3]
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[3]
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  sync_multi_WIDTH4_1
+                     ForQA                 saed32lvt_ss0p75v25c
+  async_fifo_WIDTH128_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+  fifo_read_DEPTH8   ForQA                 saed32lvt_ss0p75v25c
+  can_controller_top 35000                 saed32lvt_ss0p75v25c
+  can_rx_fifo_bridge_FIFO_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_rx_fifo_bridge/rx_fifo/sync_w/q_reg[1][3]/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_rx_fifo_bridge/rx_fifo/sync_w/q_reg[1][3]/Q (DFFARX1_LVT)
+                                                          0.24       0.24 r
+  u_rx_fifo_bridge/rx_fifo/sync_w/dout[3] (sync_multi_WIDTH4_1)
+                                                          0.00       0.24 r
+  u_rx_fifo_bridge/rx_fifo/b_w/inp[3] (g2b_WIDTH4_1)      0.00       0.24 r
+  u_rx_fifo_bridge/rx_fifo/b_w/U3/Y (XOR2X1_LVT)          0.19       0.43 f
+  u_rx_fifo_bridge/rx_fifo/b_w/U2/Y (XOR2X1_LVT)          0.19       0.62 r
+  u_rx_fifo_bridge/rx_fifo/b_w/U1/Y (XOR2X1_LVT)          0.21       0.83 f
+  u_rx_fifo_bridge/rx_fifo/b_w/outp[0] (g2b_WIDTH4_1)     0.00       0.83 f
+  u_rx_fifo_bridge/rx_fifo/r1/sync_w_ptr[0] (fifo_read_DEPTH8)
+                                                          0.00       0.83 f
+  u_rx_fifo_bridge/rx_fifo/r1/U13/Y (XNOR2X1_LVT)         0.17       0.99 r
+  u_rx_fifo_bridge/rx_fifo/r1/U12/Y (NAND4X0_LVT)         0.11       1.11 f
+  u_rx_fifo_bridge/rx_fifo/r1/U3/Y (INVX0_LVT)            0.09       1.20 r
+  u_rx_fifo_bridge/rx_fifo/r1/empty (fifo_read_DEPTH8)
+                                                          0.00       1.20 r
+  u_rx_fifo_bridge/rx_fifo/empty (async_fifo_WIDTH128_DEPTH8)
+                                                          0.00       1.20 r
+  u_rx_fifo_bridge/U16/Y (INVX0_LVT)                      0.03       1.22 f
+  u_rx_fifo_bridge/U15/Y (AND2X1_LVT)                     0.08       1.30 f
+  u_rx_fifo_bridge/rx_fifo/r_en (async_fifo_WIDTH128_DEPTH8)
+                                                          0.00       1.30 f
+  u_rx_fifo_bridge/rx_fifo/r1/r_en (fifo_read_DEPTH8)     0.00       1.30 f
+  u_rx_fifo_bridge/rx_fifo/r1/U11/Y (AND3X1_LVT)          0.11       1.41 f
+  u_rx_fifo_bridge/rx_fifo/r1/U10/Y (AND2X1_LVT)          0.09       1.50 f
+  u_rx_fifo_bridge/rx_fifo/r1/U9/Y (NAND2X0_LVT)          0.08       1.58 r
+  u_rx_fifo_bridge/rx_fifo/r1/U8/Y (XNOR2X1_LVT)          0.17       1.75 f
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[3]/D (DFFARX1_LVT)
+                                                          0.00       1.75 f
+  data arrival time                                                  1.75
+
+  clock pclk (rise edge)                                  5.00       5.00
+  clock network delay (ideal)                             0.00       5.00
+  clock uncertainty                                      -0.10       4.90
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[3]/CLK (DFFARX1_LVT)
+                                                          0.00       4.90 r
+  library setup time                                     -0.10       4.80
+  data required time                                                 4.80
+  --------------------------------------------------------------------------
+  data required time                                                 4.80
+  data arrival time                                                 -1.75
+  --------------------------------------------------------------------------
+  slack (MET)                                                        3.05
+
+
+  Startpoint: u_rx_fifo_bridge/rx_fifo/sync_w/q_reg[1][3]
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[2]
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  sync_multi_WIDTH4_1
+                     ForQA                 saed32lvt_ss0p75v25c
+  async_fifo_WIDTH128_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+  fifo_read_DEPTH8   ForQA                 saed32lvt_ss0p75v25c
+  can_controller_top 35000                 saed32lvt_ss0p75v25c
+  can_rx_fifo_bridge_FIFO_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_rx_fifo_bridge/rx_fifo/sync_w/q_reg[1][3]/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_rx_fifo_bridge/rx_fifo/sync_w/q_reg[1][3]/Q (DFFARX1_LVT)
+                                                          0.24       0.24 r
+  u_rx_fifo_bridge/rx_fifo/sync_w/dout[3] (sync_multi_WIDTH4_1)
+                                                          0.00       0.24 r
+  u_rx_fifo_bridge/rx_fifo/b_w/inp[3] (g2b_WIDTH4_1)      0.00       0.24 r
+  u_rx_fifo_bridge/rx_fifo/b_w/U3/Y (XOR2X1_LVT)          0.19       0.43 f
+  u_rx_fifo_bridge/rx_fifo/b_w/U2/Y (XOR2X1_LVT)          0.19       0.62 r
+  u_rx_fifo_bridge/rx_fifo/b_w/U1/Y (XOR2X1_LVT)          0.21       0.83 f
+  u_rx_fifo_bridge/rx_fifo/b_w/outp[0] (g2b_WIDTH4_1)     0.00       0.83 f
+  u_rx_fifo_bridge/rx_fifo/r1/sync_w_ptr[0] (fifo_read_DEPTH8)
+                                                          0.00       0.83 f
+  u_rx_fifo_bridge/rx_fifo/r1/U13/Y (XNOR2X1_LVT)         0.17       0.99 r
+  u_rx_fifo_bridge/rx_fifo/r1/U12/Y (NAND4X0_LVT)         0.11       1.11 f
+  u_rx_fifo_bridge/rx_fifo/r1/U3/Y (INVX0_LVT)            0.09       1.20 r
+  u_rx_fifo_bridge/rx_fifo/r1/empty (fifo_read_DEPTH8)
+                                                          0.00       1.20 r
+  u_rx_fifo_bridge/rx_fifo/empty (async_fifo_WIDTH128_DEPTH8)
+                                                          0.00       1.20 r
+  u_rx_fifo_bridge/U16/Y (INVX0_LVT)                      0.03       1.22 f
+  u_rx_fifo_bridge/U15/Y (AND2X1_LVT)                     0.08       1.30 f
+  u_rx_fifo_bridge/rx_fifo/r_en (async_fifo_WIDTH128_DEPTH8)
+                                                          0.00       1.30 f
+  u_rx_fifo_bridge/rx_fifo/r1/r_en (fifo_read_DEPTH8)     0.00       1.30 f
+  u_rx_fifo_bridge/rx_fifo/r1/U11/Y (AND3X1_LVT)          0.11       1.41 f
+  u_rx_fifo_bridge/rx_fifo/r1/U10/Y (AND2X1_LVT)          0.09       1.50 f
+  u_rx_fifo_bridge/rx_fifo/r1/U7/Y (XOR2X1_LVT)           0.15       1.65 f
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[2]/D (DFFARX1_LVT)
+                                                          0.00       1.65 f
+  data arrival time                                                  1.65
+
+  clock pclk (rise edge)                                  5.00       5.00
+  clock network delay (ideal)                             0.00       5.00
+  clock uncertainty                                      -0.10       4.90
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[2]/CLK (DFFARX1_LVT)
+                                                          0.00       4.90 r
+  library setup time                                     -0.11       4.79
+  data required time                                                 4.79
+  --------------------------------------------------------------------------
+  data required time                                                 4.79
+  data arrival time                                                 -1.65
+  --------------------------------------------------------------------------
+  slack (MET)                                                        3.14
+
+
+  Startpoint: u_rx_fifo_bridge/rx_fifo/sync_w/q_reg[1][3]
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  sync_multi_WIDTH4_1
+                     ForQA                 saed32lvt_ss0p75v25c
+  async_fifo_WIDTH128_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+  fifo_read_DEPTH8   ForQA                 saed32lvt_ss0p75v25c
+  can_controller_top 35000                 saed32lvt_ss0p75v25c
+  can_rx_fifo_bridge_FIFO_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_rx_fifo_bridge/rx_fifo/sync_w/q_reg[1][3]/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_rx_fifo_bridge/rx_fifo/sync_w/q_reg[1][3]/Q (DFFARX1_LVT)
+                                                          0.24       0.24 r
+  u_rx_fifo_bridge/rx_fifo/sync_w/dout[3] (sync_multi_WIDTH4_1)
+                                                          0.00       0.24 r
+  u_rx_fifo_bridge/rx_fifo/b_w/inp[3] (g2b_WIDTH4_1)      0.00       0.24 r
+  u_rx_fifo_bridge/rx_fifo/b_w/U3/Y (XOR2X1_LVT)          0.19       0.43 f
+  u_rx_fifo_bridge/rx_fifo/b_w/U2/Y (XOR2X1_LVT)          0.19       0.62 r
+  u_rx_fifo_bridge/rx_fifo/b_w/U1/Y (XOR2X1_LVT)          0.21       0.83 f
+  u_rx_fifo_bridge/rx_fifo/b_w/outp[0] (g2b_WIDTH4_1)     0.00       0.83 f
+  u_rx_fifo_bridge/rx_fifo/r1/sync_w_ptr[0] (fifo_read_DEPTH8)
+                                                          0.00       0.83 f
+  u_rx_fifo_bridge/rx_fifo/r1/U13/Y (XNOR2X1_LVT)         0.17       0.99 r
+  u_rx_fifo_bridge/rx_fifo/r1/U12/Y (NAND4X0_LVT)         0.11       1.11 f
+  u_rx_fifo_bridge/rx_fifo/r1/U3/Y (INVX0_LVT)            0.09       1.20 r
+  u_rx_fifo_bridge/rx_fifo/r1/empty (fifo_read_DEPTH8)
+                                                          0.00       1.20 r
+  u_rx_fifo_bridge/rx_fifo/empty (async_fifo_WIDTH128_DEPTH8)
+                                                          0.00       1.20 r
+  u_rx_fifo_bridge/U16/Y (INVX0_LVT)                      0.03       1.22 f
+  u_rx_fifo_bridge/U15/Y (AND2X1_LVT)                     0.08       1.30 f
+  u_rx_fifo_bridge/rx_fifo/r_en (async_fifo_WIDTH128_DEPTH8)
+                                                          0.00       1.30 f
+  u_rx_fifo_bridge/rx_fifo/r1/r_en (fifo_read_DEPTH8)     0.00       1.30 f
+  u_rx_fifo_bridge/rx_fifo/r1/U11/Y (AND3X1_LVT)          0.11       1.41 f
+  u_rx_fifo_bridge/rx_fifo/r1/U6/Y (XOR2X1_LVT)           0.16       1.57 f
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]/D (DFFARX1_LVT)
+                                                          0.00       1.57 f
+  data arrival time                                                  1.57
+
+  clock pclk (rise edge)                                  5.00       5.00
+  clock network delay (ideal)                             0.00       5.00
+  clock uncertainty                                      -0.10       4.90
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]/CLK (DFFARX1_LVT)
+                                                          0.00       4.90 r
+  library setup time                                     -0.11       4.79
+  data required time                                                 4.79
+  --------------------------------------------------------------------------
+  data required time                                                 4.79
+  data arrival time                                                 -1.57
+  --------------------------------------------------------------------------
+  slack (MET)                                                        3.23
+
+
+  Startpoint: u_rx_fifo_bridge/rx_fifo/sync_w/q_reg[1][3]
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[0]
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  sync_multi_WIDTH4_1
+                     ForQA                 saed32lvt_ss0p75v25c
+  async_fifo_WIDTH128_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+  fifo_read_DEPTH8   ForQA                 saed32lvt_ss0p75v25c
+  can_controller_top 35000                 saed32lvt_ss0p75v25c
+  can_rx_fifo_bridge_FIFO_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_rx_fifo_bridge/rx_fifo/sync_w/q_reg[1][3]/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_rx_fifo_bridge/rx_fifo/sync_w/q_reg[1][3]/Q (DFFARX1_LVT)
+                                                          0.24       0.24 r
+  u_rx_fifo_bridge/rx_fifo/sync_w/dout[3] (sync_multi_WIDTH4_1)
+                                                          0.00       0.24 r
+  u_rx_fifo_bridge/rx_fifo/b_w/inp[3] (g2b_WIDTH4_1)      0.00       0.24 r
+  u_rx_fifo_bridge/rx_fifo/b_w/U3/Y (XOR2X1_LVT)          0.19       0.43 f
+  u_rx_fifo_bridge/rx_fifo/b_w/U2/Y (XOR2X1_LVT)          0.19       0.62 r
+  u_rx_fifo_bridge/rx_fifo/b_w/U1/Y (XOR2X1_LVT)          0.21       0.83 f
+  u_rx_fifo_bridge/rx_fifo/b_w/outp[0] (g2b_WIDTH4_1)     0.00       0.83 f
+  u_rx_fifo_bridge/rx_fifo/r1/sync_w_ptr[0] (fifo_read_DEPTH8)
+                                                          0.00       0.83 f
+  u_rx_fifo_bridge/rx_fifo/r1/U13/Y (XNOR2X1_LVT)         0.17       0.99 r
+  u_rx_fifo_bridge/rx_fifo/r1/U12/Y (NAND4X0_LVT)         0.11       1.11 f
+  u_rx_fifo_bridge/rx_fifo/r1/U3/Y (INVX0_LVT)            0.09       1.20 r
+  u_rx_fifo_bridge/rx_fifo/r1/empty (fifo_read_DEPTH8)
+                                                          0.00       1.20 r
+  u_rx_fifo_bridge/rx_fifo/empty (async_fifo_WIDTH128_DEPTH8)
+                                                          0.00       1.20 r
+  u_rx_fifo_bridge/U16/Y (INVX0_LVT)                      0.03       1.22 f
+  u_rx_fifo_bridge/U15/Y (AND2X1_LVT)                     0.08       1.30 f
+  u_rx_fifo_bridge/rx_fifo/r_en (async_fifo_WIDTH128_DEPTH8)
+                                                          0.00       1.30 f
+  u_rx_fifo_bridge/rx_fifo/r1/r_en (fifo_read_DEPTH8)     0.00       1.30 f
+  u_rx_fifo_bridge/rx_fifo/r1/U5/Y (NAND2X0_LVT)          0.07       1.37 r
+  u_rx_fifo_bridge/rx_fifo/r1/U4/Y (XNOR2X1_LVT)          0.17       1.54 f
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[0]/D (DFFARX1_LVT)
+                                                          0.00       1.54 f
+  data arrival time                                                  1.54
+
+  clock pclk (rise edge)                                  5.00       5.00
+  clock network delay (ideal)                             0.00       5.00
+  clock uncertainty                                      -0.10       4.90
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[0]/CLK (DFFARX1_LVT)
+                                                          0.00       4.90 r
+  library setup time                                     -0.10       4.80
+  data required time                                                 4.80
+  --------------------------------------------------------------------------
+  data required time                                                 4.80
+  data arrival time                                                 -1.54
+  --------------------------------------------------------------------------
+  slack (MET)                                                        3.26
+
+
+  Startpoint: u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[39]
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_rx_fifo_bridge_FIFO_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+  async_fifo_WIDTH128_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+  mem_WIDTH128_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]/Q (DFFARX1_LVT)
+                                                          0.28       0.28 r
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr[1] (fifo_read_DEPTH8)
+                                                          0.00       0.28 r
+  u_rx_fifo_bridge/rx_fifo/m1/r_addr[1] (mem_WIDTH128_DEPTH8)
+                                                          0.00       0.28 r
+  u_rx_fifo_bridge/rx_fifo/m1/U388/Y (INVX1_LVT)          0.03       0.31 f
+  u_rx_fifo_bridge/rx_fifo/m1/U397/Y (AND2X1_LVT)         0.09       0.40 f
+  u_rx_fifo_bridge/rx_fifo/m1/U403/Y (AND2X1_LVT)         0.08       0.48 f
+  u_rx_fifo_bridge/rx_fifo/m1/U343/Y (NBUFFX2_LVT)        0.07       0.55 f
+  u_rx_fifo_bridge/rx_fifo/m1/U293/Y (NBUFFX2_LVT)        0.08       0.63 f
+  u_rx_fifo_bridge/rx_fifo/m1/U599/Y (AO22X1_LVT)         0.08       0.71 f
+  u_rx_fifo_bridge/rx_fifo/m1/U600/Y (AO221X1_LVT)        0.08       0.80 f
+  u_rx_fifo_bridge/rx_fifo/m1/U601/Y (OR3X1_LVT)          0.09       0.89 f
+  u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[39]/D (DFFX1_LVT)
+                                                          0.00       0.89 f
+  data arrival time                                                  0.89
+
+  clock pclk (rise edge)                                  5.00       5.00
+  clock network delay (ideal)                             0.00       5.00
+  clock uncertainty                                      -0.10       4.90
+  u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[39]/CLK (DFFX1_LVT)
+                                                          0.00       4.90 r
+  library setup time                                     -0.09       4.81
+  data required time                                                 4.81
+  --------------------------------------------------------------------------
+  data required time                                                 4.81
+  data arrival time                                                 -0.89
+  --------------------------------------------------------------------------
+  slack (MET)                                                        3.92
+
+
+  Startpoint: u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[38]
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_rx_fifo_bridge_FIFO_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+  async_fifo_WIDTH128_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+  mem_WIDTH128_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]/Q (DFFARX1_LVT)
+                                                          0.28       0.28 r
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr[1] (fifo_read_DEPTH8)
+                                                          0.00       0.28 r
+  u_rx_fifo_bridge/rx_fifo/m1/r_addr[1] (mem_WIDTH128_DEPTH8)
+                                                          0.00       0.28 r
+  u_rx_fifo_bridge/rx_fifo/m1/U388/Y (INVX1_LVT)          0.03       0.31 f
+  u_rx_fifo_bridge/rx_fifo/m1/U397/Y (AND2X1_LVT)         0.09       0.40 f
+  u_rx_fifo_bridge/rx_fifo/m1/U403/Y (AND2X1_LVT)         0.08       0.48 f
+  u_rx_fifo_bridge/rx_fifo/m1/U343/Y (NBUFFX2_LVT)        0.07       0.55 f
+  u_rx_fifo_bridge/rx_fifo/m1/U293/Y (NBUFFX2_LVT)        0.08       0.63 f
+  u_rx_fifo_bridge/rx_fifo/m1/U594/Y (AO22X1_LVT)         0.08       0.71 f
+  u_rx_fifo_bridge/rx_fifo/m1/U595/Y (AO221X1_LVT)        0.08       0.80 f
+  u_rx_fifo_bridge/rx_fifo/m1/U596/Y (OR3X1_LVT)          0.09       0.89 f
+  u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[38]/D (DFFX1_LVT)
+                                                          0.00       0.89 f
+  data arrival time                                                  0.89
+
+  clock pclk (rise edge)                                  5.00       5.00
+  clock network delay (ideal)                             0.00       5.00
+  clock uncertainty                                      -0.10       4.90
+  u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[38]/CLK (DFFX1_LVT)
+                                                          0.00       4.90 r
+  library setup time                                     -0.09       4.81
+  data required time                                                 4.81
+  --------------------------------------------------------------------------
+  data required time                                                 4.81
+  data arrival time                                                 -0.89
+  --------------------------------------------------------------------------
+  slack (MET)                                                        3.92
+
+
+  Startpoint: u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[37]
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_rx_fifo_bridge_FIFO_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+  async_fifo_WIDTH128_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+  mem_WIDTH128_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]/Q (DFFARX1_LVT)
+                                                          0.28       0.28 r
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr[1] (fifo_read_DEPTH8)
+                                                          0.00       0.28 r
+  u_rx_fifo_bridge/rx_fifo/m1/r_addr[1] (mem_WIDTH128_DEPTH8)
+                                                          0.00       0.28 r
+  u_rx_fifo_bridge/rx_fifo/m1/U388/Y (INVX1_LVT)          0.03       0.31 f
+  u_rx_fifo_bridge/rx_fifo/m1/U397/Y (AND2X1_LVT)         0.09       0.40 f
+  u_rx_fifo_bridge/rx_fifo/m1/U403/Y (AND2X1_LVT)         0.08       0.48 f
+  u_rx_fifo_bridge/rx_fifo/m1/U343/Y (NBUFFX2_LVT)        0.07       0.55 f
+  u_rx_fifo_bridge/rx_fifo/m1/U293/Y (NBUFFX2_LVT)        0.08       0.63 f
+  u_rx_fifo_bridge/rx_fifo/m1/U589/Y (AO22X1_LVT)         0.08       0.71 f
+  u_rx_fifo_bridge/rx_fifo/m1/U590/Y (AO221X1_LVT)        0.08       0.80 f
+  u_rx_fifo_bridge/rx_fifo/m1/U591/Y (OR3X1_LVT)          0.09       0.89 f
+  u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[37]/D (DFFX1_LVT)
+                                                          0.00       0.89 f
+  data arrival time                                                  0.89
+
+  clock pclk (rise edge)                                  5.00       5.00
+  clock network delay (ideal)                             0.00       5.00
+  clock uncertainty                                      -0.10       4.90
+  u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[37]/CLK (DFFX1_LVT)
+                                                          0.00       4.90 r
+  library setup time                                     -0.09       4.81
+  data required time                                                 4.81
+  --------------------------------------------------------------------------
+  data required time                                                 4.81
+  data arrival time                                                 -0.89
+  --------------------------------------------------------------------------
+  slack (MET)                                                        3.92
+
+
+  Startpoint: u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[36]
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_rx_fifo_bridge_FIFO_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+  async_fifo_WIDTH128_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+  mem_WIDTH128_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]/Q (DFFARX1_LVT)
+                                                          0.28       0.28 r
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr[1] (fifo_read_DEPTH8)
+                                                          0.00       0.28 r
+  u_rx_fifo_bridge/rx_fifo/m1/r_addr[1] (mem_WIDTH128_DEPTH8)
+                                                          0.00       0.28 r
+  u_rx_fifo_bridge/rx_fifo/m1/U388/Y (INVX1_LVT)          0.03       0.31 f
+  u_rx_fifo_bridge/rx_fifo/m1/U397/Y (AND2X1_LVT)         0.09       0.40 f
+  u_rx_fifo_bridge/rx_fifo/m1/U403/Y (AND2X1_LVT)         0.08       0.48 f
+  u_rx_fifo_bridge/rx_fifo/m1/U343/Y (NBUFFX2_LVT)        0.07       0.55 f
+  u_rx_fifo_bridge/rx_fifo/m1/U293/Y (NBUFFX2_LVT)        0.08       0.63 f
+  u_rx_fifo_bridge/rx_fifo/m1/U584/Y (AO22X1_LVT)         0.08       0.71 f
+  u_rx_fifo_bridge/rx_fifo/m1/U585/Y (AO221X1_LVT)        0.08       0.80 f
+  u_rx_fifo_bridge/rx_fifo/m1/U586/Y (OR3X1_LVT)          0.09       0.89 f
+  u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[36]/D (DFFX1_LVT)
+                                                          0.00       0.89 f
+  data arrival time                                                  0.89
+
+  clock pclk (rise edge)                                  5.00       5.00
+  clock network delay (ideal)                             0.00       5.00
+  clock uncertainty                                      -0.10       4.90
+  u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[36]/CLK (DFFX1_LVT)
+                                                          0.00       4.90 r
+  library setup time                                     -0.09       4.81
+  data required time                                                 4.81
+  --------------------------------------------------------------------------
+  data required time                                                 4.81
+  data arrival time                                                 -0.89
+  --------------------------------------------------------------------------
+  slack (MET)                                                        3.92
+
+
+  Startpoint: u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[35]
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_rx_fifo_bridge_FIFO_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+  async_fifo_WIDTH128_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+  mem_WIDTH128_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]/Q (DFFARX1_LVT)
+                                                          0.28       0.28 r
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr[1] (fifo_read_DEPTH8)
+                                                          0.00       0.28 r
+  u_rx_fifo_bridge/rx_fifo/m1/r_addr[1] (mem_WIDTH128_DEPTH8)
+                                                          0.00       0.28 r
+  u_rx_fifo_bridge/rx_fifo/m1/U388/Y (INVX1_LVT)          0.03       0.31 f
+  u_rx_fifo_bridge/rx_fifo/m1/U397/Y (AND2X1_LVT)         0.09       0.40 f
+  u_rx_fifo_bridge/rx_fifo/m1/U403/Y (AND2X1_LVT)         0.08       0.48 f
+  u_rx_fifo_bridge/rx_fifo/m1/U343/Y (NBUFFX2_LVT)        0.07       0.55 f
+  u_rx_fifo_bridge/rx_fifo/m1/U292/Y (NBUFFX2_LVT)        0.08       0.63 f
+  u_rx_fifo_bridge/rx_fifo/m1/U579/Y (AO22X1_LVT)         0.08       0.71 f
+  u_rx_fifo_bridge/rx_fifo/m1/U580/Y (AO221X1_LVT)        0.08       0.80 f
+  u_rx_fifo_bridge/rx_fifo/m1/U581/Y (OR3X1_LVT)          0.09       0.89 f
+  u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[35]/D (DFFX1_LVT)
+                                                          0.00       0.89 f
+  data arrival time                                                  0.89
+
+  clock pclk (rise edge)                                  5.00       5.00
+  clock network delay (ideal)                             0.00       5.00
+  clock uncertainty                                      -0.10       4.90
+  u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[35]/CLK (DFFX1_LVT)
+                                                          0.00       4.90 r
+  library setup time                                     -0.09       4.81
+  data required time                                                 4.81
+  --------------------------------------------------------------------------
+  data required time                                                 4.81
+  data arrival time                                                 -0.89
+  --------------------------------------------------------------------------
+  slack (MET)                                                        3.92
+
+
+  Startpoint: u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[34]
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_rx_fifo_bridge_FIFO_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+  async_fifo_WIDTH128_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+  mem_WIDTH128_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]/Q (DFFARX1_LVT)
+                                                          0.28       0.28 r
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr[1] (fifo_read_DEPTH8)
+                                                          0.00       0.28 r
+  u_rx_fifo_bridge/rx_fifo/m1/r_addr[1] (mem_WIDTH128_DEPTH8)
+                                                          0.00       0.28 r
+  u_rx_fifo_bridge/rx_fifo/m1/U388/Y (INVX1_LVT)          0.03       0.31 f
+  u_rx_fifo_bridge/rx_fifo/m1/U397/Y (AND2X1_LVT)         0.09       0.40 f
+  u_rx_fifo_bridge/rx_fifo/m1/U403/Y (AND2X1_LVT)         0.08       0.48 f
+  u_rx_fifo_bridge/rx_fifo/m1/U343/Y (NBUFFX2_LVT)        0.07       0.55 f
+  u_rx_fifo_bridge/rx_fifo/m1/U292/Y (NBUFFX2_LVT)        0.08       0.63 f
+  u_rx_fifo_bridge/rx_fifo/m1/U574/Y (AO22X1_LVT)         0.08       0.71 f
+  u_rx_fifo_bridge/rx_fifo/m1/U575/Y (AO221X1_LVT)        0.08       0.80 f
+  u_rx_fifo_bridge/rx_fifo/m1/U576/Y (OR3X1_LVT)          0.09       0.89 f
+  u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[34]/D (DFFX1_LVT)
+                                                          0.00       0.89 f
+  data arrival time                                                  0.89
+
+  clock pclk (rise edge)                                  5.00       5.00
+  clock network delay (ideal)                             0.00       5.00
+  clock uncertainty                                      -0.10       4.90
+  u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[34]/CLK (DFFX1_LVT)
+                                                          0.00       4.90 r
+  library setup time                                     -0.09       4.81
+  data required time                                                 4.81
+  --------------------------------------------------------------------------
+  data required time                                                 4.81
+  data arrival time                                                 -0.89
+  --------------------------------------------------------------------------
+  slack (MET)                                                        3.92
+
+
+  Startpoint: u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[33]
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_rx_fifo_bridge_FIFO_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+  async_fifo_WIDTH128_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+  mem_WIDTH128_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]/Q (DFFARX1_LVT)
+                                                          0.28       0.28 r
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr[1] (fifo_read_DEPTH8)
+                                                          0.00       0.28 r
+  u_rx_fifo_bridge/rx_fifo/m1/r_addr[1] (mem_WIDTH128_DEPTH8)
+                                                          0.00       0.28 r
+  u_rx_fifo_bridge/rx_fifo/m1/U388/Y (INVX1_LVT)          0.03       0.31 f
+  u_rx_fifo_bridge/rx_fifo/m1/U397/Y (AND2X1_LVT)         0.09       0.40 f
+  u_rx_fifo_bridge/rx_fifo/m1/U403/Y (AND2X1_LVT)         0.08       0.48 f
+  u_rx_fifo_bridge/rx_fifo/m1/U343/Y (NBUFFX2_LVT)        0.07       0.55 f
+  u_rx_fifo_bridge/rx_fifo/m1/U292/Y (NBUFFX2_LVT)        0.08       0.63 f
+  u_rx_fifo_bridge/rx_fifo/m1/U569/Y (AO22X1_LVT)         0.08       0.71 f
+  u_rx_fifo_bridge/rx_fifo/m1/U570/Y (AO221X1_LVT)        0.08       0.80 f
+  u_rx_fifo_bridge/rx_fifo/m1/U571/Y (OR3X1_LVT)          0.09       0.89 f
+  u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[33]/D (DFFX1_LVT)
+                                                          0.00       0.89 f
+  data arrival time                                                  0.89
+
+  clock pclk (rise edge)                                  5.00       5.00
+  clock network delay (ideal)                             0.00       5.00
+  clock uncertainty                                      -0.10       4.90
+  u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[33]/CLK (DFFX1_LVT)
+                                                          0.00       4.90 r
+  library setup time                                     -0.09       4.81
+  data required time                                                 4.81
+  --------------------------------------------------------------------------
+  data required time                                                 4.81
+  data arrival time                                                 -0.89
+  --------------------------------------------------------------------------
+  slack (MET)                                                        3.92
+
+
+  Startpoint: u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[32]
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_rx_fifo_bridge_FIFO_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+  async_fifo_WIDTH128_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+  mem_WIDTH128_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]/Q (DFFARX1_LVT)
+                                                          0.28       0.28 r
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr[1] (fifo_read_DEPTH8)
+                                                          0.00       0.28 r
+  u_rx_fifo_bridge/rx_fifo/m1/r_addr[1] (mem_WIDTH128_DEPTH8)
+                                                          0.00       0.28 r
+  u_rx_fifo_bridge/rx_fifo/m1/U388/Y (INVX1_LVT)          0.03       0.31 f
+  u_rx_fifo_bridge/rx_fifo/m1/U397/Y (AND2X1_LVT)         0.09       0.40 f
+  u_rx_fifo_bridge/rx_fifo/m1/U403/Y (AND2X1_LVT)         0.08       0.48 f
+  u_rx_fifo_bridge/rx_fifo/m1/U343/Y (NBUFFX2_LVT)        0.07       0.55 f
+  u_rx_fifo_bridge/rx_fifo/m1/U292/Y (NBUFFX2_LVT)        0.08       0.63 f
+  u_rx_fifo_bridge/rx_fifo/m1/U564/Y (AO22X1_LVT)         0.08       0.71 f
+  u_rx_fifo_bridge/rx_fifo/m1/U565/Y (AO221X1_LVT)        0.08       0.80 f
+  u_rx_fifo_bridge/rx_fifo/m1/U566/Y (OR3X1_LVT)          0.09       0.89 f
+  u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[32]/D (DFFX1_LVT)
+                                                          0.00       0.89 f
+  data arrival time                                                  0.89
+
+  clock pclk (rise edge)                                  5.00       5.00
+  clock network delay (ideal)                             0.00       5.00
+  clock uncertainty                                      -0.10       4.90
+  u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[32]/CLK (DFFX1_LVT)
+                                                          0.00       4.90 r
+  library setup time                                     -0.09       4.81
+  data required time                                                 4.81
+  --------------------------------------------------------------------------
+  data required time                                                 4.81
+  data arrival time                                                 -0.89
+  --------------------------------------------------------------------------
+  slack (MET)                                                        3.92
+
+
+  Startpoint: u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[31]
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_rx_fifo_bridge_FIFO_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+  async_fifo_WIDTH128_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+  mem_WIDTH128_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]/Q (DFFARX1_LVT)
+                                                          0.28       0.28 r
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr[1] (fifo_read_DEPTH8)
+                                                          0.00       0.28 r
+  u_rx_fifo_bridge/rx_fifo/m1/r_addr[1] (mem_WIDTH128_DEPTH8)
+                                                          0.00       0.28 r
+  u_rx_fifo_bridge/rx_fifo/m1/U388/Y (INVX1_LVT)          0.03       0.31 f
+  u_rx_fifo_bridge/rx_fifo/m1/U397/Y (AND2X1_LVT)         0.09       0.40 f
+  u_rx_fifo_bridge/rx_fifo/m1/U403/Y (AND2X1_LVT)         0.08       0.48 f
+  u_rx_fifo_bridge/rx_fifo/m1/U343/Y (NBUFFX2_LVT)        0.07       0.55 f
+  u_rx_fifo_bridge/rx_fifo/m1/U292/Y (NBUFFX2_LVT)        0.08       0.63 f
+  u_rx_fifo_bridge/rx_fifo/m1/U559/Y (AO22X1_LVT)         0.08       0.71 f
+  u_rx_fifo_bridge/rx_fifo/m1/U560/Y (AO221X1_LVT)        0.08       0.80 f
+  u_rx_fifo_bridge/rx_fifo/m1/U561/Y (OR3X1_LVT)          0.09       0.89 f
+  u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[31]/D (DFFX1_LVT)
+                                                          0.00       0.89 f
+  data arrival time                                                  0.89
+
+  clock pclk (rise edge)                                  5.00       5.00
+  clock network delay (ideal)                             0.00       5.00
+  clock uncertainty                                      -0.10       4.90
+  u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[31]/CLK (DFFX1_LVT)
+                                                          0.00       4.90 r
+  library setup time                                     -0.09       4.81
+  data required time                                                 4.81
+  --------------------------------------------------------------------------
+  data required time                                                 4.81
+  data arrival time                                                 -0.89
+  --------------------------------------------------------------------------
+  slack (MET)                                                        3.92
+
+
+  Startpoint: u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[30]
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_rx_fifo_bridge_FIFO_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+  async_fifo_WIDTH128_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+  mem_WIDTH128_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]/Q (DFFARX1_LVT)
+                                                          0.28       0.28 r
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr[1] (fifo_read_DEPTH8)
+                                                          0.00       0.28 r
+  u_rx_fifo_bridge/rx_fifo/m1/r_addr[1] (mem_WIDTH128_DEPTH8)
+                                                          0.00       0.28 r
+  u_rx_fifo_bridge/rx_fifo/m1/U388/Y (INVX1_LVT)          0.03       0.31 f
+  u_rx_fifo_bridge/rx_fifo/m1/U397/Y (AND2X1_LVT)         0.09       0.40 f
+  u_rx_fifo_bridge/rx_fifo/m1/U403/Y (AND2X1_LVT)         0.08       0.48 f
+  u_rx_fifo_bridge/rx_fifo/m1/U343/Y (NBUFFX2_LVT)        0.07       0.55 f
+  u_rx_fifo_bridge/rx_fifo/m1/U292/Y (NBUFFX2_LVT)        0.08       0.63 f
+  u_rx_fifo_bridge/rx_fifo/m1/U554/Y (AO22X1_LVT)         0.08       0.71 f
+  u_rx_fifo_bridge/rx_fifo/m1/U555/Y (AO221X1_LVT)        0.08       0.80 f
+  u_rx_fifo_bridge/rx_fifo/m1/U556/Y (OR3X1_LVT)          0.09       0.89 f
+  u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[30]/D (DFFX1_LVT)
+                                                          0.00       0.89 f
+  data arrival time                                                  0.89
+
+  clock pclk (rise edge)                                  5.00       5.00
+  clock network delay (ideal)                             0.00       5.00
+  clock uncertainty                                      -0.10       4.90
+  u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[30]/CLK (DFFX1_LVT)
+                                                          0.00       4.90 r
+  library setup time                                     -0.09       4.81
+  data required time                                                 4.81
+  --------------------------------------------------------------------------
+  data required time                                                 4.81
+  data arrival time                                                 -0.89
+  --------------------------------------------------------------------------
+  slack (MET)                                                        3.92
+
+
+  Startpoint: u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[29]
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_rx_fifo_bridge_FIFO_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+  async_fifo_WIDTH128_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+  mem_WIDTH128_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]/Q (DFFARX1_LVT)
+                                                          0.28       0.28 r
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr[1] (fifo_read_DEPTH8)
+                                                          0.00       0.28 r
+  u_rx_fifo_bridge/rx_fifo/m1/r_addr[1] (mem_WIDTH128_DEPTH8)
+                                                          0.00       0.28 r
+  u_rx_fifo_bridge/rx_fifo/m1/U388/Y (INVX1_LVT)          0.03       0.31 f
+  u_rx_fifo_bridge/rx_fifo/m1/U397/Y (AND2X1_LVT)         0.09       0.40 f
+  u_rx_fifo_bridge/rx_fifo/m1/U403/Y (AND2X1_LVT)         0.08       0.48 f
+  u_rx_fifo_bridge/rx_fifo/m1/U343/Y (NBUFFX2_LVT)        0.07       0.55 f
+  u_rx_fifo_bridge/rx_fifo/m1/U292/Y (NBUFFX2_LVT)        0.08       0.63 f
+  u_rx_fifo_bridge/rx_fifo/m1/U549/Y (AO22X1_LVT)         0.08       0.71 f
+  u_rx_fifo_bridge/rx_fifo/m1/U550/Y (AO221X1_LVT)        0.08       0.80 f
+  u_rx_fifo_bridge/rx_fifo/m1/U551/Y (OR3X1_LVT)          0.09       0.89 f
+  u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[29]/D (DFFX1_LVT)
+                                                          0.00       0.89 f
+  data arrival time                                                  0.89
+
+  clock pclk (rise edge)                                  5.00       5.00
+  clock network delay (ideal)                             0.00       5.00
+  clock uncertainty                                      -0.10       4.90
+  u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[29]/CLK (DFFX1_LVT)
+                                                          0.00       4.90 r
+  library setup time                                     -0.09       4.81
+  data required time                                                 4.81
+  --------------------------------------------------------------------------
+  data required time                                                 4.81
+  data arrival time                                                 -0.89
+  --------------------------------------------------------------------------
+  slack (MET)                                                        3.92
+
+
+  Startpoint: u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[28]
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_rx_fifo_bridge_FIFO_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+  async_fifo_WIDTH128_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+  mem_WIDTH128_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]/Q (DFFARX1_LVT)
+                                                          0.28       0.28 r
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr[1] (fifo_read_DEPTH8)
+                                                          0.00       0.28 r
+  u_rx_fifo_bridge/rx_fifo/m1/r_addr[1] (mem_WIDTH128_DEPTH8)
+                                                          0.00       0.28 r
+  u_rx_fifo_bridge/rx_fifo/m1/U388/Y (INVX1_LVT)          0.03       0.31 f
+  u_rx_fifo_bridge/rx_fifo/m1/U397/Y (AND2X1_LVT)         0.09       0.40 f
+  u_rx_fifo_bridge/rx_fifo/m1/U403/Y (AND2X1_LVT)         0.08       0.48 f
+  u_rx_fifo_bridge/rx_fifo/m1/U343/Y (NBUFFX2_LVT)        0.07       0.55 f
+  u_rx_fifo_bridge/rx_fifo/m1/U292/Y (NBUFFX2_LVT)        0.08       0.63 f
+  u_rx_fifo_bridge/rx_fifo/m1/U544/Y (AO22X1_LVT)         0.08       0.71 f
+  u_rx_fifo_bridge/rx_fifo/m1/U545/Y (AO221X1_LVT)        0.08       0.80 f
+  u_rx_fifo_bridge/rx_fifo/m1/U546/Y (OR3X1_LVT)          0.09       0.89 f
+  u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[28]/D (DFFX1_LVT)
+                                                          0.00       0.89 f
+  data arrival time                                                  0.89
+
+  clock pclk (rise edge)                                  5.00       5.00
+  clock network delay (ideal)                             0.00       5.00
+  clock uncertainty                                      -0.10       4.90
+  u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[28]/CLK (DFFX1_LVT)
+                                                          0.00       4.90 r
+  library setup time                                     -0.09       4.81
+  data required time                                                 4.81
+  --------------------------------------------------------------------------
+  data required time                                                 4.81
+  data arrival time                                                 -0.89
+  --------------------------------------------------------------------------
+  slack (MET)                                                        3.92
+
+
+  Startpoint: u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[27]
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_rx_fifo_bridge_FIFO_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+  async_fifo_WIDTH128_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+  mem_WIDTH128_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]/Q (DFFARX1_LVT)
+                                                          0.28       0.28 r
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr[1] (fifo_read_DEPTH8)
+                                                          0.00       0.28 r
+  u_rx_fifo_bridge/rx_fifo/m1/r_addr[1] (mem_WIDTH128_DEPTH8)
+                                                          0.00       0.28 r
+  u_rx_fifo_bridge/rx_fifo/m1/U388/Y (INVX1_LVT)          0.03       0.31 f
+  u_rx_fifo_bridge/rx_fifo/m1/U397/Y (AND2X1_LVT)         0.09       0.40 f
+  u_rx_fifo_bridge/rx_fifo/m1/U403/Y (AND2X1_LVT)         0.08       0.48 f
+  u_rx_fifo_bridge/rx_fifo/m1/U343/Y (NBUFFX2_LVT)        0.07       0.55 f
+  u_rx_fifo_bridge/rx_fifo/m1/U292/Y (NBUFFX2_LVT)        0.08       0.63 f
+  u_rx_fifo_bridge/rx_fifo/m1/U539/Y (AO22X1_LVT)         0.08       0.71 f
+  u_rx_fifo_bridge/rx_fifo/m1/U540/Y (AO221X1_LVT)        0.08       0.80 f
+  u_rx_fifo_bridge/rx_fifo/m1/U541/Y (OR3X1_LVT)          0.09       0.89 f
+  u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[27]/D (DFFX1_LVT)
+                                                          0.00       0.89 f
+  data arrival time                                                  0.89
+
+  clock pclk (rise edge)                                  5.00       5.00
+  clock network delay (ideal)                             0.00       5.00
+  clock uncertainty                                      -0.10       4.90
+  u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[27]/CLK (DFFX1_LVT)
+                                                          0.00       4.90 r
+  library setup time                                     -0.09       4.81
+  data required time                                                 4.81
+  --------------------------------------------------------------------------
+  data required time                                                 4.81
+  data arrival time                                                 -0.89
+  --------------------------------------------------------------------------
+  slack (MET)                                                        3.92
+
+
+  Startpoint: u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[26]
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_rx_fifo_bridge_FIFO_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+  async_fifo_WIDTH128_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+  mem_WIDTH128_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]/Q (DFFARX1_LVT)
+                                                          0.28       0.28 r
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr[1] (fifo_read_DEPTH8)
+                                                          0.00       0.28 r
+  u_rx_fifo_bridge/rx_fifo/m1/r_addr[1] (mem_WIDTH128_DEPTH8)
+                                                          0.00       0.28 r
+  u_rx_fifo_bridge/rx_fifo/m1/U388/Y (INVX1_LVT)          0.03       0.31 f
+  u_rx_fifo_bridge/rx_fifo/m1/U397/Y (AND2X1_LVT)         0.09       0.40 f
+  u_rx_fifo_bridge/rx_fifo/m1/U403/Y (AND2X1_LVT)         0.08       0.48 f
+  u_rx_fifo_bridge/rx_fifo/m1/U343/Y (NBUFFX2_LVT)        0.07       0.55 f
+  u_rx_fifo_bridge/rx_fifo/m1/U292/Y (NBUFFX2_LVT)        0.08       0.63 f
+  u_rx_fifo_bridge/rx_fifo/m1/U534/Y (AO22X1_LVT)         0.08       0.71 f
+  u_rx_fifo_bridge/rx_fifo/m1/U535/Y (AO221X1_LVT)        0.08       0.80 f
+  u_rx_fifo_bridge/rx_fifo/m1/U536/Y (OR3X1_LVT)          0.09       0.89 f
+  u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[26]/D (DFFX1_LVT)
+                                                          0.00       0.89 f
+  data arrival time                                                  0.89
+
+  clock pclk (rise edge)                                  5.00       5.00
+  clock network delay (ideal)                             0.00       5.00
+  clock uncertainty                                      -0.10       4.90
+  u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[26]/CLK (DFFX1_LVT)
+                                                          0.00       4.90 r
+  library setup time                                     -0.09       4.81
+  data required time                                                 4.81
+  --------------------------------------------------------------------------
+  data required time                                                 4.81
+  data arrival time                                                 -0.89
+  --------------------------------------------------------------------------
+  slack (MET)                                                        3.92
+
+
+  Startpoint: u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[25]
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_rx_fifo_bridge_FIFO_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+  async_fifo_WIDTH128_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+  mem_WIDTH128_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]/Q (DFFARX1_LVT)
+                                                          0.28       0.28 r
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr[1] (fifo_read_DEPTH8)
+                                                          0.00       0.28 r
+  u_rx_fifo_bridge/rx_fifo/m1/r_addr[1] (mem_WIDTH128_DEPTH8)
+                                                          0.00       0.28 r
+  u_rx_fifo_bridge/rx_fifo/m1/U388/Y (INVX1_LVT)          0.03       0.31 f
+  u_rx_fifo_bridge/rx_fifo/m1/U397/Y (AND2X1_LVT)         0.09       0.40 f
+  u_rx_fifo_bridge/rx_fifo/m1/U403/Y (AND2X1_LVT)         0.08       0.48 f
+  u_rx_fifo_bridge/rx_fifo/m1/U343/Y (NBUFFX2_LVT)        0.07       0.55 f
+  u_rx_fifo_bridge/rx_fifo/m1/U292/Y (NBUFFX2_LVT)        0.08       0.63 f
+  u_rx_fifo_bridge/rx_fifo/m1/U529/Y (AO22X1_LVT)         0.08       0.71 f
+  u_rx_fifo_bridge/rx_fifo/m1/U530/Y (AO221X1_LVT)        0.08       0.80 f
+  u_rx_fifo_bridge/rx_fifo/m1/U531/Y (OR3X1_LVT)          0.09       0.89 f
+  u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[25]/D (DFFX1_LVT)
+                                                          0.00       0.89 f
+  data arrival time                                                  0.89
+
+  clock pclk (rise edge)                                  5.00       5.00
+  clock network delay (ideal)                             0.00       5.00
+  clock uncertainty                                      -0.10       4.90
+  u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[25]/CLK (DFFX1_LVT)
+                                                          0.00       4.90 r
+  library setup time                                     -0.09       4.81
+  data required time                                                 4.81
+  --------------------------------------------------------------------------
+  data required time                                                 4.81
+  data arrival time                                                 -0.89
+  --------------------------------------------------------------------------
+  slack (MET)                                                        3.92
+
+
+  Startpoint: u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]
+              (rising edge-triggered flip-flop clocked by pclk)
+  Endpoint: u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[24]
+            (rising edge-triggered flip-flop clocked by pclk)
+  Path Group: pclk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  can_rx_fifo_bridge_FIFO_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+  async_fifo_WIDTH128_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+  mem_WIDTH128_DEPTH8
+                     16000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock pclk (rise edge)                                  0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]/CLK (DFFARX1_LVT)
+                                                          0.00       0.00 r
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr_reg[1]/Q (DFFARX1_LVT)
+                                                          0.28       0.28 r
+  u_rx_fifo_bridge/rx_fifo/r1/r_ptr[1] (fifo_read_DEPTH8)
+                                                          0.00       0.28 r
+  u_rx_fifo_bridge/rx_fifo/m1/r_addr[1] (mem_WIDTH128_DEPTH8)
+                                                          0.00       0.28 r
+  u_rx_fifo_bridge/rx_fifo/m1/U388/Y (INVX1_LVT)          0.03       0.31 f
+  u_rx_fifo_bridge/rx_fifo/m1/U397/Y (AND2X1_LVT)         0.09       0.40 f
+  u_rx_fifo_bridge/rx_fifo/m1/U403/Y (AND2X1_LVT)         0.08       0.48 f
+  u_rx_fifo_bridge/rx_fifo/m1/U343/Y (NBUFFX2_LVT)        0.07       0.55 f
+  u_rx_fifo_bridge/rx_fifo/m1/U292/Y (NBUFFX2_LVT)        0.08       0.63 f
+  u_rx_fifo_bridge/rx_fifo/m1/U524/Y (AO22X1_LVT)         0.08       0.71 f
+  u_rx_fifo_bridge/rx_fifo/m1/U525/Y (AO221X1_LVT)        0.08       0.80 f
+  u_rx_fifo_bridge/rx_fifo/m1/U526/Y (OR3X1_LVT)          0.09       0.89 f
+  u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[24]/D (DFFX1_LVT)
+                                                          0.00       0.89 f
+  data arrival time                                                  0.89
+
+  clock pclk (rise edge)                                  5.00       5.00
+  clock network delay (ideal)                             0.00       5.00
+  clock uncertainty                                      -0.10       4.90
+  u_rx_fifo_bridge/rx_fifo/m1/r_data_reg[24]/CLK (DFFX1_LVT)
+                                                          0.00       4.90 r
+  library setup time                                     -0.09       4.81
+  data required time                                                 4.81
+  --------------------------------------------------------------------------
+  data required time                                                 4.81
+  data arrival time                                                 -0.89
+  --------------------------------------------------------------------------
+  slack (MET)                                                        3.92
+
+
+1

@@ -1,0 +1,103 @@
+ 
+****************************************
+Report : area
+Design : can_controller_top
+Version: S-2021.06-SP4
+Date   : Fri Sep 11 22:17:04 2026
+****************************************
+
+Information: Updating design information... (UID-85)
+Library(s) Used:
+
+    saed32lvt_ss0p75v25c (File: /fetools/work_area/frontend/SAED32_EDK/lib/stdcell_lvt/db_nldm/saed32lvt_ss0p75v25c.db)
+
+Number of ports:                         3714
+Number of nets:                         12452
+Number of cells:                         8728
+Number of combinational cells:           6108
+Number of sequential cells:              2545
+Number of macros/black boxes:               0
+Number of buf/inv:                       1104
+Number of references:                      25
+
+Combinational area:              16490.387926
+Buf/Inv area:                     1905.063489
+Noncombinational area:           17535.428132
+Macro/Black Box area:                0.000000
+Net Interconnect area:            5961.327604
+
+Total cell area:                 34025.816058
+Total area:                      39987.143663
+
+Hierarchical area distribution
+------------------------------
+
+                                  Global cell area            Local cell area
+                                  -------------------  ------------------------------ 
+Hierarchical cell                 Absolute    Percent  Combi-      Noncombi-   Black-
+                                  Total       Total    national    national    boxes   Design
+--------------------------------  ----------  -------  ----------  ----------  ------  ---------------------------------------------------------------------------------------
+can_controller_top                34025.8161    100.0     59.2156     14.2321  0.0000  can_controller_top
+u_acceptance_filter                 558.3544      1.6    255.9230      0.0000  0.0000  can_acceptance_filter_ID_WIDTH29
+u_acceptance_filter/eq_38_2         151.2157      0.4    151.2157      0.0000  0.0000  can_acceptance_filter_ID_WIDTH29_DW01_cmp6_0_DW01_cmp6_3
+u_acceptance_filter/eq_45_2         151.2157      0.4    151.2157      0.0000  0.0000  can_acceptance_filter_ID_WIDTH29_DW01_cmp6_1_DW01_cmp6_4
+u_apb_slave                        4097.5638     12.0   2033.9145   2063.6493  0.0000  can_apb_slave_ADDR_WIDTH12
+u_can_controller                   8011.1273     23.5     75.7349     14.2321  0.0000  can_controller_CAN_CLK_FREQ100000000_CAN_BIT_RATE1000000
+u_can_controller/u_ack_detector      42.4420      0.1     28.2100     14.2321  0.0000  can_ack_detector
+u_can_controller/u_bit_error_detector
+                                     10.1658      0.0     10.1658      0.0000  0.0000  bit_error_detector
+u_can_controller/u_bte             2004.1796      5.9    727.1060    435.0945  0.0000  bit_timing_engine_CAN_CLK_FREQ100000000_CAN_BIT_RATE1000000
+u_can_controller/u_bte/add_0_root_add_56_3
+                                     50.8288      0.1     50.8288      0.0000  0.0000  bit_timing_engine_CAN_CLK_FREQ100000000_CAN_BIT_RATE1000000_DW01_add_1_DW01_add_2
+u_can_controller/u_bte/add_0_root_add_62_3
+                                     50.8288      0.1     50.8288      0.0000  0.0000  bit_timing_engine_CAN_CLK_FREQ100000000_CAN_BIT_RATE1000000_DW01_add_0_DW01_add_1
+u_can_controller/u_bte/add_187      104.7073      0.3    104.7073      0.0000  0.0000  bit_timing_engine_CAN_CLK_FREQ100000000_CAN_BIT_RATE1000000_DW01_inc_1_DW01_inc_13
+u_can_controller/u_bte/add_1_root_add_56_3
+                                     46.5084      0.1     46.5084      0.0000  0.0000  bit_timing_engine_CAN_CLK_FREQ100000000_CAN_BIT_RATE1000000_DW01_add_2_DW01_add_3
+u_can_controller/u_bte/add_222       32.0221      0.1     32.0221      0.0000  0.0000  bit_timing_engine_CAN_CLK_FREQ100000000_CAN_BIT_RATE1000000_DW01_inc_0_DW01_inc_12
+u_can_controller/u_bte/add_56        24.3978      0.1     24.3978      0.0000  0.0000  bit_timing_engine_CAN_CLK_FREQ100000000_CAN_BIT_RATE1000000_DW01_inc_2_DW01_inc_14
+u_can_controller/u_bte/eq_84        168.4975      0.5    168.4975      0.0000  0.0000  bit_timing_engine_CAN_CLK_FREQ100000000_CAN_BIT_RATE1000000_DW01_cmp6_0_DW01_cmp6_5
+u_can_controller/u_bte/r517          44.9835      0.1     44.9835      0.0000  0.0000  bit_timing_engine_CAN_CLK_FREQ100000000_CAN_BIT_RATE1000000_DW01_add_3_DW01_add_4
+u_can_controller/u_bte/sub_125       64.5526      0.2     64.5526      0.0000  0.0000  bit_timing_engine_CAN_CLK_FREQ100000000_CAN_BIT_RATE1000000_DW01_sub_0_DW01_sub_3
+u_can_controller/u_bte/sub_84       196.1992      0.6    196.1992      0.0000  0.0000  bit_timing_engine_CAN_CLK_FREQ100000000_CAN_BIT_RATE1000000_DW01_incdec_0_DW01_incdec_3
+u_can_controller/u_bte/sub_92        58.4531      0.2     58.4531      0.0000  0.0000  bit_timing_engine_CAN_CLK_FREQ100000000_CAN_BIT_RATE1000000_DW01_incdec_1_DW01_incdec_4
+u_can_controller/u_destuffer         96.8289      0.3     61.2487     35.5802  0.0000  can_destuffer
+u_can_controller/u_error_controller
+                                    809.9569      2.4    476.2659    270.4092  0.0000  error_controller
+u_can_controller/u_error_controller/add_370
+                                     22.1105      0.1     22.1105      0.0000  0.0000  error_controller_DW01_inc_0_DW01_inc_10
+u_can_controller/u_error_controller/r510
+                                     41.1713      0.1     41.1713      0.0000  0.0000  error_controller_DW01_incdec_0_DW01_incdec_2
+u_can_controller/u_form_error_detector
+                                     21.3481      0.1     14.2321      7.1160  0.0000  can_form_error_detector
+u_can_controller/u_frame_controller
+                                    750.7414      2.2    591.6472    159.0941  0.0000  can_frame_controller
+u_can_controller/u_rx_crc           237.3705      0.7    123.5140    113.8565  0.0000  crc_1
+u_can_controller/u_rx_datapath     1883.7154      5.5    965.7472    917.9681  0.0000  can_rx_datapath
+u_can_controller/u_rx_sample         12.4531      0.0      5.3370      7.1160  0.0000  can_rx_sample
+u_can_controller/u_rx_sync           14.2321      0.0      0.0000     14.2321  0.0000  can_rx_sync
+u_can_controller/u_stuffer           72.1769      0.2     43.7128     28.4641  0.0000  can_stuffer
+u_can_controller/u_tx_buffer       1523.5933      4.5    819.1061    704.4872  0.0000  tx_buffer
+u_can_controller/u_tx_crc           237.3705      0.7    123.5140    113.8565  0.0000  crc_0
+u_can_controller/u_tx_datapath      204.5859      0.6    204.5859      0.0000  0.0000  tx_datapath
+u_canclk_reset_sync                  14.2321      0.0      0.0000     14.2321  0.0000  reset_sync_1
+u_config_cdc                       4159.8291     12.2   1498.4331   2661.3960  0.0000  can_config_cdc
+u_error_latch                        75.9891      0.2     40.4089     35.5802  0.0000  can_error_latch
+u_error_status_cdc                  893.0620      2.6    259.7352    633.3269  0.0000  can_error_status_cdc
+u_pclk_reset_sync                    16.7735      0.0      2.5414     14.2321  0.0000  reset_sync_0
+u_rx_fifo_bridge                  13897.8650     40.8     20.5857      7.1160  0.0000  can_rx_fifo_bridge_FIFO_DEPTH8
+u_rx_fifo_bridge/rx_fifo          13870.1633     40.8     56.9283      0.0000  0.0000  async_fifo_WIDTH128_DEPTH8
+u_rx_fifo_bridge/rx_fifo/b_r         12.9613      0.0     12.9613      0.0000  0.0000  g2b_WIDTH4_0
+u_rx_fifo_bridge/rx_fifo/b_w         12.9613      0.0     12.9613      0.0000  0.0000  g2b_WIDTH4_1
+u_rx_fifo_bridge/rx_fifo/g_r         12.9613      0.0     12.9613      0.0000  0.0000  b2g_WIDTH4_0
+u_rx_fifo_bridge/rx_fifo/g_w         12.9613      0.0     12.9613      0.0000  0.0000  b2g_WIDTH4_1
+u_rx_fifo_bridge/rx_fifo/m1       13489.4556     39.6   5877.3343   7612.1213  0.0000  mem_WIDTH128_DEPTH8
+u_rx_fifo_bridge/rx_fifo/r1          73.7018      0.2     45.2376     28.4641  0.0000  fifo_read_DEPTH8
+u_rx_fifo_bridge/rx_fifo/sync_r      62.2653      0.2      5.3370     56.9283  0.0000  sync_multi_WIDTH4_0
+u_rx_fifo_bridge/rx_fifo/sync_w      62.2653      0.2      5.3370     56.9283  0.0000  sync_multi_WIDTH4_1
+u_rx_fifo_bridge/rx_fifo/w1          73.7018      0.2     45.2376     28.4641  0.0000  fifo_write_DEPTH8
+u_tx_cdc                           2227.5722      6.5    754.5536   1473.0186  0.0000  can_tx_cdc
+--------------------------------  ----------  -------  ----------  ----------  ------  ---------------------------------------------------------------------------------------
+Total                                                  16490.3879  17535.4281  0.0000
+
+1

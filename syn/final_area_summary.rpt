@@ -1,0 +1,33 @@
+ 
+****************************************
+Report : area
+Design : can_controller_top
+Version: S-2021.06-SP4
+Date   : Fri Sep 11 22:20:53 2026
+****************************************
+
+Information: Updating design information... (UID-85)
+Warning: Clock port 'pclk' is assigned input delay relative to clock 'can_clk'. (TIM-111)
+Warning: Clock port 'pclk' is assigned input delay relative to clock 'can_clk'. (TIM-111)
+Library(s) Used:
+
+    saed32lvt_ss0p75v25c (File: /fetools/work_area/frontend/SAED32_EDK/lib/stdcell_lvt/db_nldm/saed32lvt_ss0p75v25c.db)
+
+Number of ports:                         3714
+Number of nets:                         12452
+Number of cells:                         8728
+Number of combinational cells:           6108
+Number of sequential cells:              2545
+Number of macros/black boxes:               0
+Number of buf/inv:                       1104
+Number of references:                      25
+
+Combinational area:              16490.387926
+Buf/Inv area:                     1905.063489
+Noncombinational area:           17535.428132
+Macro/Black Box area:                0.000000
+Net Interconnect area:            5961.327604
+
+Total cell area:                 34025.816058
+Total area:                      39987.143663
+1

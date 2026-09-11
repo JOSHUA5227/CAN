@@ -1,0 +1,51 @@
+ 
+****************************************
+Report : constraint
+        -all_violators
+Design : can_controller_top
+Version: S-2021.06-SP4
+Date   : Fri Sep 11 22:21:23 2026
+****************************************
+
+
+   max_delay/setup ('can_clk' group)
+
+                             Required        Actual
+   Endpoint                 Path Delay     Path Delay        Slack
+   -----------------------------------------------------------------
+   PRDATA[4]                    5.00           5.92 r        -0.92  (VIOLATED)
+   PRDATA[5]                    5.00           5.92 r        -0.92  (VIOLATED)
+   PRDATA[6]                    5.00           5.89 r        -0.89  (VIOLATED)
+   PRDATA[7]                    5.00           5.89 r        -0.89  (VIOLATED)
+   PRDATA[10]                   5.00           5.83 f        -0.83  (VIOLATED)
+   PRDATA[0]                    5.00           5.78 f        -0.78  (VIOLATED)
+   PRDATA[1]                    5.00           5.78 f        -0.78  (VIOLATED)
+   PRDATA[13]                   5.00           5.78 r        -0.78  (VIOLATED)
+   PRDATA[3]                    5.00           5.76 f        -0.76  (VIOLATED)
+   PRDATA[2]                    5.00           5.76 f        -0.76  (VIOLATED)
+   PRDATA[8]                    5.00           5.74 f        -0.74  (VIOLATED)
+   PRDATA[25]                   5.00           5.74 r        -0.74  (VIOLATED)
+   PRDATA[26]                   5.00           5.74 r        -0.74  (VIOLATED)
+   PRDATA[27]                   5.00           5.74 r        -0.74  (VIOLATED)
+   PRDATA[28]                   5.00           5.74 r        -0.74  (VIOLATED)
+   PRDATA[11]                   5.00           5.73 r        -0.73  (VIOLATED)
+   PRDATA[12]                   5.00           5.73 r        -0.73  (VIOLATED)
+   PRDATA[14]                   5.00           5.73 r        -0.73  (VIOLATED)
+   PRDATA[15]                   5.00           5.73 r        -0.73  (VIOLATED)
+   PRDATA[16]                   5.00           5.73 r        -0.73  (VIOLATED)
+   PRDATA[17]                   5.00           5.73 r        -0.73  (VIOLATED)
+   PRDATA[18]                   5.00           5.73 r        -0.73  (VIOLATED)
+   PRDATA[19]                   5.00           5.73 r        -0.73  (VIOLATED)
+   PRDATA[20]                   5.00           5.73 r        -0.73  (VIOLATED)
+   PRDATA[21]                   5.00           5.73 r        -0.73  (VIOLATED)
+   PRDATA[22]                   5.00           5.73 r        -0.73  (VIOLATED)
+   PRDATA[23]                   5.00           5.73 r        -0.73  (VIOLATED)
+   PRDATA[9]                    5.00           5.71 f        -0.71  (VIOLATED)
+   PRDATA[24]                   5.00           5.69 f        -0.69  (VIOLATED)
+   PSLVERR                      5.00           5.68 r        -0.68  (VIOLATED)
+   PRDATA[29]                   5.00           5.61 f        -0.61  (VIOLATED)
+   PRDATA[30]                   5.00           5.61 f        -0.61  (VIOLATED)
+   PRDATA[31]                   5.00           5.61 f        -0.61  (VIOLATED)
+
+
+1

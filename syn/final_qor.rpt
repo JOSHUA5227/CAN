@@ -1,0 +1,96 @@
+ 
+****************************************
+Report : qor
+Design : can_controller_top
+Version: S-2021.06-SP4
+Date   : Fri Sep 11 22:22:25 2026
+****************************************
+
+
+  Timing Path Group 'can_clk'
+  -----------------------------------
+  Levels of Logic:               8.00
+  Critical Path Length:          0.92
+  Critical Path Slack:          -0.92
+  Critical Path Clk Period:     10.00
+  Total Negative Slack:        -24.68
+  No. of Violating Paths:       33.00
+  Worst Hold Violation:          0.00
+  Total Hold Violation:          0.00
+  No. of Hold Violations:        0.00
+  -----------------------------------
+
+  Timing Path Group 'pclk'
+  -----------------------------------
+  Levels of Logic:              12.00
+  Critical Path Length:          1.75
+  Critical Path Slack:           3.05
+  Critical Path Clk Period:      5.00
+  Total Negative Slack:          0.00
+  No. of Violating Paths:        0.00
+  Worst Hold Violation:          0.00
+  Total Hold Violation:          0.00
+  No. of Hold Violations:        0.00
+  -----------------------------------
+
+
+  Cell Count
+  -----------------------------------
+  Hierarchical Cell Count:         50
+  Hierarchical Port Count:       3623
+  Leaf Cell Count:               8653
+  Buf/Inv Cell Count:            1104
+  Buf Cell Count:                 621
+  Inv Cell Count:                 483
+  CT Buf/Inv Cell Count:          319
+  Combinational Cell Count:      6108
+  Sequential Cell Count:         2545
+  Macro Count:                      0
+  -----------------------------------
+
+
+  Area
+  -----------------------------------
+  Combinational Area:    16490.387926
+  Noncombinational Area: 17535.428132
+  Buf/Inv Area:           1905.063489
+  Total Buffer Area:          1262.59
+  Total Inverter Area:         642.48
+  Macro/Black Box Area:      0.000000
+  Net Area:               5961.327604
+  -----------------------------------
+  Cell Area:             34025.816058
+  Design Area:           39987.143663
+
+
+  Design Rules
+  -----------------------------------
+  Total Number of Nets:          8913
+  Nets With Violations:             0
+  Max Trans Violations:             0
+  Max Cap Violations:               0
+  -----------------------------------
+
+
+  Hostname: feserver.mirafra.com
+
+  Compile CPU Statistics
+  -----------------------------------------
+  Resource Sharing:                    7.83
+  Logic Optimization:                  6.67
+  Mapping Optimization:                4.92
+  -----------------------------------------
+  Overall Compile Time:               22.98
+  Overall Compile Wall Clock Time:    23.80
+
+  --------------------------------------------------------------------
+
+  Design  WNS: 0.92  TNS: 24.68  Number of Violating Paths: 33
+
+
+  Design (Hold)  WNS: 0.00  TNS: 0.00  Number of Violating Paths: 0
+
+  --------------------------------------------------------------------
+
+
+1
