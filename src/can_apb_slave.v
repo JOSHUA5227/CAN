@@ -64,9 +64,6 @@ module can_apb_slave #(
 
     /*
      * TX STATUS
-     *
-     * These inputs are PCLK-domain signals coming from the
-     * CAN status CDC block.
      */
     input wire                  tx_busy,
     input wire                  tx_pending,
@@ -86,35 +83,35 @@ module can_apb_slave #(
     /*
      * RX DATA
      */
-    input wire [28:0]           rx_identifier,
+    input wire [28:0]            rx_identifier,
     input wire                  rx_ide,
     input wire                  rx_rtr,
-    input wire [3:0]            rx_dlc,
+    input wire [3:0]             rx_dlc,
     input wire [63:0]            rx_data,
 
     /*
      * ERROR STATUS
      */
-    input wire [1:0]            error_state,
-    input wire                  recovery_active,
-    input wire                  last_error_valid,
-    input wire [3:0]            last_error_type,
+    input wire [1:0]             error_state,
+    input wire                   recovery_active,
+    input wire                   last_error_valid,
+    input wire [3:0]             last_error_type,
 
     /*
      * ERROR FLAGS
      */
-    input wire                  arb_lost,
-    input wire                  ack_error,
-    input wire                  crc_error,
-    input wire                  stuff_error,
-    input wire                  form_error,
-    input wire                  bit_error,
+    input wire                   arb_lost,
+    input wire                   ack_error,
+    input wire                   crc_error,
+    input wire                   stuff_error,
+    input wire                   form_error,
+    input wire                   bit_error,
 
     /*
      * ERROR COUNTERS
      */
-    input wire [8:0]            tec,
-    input wire [7:0]            rec
+    input wire [8:0]             tec,
+    input wire [7:0]             rec
 );
 
     /*
@@ -160,21 +157,6 @@ module can_apb_slave #(
     /*
      * ================================================================
      * STICKY TX STATUS
-     *
-     * These solve the original problem:
-     *
-     * CAN event
-     *      |
-     *      v
-     * CDC generates 1 PCLK pulse
-     *      |
-     *      v
-     * APB sticky register
-     *      |
-     *      v
-     * Software can read it later
-     *
-     * The CDC outputs themselves remain one-cycle event pulses.
      * ================================================================
      */
 
@@ -186,6 +168,25 @@ module can_apb_slave #(
 
     /*
      * ================================================================
+     * CAN_CLK -> PCLK RX STATUS SYNCHRONIZERS
+     * ================================================================
+     *
+     * rx_fifo_full and rx_overflow originate in the CAN clock domain.
+     *
+     * They must not be used directly by the PCLK-domain APB read
+     * mux. Each persistent single-bit status signal therefore passes
+     * through a 2-FF synchronizer.
+     */
+
+    reg rx_fifo_full_sync1;
+    reg rx_fifo_full_sync2;
+
+    reg rx_overflow_sync1;
+    reg rx_overflow_sync2;
+
+
+    /*
+     * ================================================================
      * APB ACCESS
      * ================================================================
      */
@@ -193,6 +194,33 @@ module can_apb_slave #(
     wire apb_access;
 
     assign apb_access = PSEL && PENABLE;
+
+
+    /*
+     * ================================================================
+     * CAN_CLK -> PCLK RX STATUS SYNCHRONIZATION
+     * ================================================================
+     */
+
+    always @(posedge PCLK or negedge PRESETn)
+    begin
+        if(!PRESETn)
+        begin
+            rx_fifo_full_sync1 <= 1'b0;
+            rx_fifo_full_sync2 <= 1'b0;
+
+            rx_overflow_sync1 <= 1'b0;
+            rx_overflow_sync2 <= 1'b0;
+        end
+        else
+        begin
+            rx_fifo_full_sync1 <= rx_fifo_full;
+            rx_fifo_full_sync2 <= rx_fifo_full_sync1;
+
+            rx_overflow_sync1 <= rx_overflow;
+            rx_overflow_sync2 <= rx_overflow_sync1;
+        end
+    end
 
 
     /*
@@ -242,9 +270,7 @@ module can_apb_slave #(
         else
         begin
             /*
-             * --------------------------------------------------------
              * DEFAULT PULSES
-             * --------------------------------------------------------
              */
 
             tx_request <= 1'b0;
@@ -252,9 +278,7 @@ module can_apb_slave #(
 
 
             /*
-             * --------------------------------------------------------
              * CAPTURE CDC TX EVENTS INTO STICKY PCLK REGISTERS
-             * --------------------------------------------------------
              */
 
             if(tx_done)
@@ -271,9 +295,7 @@ module can_apb_slave #(
 
 
             /*
-             * --------------------------------------------------------
              * APB WRITE
-             * --------------------------------------------------------
              */
 
             if(PSEL && PENABLE && PWRITE)
@@ -281,42 +303,18 @@ module can_apb_slave #(
                 case(PADDR)
 
                     /*
-                     * ------------------------------------------------
                      * CONTROL
-                     * ------------------------------------------------
                      */
 
                     ADDR_CONTROL:
                     begin
-                        /*
-                         * CONTROL writes require byte lane 0.
-                         */
-
                         if(PSTRB[0])
                         begin
-                            /*
-                             * LOOPBACK and LISTEN_ONLY cannot both
-                             * be enabled.
-                             */
-
                             if(PWDATA[1] && PWDATA[2])
                             begin
-                                /*
-                                 * Illegal combination.
-                                 *
-                                 * Do not modify the control
-                                 * registers.
-                                 */
                             end
                             else if(!PWDATA[0] && tx_busy)
                             begin
-                                /*
-                                 * Cannot disable CAN while TX is
-                                 * active.
-                                 *
-                                 * Do not modify the control
-                                 * registers.
-                                 */
                             end
                             else
                             begin
@@ -329,9 +327,7 @@ module can_apb_slave #(
 
 
                     /*
-                     * ------------------------------------------------
                      * BIT RATE PRESCALER
-                     * ------------------------------------------------
                      */
 
                     ADDR_BRP:
@@ -354,9 +350,7 @@ module can_apb_slave #(
 
 
                     /*
-                     * ------------------------------------------------
                      * SEGMENTS
-                     * ------------------------------------------------
                      *
                      * [7:0]   PROP_SEG
                      * [15:8]  PHASE_SEG1
@@ -380,9 +374,7 @@ module can_apb_slave #(
 
 
                     /*
-                     * ------------------------------------------------
                      * SJW
-                     * ------------------------------------------------
                      */
 
                     ADDR_SJW_CONTROL:
@@ -396,9 +388,7 @@ module can_apb_slave #(
 
 
                     /*
-                     * ------------------------------------------------
                      * TX ID
-                     * ------------------------------------------------
                      */
 
                     ADDR_TX_ID:
@@ -418,9 +408,7 @@ module can_apb_slave #(
 
 
                     /*
-                     * ------------------------------------------------
                      * TX CONTROL
-                     * ------------------------------------------------
                      *
                      * bit 0     = IDE
                      * bit 1     = RTR
@@ -439,9 +427,7 @@ module can_apb_slave #(
 
 
                     /*
-                     * ------------------------------------------------
                      * TX DATA LOW
-                     * ------------------------------------------------
                      */
 
                     ADDR_TX_DATA_LO:
@@ -461,9 +447,7 @@ module can_apb_slave #(
 
 
                     /*
-                     * ------------------------------------------------
                      * TX DATA HIGH
-                     * ------------------------------------------------
                      */
 
                     ADDR_TX_DATA_HI:
@@ -483,9 +467,7 @@ module can_apb_slave #(
 
 
                     /*
-                     * ------------------------------------------------
                      * TX COMMAND
-                     * ------------------------------------------------
                      *
                      * bit 0 = transmit request
                      *
@@ -508,9 +490,7 @@ module can_apb_slave #(
 
 
                     /*
-                     * ------------------------------------------------
                      * RX COMMAND
-                     * ------------------------------------------------
                      *
                      * bit 0 = pop RX FIFO
                      */
@@ -523,9 +503,7 @@ module can_apb_slave #(
 
 
                     /*
-                     * ------------------------------------------------
                      * FILTER 0 ID
-                     * ------------------------------------------------
                      */
 
                     ADDR_FILTER0_ID:
@@ -548,9 +526,7 @@ module can_apb_slave #(
 
 
                     /*
-                     * ------------------------------------------------
                      * FILTER 0 MASK
-                     * ------------------------------------------------
                      */
 
                     ADDR_FILTER0_MASK:
@@ -573,9 +549,7 @@ module can_apb_slave #(
 
 
                     /*
-                     * ------------------------------------------------
                      * FILTER 0 CONTROL
-                     * ------------------------------------------------
                      *
                      * bit 0 = enable
                      * bit 1 = IDE
@@ -595,9 +569,7 @@ module can_apb_slave #(
 
 
                     /*
-                     * ------------------------------------------------
                      * FILTER 1 ID
-                     * ------------------------------------------------
                      */
 
                     ADDR_FILTER1_ID:
@@ -620,9 +592,7 @@ module can_apb_slave #(
 
 
                     /*
-                     * ------------------------------------------------
                      * FILTER 1 MASK
-                     * ------------------------------------------------
                      */
 
                     ADDR_FILTER1_MASK:
@@ -645,9 +615,7 @@ module can_apb_slave #(
 
 
                     /*
-                     * ------------------------------------------------
                      * FILTER 1 CONTROL
-                     * ------------------------------------------------
                      *
                      * bit 0 = enable
                      * bit 1 = IDE
@@ -667,9 +635,7 @@ module can_apb_slave #(
 
 
                     /*
-                     * ------------------------------------------------
                      * READ-ONLY REGISTERS
-                     * ------------------------------------------------
                      *
                      * Writes to these registers are ignored.
                      */
@@ -720,9 +686,7 @@ module can_apb_slave #(
 
 
                     /*
-                     * ------------------------------------------------
                      * UNMAPPED
-                     * ------------------------------------------------
                      */
 
                     default:
@@ -739,12 +703,14 @@ module can_apb_slave #(
      * ================================================================
      * APB READ DATA
      * ================================================================
+     *
+     * All CAN_CLK-domain RX status levels used below are now consumed
+     * through their PCLK-domain synchronized copies.
      */
 
     always @(*)
     begin
         PRDATA = 32'd0;
-        PSLVERR = 1'b0;
         PREADY = 1'b1;
 
         if(PSEL && PENABLE && !PWRITE)
@@ -752,9 +718,7 @@ module can_apb_slave #(
             case(PADDR)
 
                 /*
-                 * ----------------------------------------------------
                  * VERSION
-                 * ----------------------------------------------------
                  */
 
                 ADDR_VERSION:
@@ -764,9 +728,7 @@ module can_apb_slave #(
 
 
                 /*
-                 * ----------------------------------------------------
                  * CONTROL
-                 * ----------------------------------------------------
                  */
 
                 ADDR_CONTROL:
@@ -779,9 +741,7 @@ module can_apb_slave #(
 
 
                 /*
-                 * ----------------------------------------------------
                  * STATUS
-                 * ----------------------------------------------------
                  *
                  * bit 0  = tx_busy
                  * bit 1  = tx_done
@@ -803,21 +763,19 @@ module can_apb_slave #(
                     PRDATA[0] = tx_busy;
                     PRDATA[1] = tx_done_latched;
                     PRDATA[2] = rx_available;
-                    PRDATA[3] = rx_fifo_full;
+                    PRDATA[3] = rx_fifo_full_sync2;
                     PRDATA[4] = arb_lost;
                     PRDATA[5] = ack_error;
                     PRDATA[6] = crc_error;
                     PRDATA[7] = stuff_error;
                     PRDATA[8] = form_error;
                     PRDATA[9] = bit_error;
-                    PRDATA[10] = rx_overflow;
+                    PRDATA[10] = rx_overflow_sync2;
                 end
 
 
                 /*
-                 * ----------------------------------------------------
                  * ERROR STATUS
-                 * ----------------------------------------------------
                  *
                  * bits [1:0] = error_state
                  * bit  [2]   = recovery_active
@@ -837,9 +795,7 @@ module can_apb_slave #(
 
 
                 /*
-                 * ----------------------------------------------------
                  * BRP
-                 * ----------------------------------------------------
                  */
 
                 ADDR_BRP:
@@ -849,9 +805,7 @@ module can_apb_slave #(
 
 
                 /*
-                 * ----------------------------------------------------
                  * SEGMENTS
-                 * ----------------------------------------------------
                  *
                  * [7:0]   PROP_SEG
                  * [15:8]  PHASE_SEG1
@@ -868,9 +822,7 @@ module can_apb_slave #(
 
 
                 /*
-                 * ----------------------------------------------------
                  * SJW
-                 * ----------------------------------------------------
                  */
 
                 ADDR_SJW_CONTROL:
@@ -881,9 +833,7 @@ module can_apb_slave #(
 
 
                 /*
-                 * ----------------------------------------------------
                  * TX ID
-                 * ----------------------------------------------------
                  */
 
                 ADDR_TX_ID:
@@ -894,9 +844,7 @@ module can_apb_slave #(
 
 
                 /*
-                 * ----------------------------------------------------
                  * TX CTRL
-                 * ----------------------------------------------------
                  *
                  * bit 0     = IDE
                  * bit 1     = RTR
@@ -913,9 +861,7 @@ module can_apb_slave #(
 
 
                 /*
-                 * ----------------------------------------------------
                  * TX DATA LOW
-                 * ----------------------------------------------------
                  */
 
                 ADDR_TX_DATA_LO:
@@ -925,9 +871,7 @@ module can_apb_slave #(
 
 
                 /*
-                 * ----------------------------------------------------
                  * TX DATA HIGH
-                 * ----------------------------------------------------
                  */
 
                 ADDR_TX_DATA_HI:
@@ -937,9 +881,7 @@ module can_apb_slave #(
 
 
                 /*
-                 * ----------------------------------------------------
                  * TX COMMAND
-                 * ----------------------------------------------------
                  *
                  * Write-only command register.
                  */
@@ -951,9 +893,7 @@ module can_apb_slave #(
 
 
                 /*
-                 * ----------------------------------------------------
                  * TX STATUS
-                 * ----------------------------------------------------
                  *
                  * bit 0 = tx_pending
                  * bit 1 = tx_busy
@@ -963,7 +903,6 @@ module can_apb_slave #(
                  * bit 5 = tx_error
                  *
                  * Bits 2-5 are sticky PCLK-domain status.
-                 * ----------------------------------------------------
                  */
 
                 ADDR_TX_STATUS:
@@ -980,9 +919,7 @@ module can_apb_slave #(
 
 
                 /*
-                 * ----------------------------------------------------
                  * RX STATUS
-                 * ----------------------------------------------------
                  *
                  * bits [7:0] = fifo_count
                  * bit 8      = empty
@@ -996,15 +933,13 @@ module can_apb_slave #(
 
                     PRDATA[7:0] = fifo_count;
                     PRDATA[8] = !rx_available;
-                    PRDATA[9] = rx_fifo_full;
-                    PRDATA[10] = rx_overflow;
+                    PRDATA[9] = rx_fifo_full_sync2;
+                    PRDATA[10] = rx_overflow_sync2;
                 end
 
 
                 /*
-                 * ----------------------------------------------------
                  * RX ID
-                 * ----------------------------------------------------
                  */
 
                 ADDR_RX_ID:
@@ -1015,9 +950,7 @@ module can_apb_slave #(
 
 
                 /*
-                 * ----------------------------------------------------
                  * RX CTRL
-                 * ----------------------------------------------------
                  *
                  * bit 0     = IDE
                  * bit 1     = RTR
@@ -1034,9 +967,7 @@ module can_apb_slave #(
 
 
                 /*
-                 * ----------------------------------------------------
                  * RX DATA LOW
-                 * ----------------------------------------------------
                  */
 
                 ADDR_RX_DATA_LO:
@@ -1046,9 +977,7 @@ module can_apb_slave #(
 
 
                 /*
-                 * ----------------------------------------------------
                  * RX DATA HIGH
-                 * ----------------------------------------------------
                  */
 
                 ADDR_RX_DATA_HI:
@@ -1058,9 +987,7 @@ module can_apb_slave #(
 
 
                 /*
-                 * ----------------------------------------------------
                  * RX COMMAND
-                 * ----------------------------------------------------
                  *
                  * Write-only command register.
                  */
@@ -1072,9 +999,7 @@ module can_apb_slave #(
 
 
                 /*
-                 * ----------------------------------------------------
                  * FILTER 0 ID
-                 * ----------------------------------------------------
                  */
 
                 ADDR_FILTER0_ID:
@@ -1085,9 +1010,7 @@ module can_apb_slave #(
 
 
                 /*
-                 * ----------------------------------------------------
                  * FILTER 0 MASK
-                 * ----------------------------------------------------
                  */
 
                 ADDR_FILTER0_MASK:
@@ -1098,9 +1021,7 @@ module can_apb_slave #(
 
 
                 /*
-                 * ----------------------------------------------------
                  * FILTER 0 CONTROL
-                 * ----------------------------------------------------
                  *
                  * bit 0 = enable
                  * bit 1 = IDE
@@ -1115,9 +1036,7 @@ module can_apb_slave #(
 
 
                 /*
-                 * ----------------------------------------------------
                  * FILTER 1 ID
-                 * ----------------------------------------------------
                  */
 
                 ADDR_FILTER1_ID:
@@ -1128,9 +1047,7 @@ module can_apb_slave #(
 
 
                 /*
-                 * ----------------------------------------------------
                  * FILTER 1 MASK
-                 * ----------------------------------------------------
                  */
 
                 ADDR_FILTER1_MASK:
@@ -1141,9 +1058,7 @@ module can_apb_slave #(
 
 
                 /*
-                 * ----------------------------------------------------
                  * FILTER 1 CONTROL
-                 * ----------------------------------------------------
                  *
                  * bit 0 = enable
                  * bit 1 = IDE
@@ -1158,9 +1073,7 @@ module can_apb_slave #(
 
 
                 /*
-                 * ----------------------------------------------------
                  * TEC
-                 * ----------------------------------------------------
                  */
 
                 ADDR_TEC:
@@ -1171,9 +1084,7 @@ module can_apb_slave #(
 
 
                 /*
-                 * ----------------------------------------------------
                  * REC
-                 * ----------------------------------------------------
                  */
 
                 ADDR_REC:
@@ -1184,9 +1095,7 @@ module can_apb_slave #(
 
 
                 /*
-                 * ----------------------------------------------------
                  * UNMAPPED ADDRESS
-                 * ----------------------------------------------------
                  *
                  * Default slave behavior: return zero and no error.
                  */
@@ -1217,7 +1126,6 @@ module can_apb_slave #(
      * 3. BIT timing/filter configuration while CAN is enabled
      *
      * Read-only registers are treated as ignored writes.
-     * ================================================================
      */
 
     always @(*)
