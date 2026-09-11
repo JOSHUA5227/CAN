@@ -1,5 +1,3 @@
-`timescale 1ns/1ps
-
 module bit_timing_engine #(
     parameter CAN_CLK_FREQ = 100_000_000,
     parameter CAN_BIT_RATE = 1_000_000

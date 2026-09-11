@@ -21,57 +21,56 @@ module can_rx_datapath(
     output reg        rx_frame_valid
 );
 
+localparam IDLE           = 4'd0;
+localparam SOF            = 4'd1;
+localparam ARBITRATION    = 4'd2;
+localparam CONTROL        = 4'd3;
+localparam DATA           = 4'd4;
+localparam CRC            = 4'd5;
+localparam CRC_DELIM      = 4'd6;
+localparam ACK            = 4'd7;
+localparam ACK_DELIM      = 4'd8;
+localparam EOF            = 4'd9;
+localparam INTERMISSION   = 4'd10;
+localparam ERROR_FLAG     = 4'd11;
+localparam WAIT_RECESSIVE = 4'd12;
+localparam ERROR_DELIM    = 4'd13;
+localparam RX_ONLY        = 4'd14;
 
-    /* =============================================================
-     * CAN FRAME STATES
-     * ============================================================= */
+reg [10:0] arb_base_id;
+reg [17:0] arb_extended_id;
 
-    localparam IDLE           = 4'd0;
-    localparam SOF            = 4'd1;
-    localparam ARBITRATION    = 4'd2;
-    localparam CONTROL        = 4'd3;
-    localparam DATA           = 4'd4;
-    localparam CRC            = 4'd5;
-    localparam CRC_DELIM      = 4'd6;
-    localparam ACK            = 4'd7;
-    localparam ACK_DELIM      = 4'd8;
-    localparam EOF            = 4'd9;
-    localparam INTERMISSION   = 4'd10;
-    localparam ERROR_FLAG     = 4'd11;
-    localparam WAIT_RECESSIVE = 4'd12;
-    localparam ERROR_DELIM    = 4'd13;
-    localparam RX_ONLY        = 4'd14;
+wire [3:0] arb_base_id_index;
+wire [4:0] arb_extended_id_index;
 
+assign arb_base_id_index =
+    bit_cnt[3:0] - 4'd3;
 
-    /* =============================================================
-     * ARBITRATION STORAGE
-     * ============================================================= */
+assign arb_extended_id_index =
+    bit_cnt[4:0] - 5'd2;
 
-    reg [10:0] arb_base_id;
-    reg [17:0] arb_extended_id;
-
-
-    /* =============================================================
-     * SAFE ARRAY INDEXES
-     * ============================================================= */
-
-    wire [3:0] arb_base_id_index;
-    wire [4:0] arb_extended_id_index;
-
-    assign arb_base_id_index =
-        bit_cnt[3:0] - 4'd3;
-
-    assign arb_extended_id_index =
-        bit_cnt[4:0] - 5'd1;
-
-
-    /* =============================================================
-     * RX SEQUENTIAL LOGIC
-     * ============================================================= */
-
-    always @(posedge clk or negedge rst_n)
+always @(posedge clk or negedge rst_n)
+begin
+    if(!rst_n)
     begin
-        if(!rst_n)
+        arb_base_id     <= 11'd0;
+        arb_extended_id <= 18'd0;
+
+        rx_identifier   <= 29'd0;
+        rx_rtr          <= 1'b0;
+        rx_ide          <= 1'b0;
+        rx_dlc          <= 4'd0;
+
+        rx_data         <= 64'd0;
+
+        rx_frame_valid  <= 1'b0;
+    end
+    else
+    begin
+        rx_frame_valid <= 1'b0;
+
+        if(bit_en &&
+           (state == SOF))
         begin
             arb_base_id     <= 11'd0;
             arb_extended_id <= 18'd0;
@@ -81,438 +80,836 @@ module can_rx_datapath(
             rx_ide          <= 1'b0;
             rx_dlc          <= 4'd0;
 
-            rx_data         <= 64'd0;
-
-            rx_frame_valid  <= 1'b0;
+            /*
+             * Do not clear rx_data here.
+             * This preserves the previous RX data value
+             * for DLC=0 frames.
+             */
         end
-        else
+
+        else if(bit_en &&
+                (state == EOF) &&
+                (bit_cnt == 6'd1))
+        begin
+            rx_frame_valid <= 1'b1;
+        end
+
+        else if(bit_en &&
+                rx_bit_valid)
         begin
 
-            /*
-             * rx_frame_valid is a one-clock registered pulse.
-             *
-             * can_controller also generates a combinational EOF
-             * event for the FIFO so that the FIFO does not miss
-             * the final frame write.
-             */
+            case(state)
 
-            rx_frame_valid <= 1'b0;
+                ARBITRATION,
+                RX_ONLY:
+                begin
 
-
-            /* =====================================================
-             * SOF
-             * ===================================================== */
-
-            if(bit_en &&
-               (state == SOF))
-            begin
-                arb_base_id     <= 11'd0;
-                arb_extended_id <= 18'd0;
-
-                rx_identifier   <= 29'd0;
-                rx_rtr          <= 1'b0;
-                rx_ide          <= 1'b0;
-                rx_dlc          <= 4'd0;
-
-                /*
-                 * Do NOT clear rx_data here.
-                 *
-                 * This preserves the previous RX data value for
-                 * DLC=0 frames.
-                 */
-            end
-
-
-            /* =====================================================
-             * EOF
-             * ===================================================== */
-
-            else if(bit_en &&
-                    (state == EOF) &&
-                    (bit_cnt == 6'd1))
-            begin
-                rx_frame_valid <= 1'b1;
-            end
-
-
-            /* =====================================================
-             * LOGICAL RX BIT
-             * ===================================================== */
-
-            else if(bit_en &&
-                    rx_bit_valid)
-            begin
-
-                case(state)
-
-
-                    /* =================================================
-                     * ARBITRATION / RX_ONLY
-                     * ================================================= */
-
-                    ARBITRATION,
-                    RX_ONLY:
+                    if(!arb_phase)
                     begin
 
                         /*
-                         * -------------------------------------------------
-                         * PHASE 0
-                         * -------------------------------------------------
+                         * Base identifier:
                          *
-                         * Standard frame:
-                         *
-                         * bit 13 ... 3 = Base ID
-                         * bit 2        = RTR
-                         * bit 1        = IDE
+                         * bit_cnt 13 -> ID[10]
+                         * bit_cnt 12 -> ID[9]
+                         * ...
+                         * bit_cnt 3  -> ID[0]
                          */
 
-                        if(!arb_phase)
+                        if((bit_cnt >= 6'd3) &&
+                           (bit_cnt <= 6'd13))
                         begin
-
-                            /*
-                             * Base identifier.
-                             *
-                             * bit_cnt 13 -> ID[10]
-                             * bit_cnt 12 -> ID[9]
-                             * ...
-                             * bit_cnt 3  -> ID[0]
-                             */
-
-                            if((bit_cnt >= 6'd3) &&
-                               (bit_cnt <= 6'd13))
-                            begin
-                                arb_base_id[arb_base_id_index]
-                                    <= rx_bit_destuffed;
-                            end
-
-
-                            /*
-                             * bit_cnt = 2
-                             *
-                             * RTR for standard frame.
-                             *
-                             * For extended frame this is SRR,
-                             * therefore do not store it as RTR.
-                             */
-
-                            else if(bit_cnt == 6'd2)
-                            begin
-                                if(!active_ide)
-                                begin
-                                    rx_rtr <= rx_bit_destuffed;
-                                end
-                            end
-
-
-                            /*
-                             * bit_cnt = 1
-                             *
-                             * IDE determines standard vs extended.
-                             */
-
-                            else if(bit_cnt == 6'd1)
-                            begin
-                                rx_ide <= rx_bit_destuffed;
-
-
-                                /*
-                                 * STANDARD FRAME
-                                 */
-
-                                if(!rx_bit_destuffed)
-                                begin
-                                    rx_identifier <=
-                                        {18'd0, arb_base_id};
-                                end
-
-
-                                /*
-                                 * EXTENDED FRAME
-                                 *
-                                 * The extended identifier is completed
-                                 * during the extended arbitration phase.
-                                 */
-
-                            end
-
+                            arb_base_id[arb_base_id_index]
+                                <= rx_bit_destuffed;
                         end
 
-
                         /*
-                         * -------------------------------------------------
-                         * EXTENDED ARBITRATION PHASE
-                         * -------------------------------------------------
+                         * bit_cnt = 2
+                         *
+                         * RTR for standard frame.
+                         * For extended frame this is SRR.
                          */
 
-                        else
+                        else if(bit_cnt == 6'd2)
                         begin
-
-                            /*
-                             * Extended ID bits.
-                             *
-                             * bit 18 ... 1 -> EXT_ID[17:0]
-                             */
-
-                            if((bit_cnt >= 6'd1) &&
-                               (bit_cnt <= 6'd18))
+                            if(!active_ide)
                             begin
-                                arb_extended_id[arb_extended_id_index]
-                                    <= rx_bit_destuffed;
+                                rx_rtr <= rx_bit_destuffed;
                             end
+                        end
 
+                        /*
+                         * bit_cnt = 1
+                         *
+                         * IDE determines standard or extended.
+                         */
+
+                        else if(bit_cnt == 6'd1)
+                        begin
+                            rx_ide <= rx_bit_destuffed;
+
+                            if(!rx_bit_destuffed)
+                            begin
+                                rx_identifier <=
+                                    {18'd0, arb_base_id};
+                            end
                         end
 
                     end
 
-
-                    /* =================================================
-                     * CONTROL
-                     * ================================================= */
-
-                    CONTROL:
+                    else
                     begin
 
                         /*
-                         * DLC occupies four bits.
+                         * Extended arbitration:
                          *
-                         * DLC bit order:
-                         *
-                         * bit_cnt 4 -> DLC[3]
-                         * bit_cnt 3 -> DLC[2]
-                         * bit_cnt 2 -> DLC[1]
-                         * bit_cnt 1 -> DLC[0]
+                         * bit_cnt 19 -> Extended ID[17]
+                         * bit_cnt 18 -> Extended ID[16]
+                         * ...
+                         * bit_cnt 3  -> Extended ID[1]
+                         * bit_cnt 2  -> Extended ID[0]
+                         * bit_cnt 1  -> RTR
                          */
 
-                        if(bit_cnt == 6'd4)
+                        if((bit_cnt >= 6'd2) &&
+                           (bit_cnt <= 6'd19))
                         begin
-                            rx_dlc[3] <= rx_bit_destuffed;
-                        end
-
-                        else if(bit_cnt == 6'd3)
-                        begin
-                            rx_dlc[2] <= rx_bit_destuffed;
-                        end
-
-                        else if(bit_cnt == 6'd2)
-                        begin
-                            rx_dlc[1] <= rx_bit_destuffed;
+                            arb_extended_id[arb_extended_id_index]
+                                <= rx_bit_destuffed;
                         end
 
                         else if(bit_cnt == 6'd1)
                         begin
-                            rx_dlc[0] <= rx_bit_destuffed;
+                            rx_rtr <= rx_bit_destuffed;
+
+                            rx_identifier <=
+                                {arb_base_id, arb_extended_id};
                         end
 
                     end
 
+                end
 
-                    /* =================================================
-                     * DATA
-                     * ================================================= */
+                CONTROL:
+                begin
 
-                    DATA:
+                    /*
+                     * DLC:
+                     *
+                     * bit_cnt 4 -> DLC[3]
+                     * bit_cnt 3 -> DLC[2]
+                     * bit_cnt 2 -> DLC[1]
+                     * bit_cnt 1 -> DLC[0]
+                     */
+
+                    if(bit_cnt == 6'd4)
                     begin
-
-                        /*
-                         * Data is received MSB first.
-                         *
-                         * The active payload is right-aligned in
-                         * the 64-bit RX register.
-                         *
-                         * DLC=1:
-                         *
-                         *       00000000_000000XX
-                         *
-                         * DLC=2:
-                         *
-                         *       00000000_0000XXXX
-                         *
-                         * ...
-                         *
-                         * DLC=8:
-                         *
-                         *       XXXXXXXX_XXXXXXXX
-                         *
-                         * The first data bit starts with a clean
-                         * register for DLC 1..8.
-                         *
-                         * DLC=0 does not enter the data field and
-                         * therefore preserves rx_data.
-                         */
-
-                        case(rx_dlc)
-
-                            4'd0:
-                            begin
-                                /*
-                                 * No data field.
-                                 *
-                                 * Preserve rx_data.
-                                 */
-                            end
-
-
-                            4'd1:
-                            begin
-                                if((byte_idx == 3'd0) &&
-                                   (bit_cnt == 6'd8))
-                                begin
-                                    rx_data <=
-                                        {63'd0, rx_bit_destuffed};
-                                end
-                                else
-                                begin
-                                    rx_data <=
-                                        {rx_data[62:0],
-                                         rx_bit_destuffed};
-                                end
-                            end
-
-
-                            4'd2:
-                            begin
-                                if((byte_idx == 3'd0) &&
-                                   (bit_cnt == 6'd8))
-                                begin
-                                    rx_data <=
-                                        {63'd0, rx_bit_destuffed};
-                                end
-                                else
-                                begin
-                                    rx_data <=
-                                        {rx_data[62:0],
-                                         rx_bit_destuffed};
-                                end
-                            end
-
-
-                            4'd3:
-                            begin
-                                if((byte_idx == 3'd0) &&
-                                   (bit_cnt == 6'd8))
-                                begin
-                                    rx_data <=
-                                        {63'd0, rx_bit_destuffed};
-                                end
-                                else
-                                begin
-                                    rx_data <=
-                                        {rx_data[62:0],
-                                         rx_bit_destuffed};
-                                end
-                            end
-
-
-                            4'd4:
-                            begin
-                                if((byte_idx == 3'd0) &&
-                                   (bit_cnt == 6'd8))
-                                begin
-                                    rx_data <=
-                                        {63'd0, rx_bit_destuffed};
-                                end
-                                else
-                                begin
-                                    rx_data <=
-                                        {rx_data[62:0],
-                                         rx_bit_destuffed};
-                                end
-                            end
-
-
-                            4'd5:
-                            begin
-                                if((byte_idx == 3'd0) &&
-                                   (bit_cnt == 6'd8))
-                                begin
-                                    rx_data <=
-                                        {63'd0, rx_bit_destuffed};
-                                end
-                                else
-                                begin
-                                    rx_data <=
-                                        {rx_data[62:0],
-                                         rx_bit_destuffed};
-                                end
-                            end
-
-
-                            4'd6:
-                            begin
-                                if((byte_idx == 3'd0) &&
-                                   (bit_cnt == 6'd8))
-                                begin
-                                    rx_data <=
-                                        {63'd0, rx_bit_destuffed};
-                                end
-                                else
-                                begin
-                                    rx_data <=
-                                        {rx_data[62:0],
-                                         rx_bit_destuffed};
-                                end
-                            end
-
-
-                            4'd7:
-                            begin
-                                if((byte_idx == 3'd0) &&
-                                   (bit_cnt == 6'd8))
-                                begin
-                                    rx_data <=
-                                        {63'd0, rx_bit_destuffed};
-                                end
-                                else
-                                begin
-                                    rx_data <=
-                                        {rx_data[62:0],
-                                         rx_bit_destuffed};
-                                end
-                            end
-
-
-                            4'd8:
-                            begin
-                                if((byte_idx == 3'd0) &&
-                                   (bit_cnt == 6'd8))
-                                begin
-                                    rx_data <=
-                                        {63'd0, rx_bit_destuffed};
-                                end
-                                else
-                                begin
-                                    rx_data <=
-                                        {rx_data[62:0],
-                                         rx_bit_destuffed};
-                                end
-                            end
-
-
-                            default:
-                            begin
-                                rx_data <=
-                                    {rx_data[62:0],
-                                     rx_bit_destuffed};
-                            end
-
-                        endcase
-
+                        rx_dlc[3] <= rx_bit_destuffed;
                     end
 
-
-                    default:
+                    else if(bit_cnt == 6'd3)
                     begin
-                        /*
-                         * No RX payload operation in this field.
-                         */
+                        rx_dlc[2] <= rx_bit_destuffed;
                     end
 
-                endcase
+                    else if(bit_cnt == 6'd2)
+                    begin
+                        rx_dlc[1] <= rx_bit_destuffed;
+                    end
 
-            end
+                    else if(bit_cnt == 6'd1)
+                    begin
+                        rx_dlc[0] <= rx_bit_destuffed;
+                    end
+
+                end
+
+                DATA:
+                begin
+
+                    /*
+                     * Right-aligned RX payload.
+                     *
+                     * The first received byte is the MSB
+                     * of the active payload region.
+                     *
+                     * DLC1:
+                     *   byte 0 -> rx_data[7:0]
+                     *
+                     * DLC2:
+                     *   byte 0 -> rx_data[15:8]
+                     *   byte 1 -> rx_data[7:0]
+                     *
+                     * DLC3:
+                     *   byte 0 -> rx_data[23:16]
+                     *   byte 1 -> rx_data[15:8]
+                     *   byte 2 -> rx_data[7:0]
+                     *
+                     * ...
+                     *
+                     * DLC8:
+                     *   byte 0 -> rx_data[63:56]
+                     *   ...
+                     *   byte 7 -> rx_data[7:0]
+                     *
+                     * Each byte is received MSB first.
+                     */
+
+                    case(rx_dlc)
+
+                        4'd0:
+                        begin
+                            /*
+                             * No DATA field.
+                             * Preserve rx_data.
+                             */
+                        end
+
+                        4'd1:
+                        begin
+                            case(byte_idx)
+
+                                3'd0:
+                                begin
+                                    case(bit_cnt)
+                                        6'd8: rx_data[7] <= rx_bit_destuffed;
+                                        6'd7: rx_data[6] <= rx_bit_destuffed;
+                                        6'd6: rx_data[5] <= rx_bit_destuffed;
+                                        6'd5: rx_data[4] <= rx_bit_destuffed;
+                                        6'd4: rx_data[3] <= rx_bit_destuffed;
+                                        6'd3: rx_data[2] <= rx_bit_destuffed;
+                                        6'd2: rx_data[1] <= rx_bit_destuffed;
+                                        6'd1: rx_data[0] <= rx_bit_destuffed;
+                                        default: begin end
+                                    endcase
+                                end
+
+                                default:
+                                begin
+                                end
+
+                            endcase
+                        end
+
+                        4'd2:
+                        begin
+                            case(byte_idx)
+
+                                3'd0:
+                                begin
+                                    case(bit_cnt)
+                                        6'd8: rx_data[15] <= rx_bit_destuffed;
+                                        6'd7: rx_data[14] <= rx_bit_destuffed;
+                                        6'd6: rx_data[13] <= rx_bit_destuffed;
+                                        6'd5: rx_data[12] <= rx_bit_destuffed;
+                                        6'd4: rx_data[11] <= rx_bit_destuffed;
+                                        6'd3: rx_data[10] <= rx_bit_destuffed;
+                                        6'd2: rx_data[9]  <= rx_bit_destuffed;
+                                        6'd1: rx_data[8]  <= rx_bit_destuffed;
+                                        default: begin end
+                                    endcase
+                                end
+
+                                3'd1:
+                                begin
+                                    case(bit_cnt)
+                                        6'd8: rx_data[7] <= rx_bit_destuffed;
+                                        6'd7: rx_data[6] <= rx_bit_destuffed;
+                                        6'd6: rx_data[5] <= rx_bit_destuffed;
+                                        6'd5: rx_data[4] <= rx_bit_destuffed;
+                                        6'd4: rx_data[3] <= rx_bit_destuffed;
+                                        6'd3: rx_data[2] <= rx_bit_destuffed;
+                                        6'd2: rx_data[1] <= rx_bit_destuffed;
+                                        6'd1: rx_data[0] <= rx_bit_destuffed;
+                                        default: begin end
+                                    endcase
+                                end
+
+                                default:
+                                begin
+                                end
+
+                            endcase
+                        end
+
+                        4'd3:
+                        begin
+                            case(byte_idx)
+
+                                3'd0:
+                                begin
+                                    case(bit_cnt)
+                                        6'd8: rx_data[23] <= rx_bit_destuffed;
+                                        6'd7: rx_data[22] <= rx_bit_destuffed;
+                                        6'd6: rx_data[21] <= rx_bit_destuffed;
+                                        6'd5: rx_data[20] <= rx_bit_destuffed;
+                                        6'd4: rx_data[19] <= rx_bit_destuffed;
+                                        6'd3: rx_data[18] <= rx_bit_destuffed;
+                                        6'd2: rx_data[17] <= rx_bit_destuffed;
+                                        6'd1: rx_data[16] <= rx_bit_destuffed;
+                                        default: begin end
+                                    endcase
+                                end
+
+                                3'd1:
+                                begin
+                                    case(bit_cnt)
+                                        6'd8: rx_data[15] <= rx_bit_destuffed;
+                                        6'd7: rx_data[14] <= rx_bit_destuffed;
+                                        6'd6: rx_data[13] <= rx_bit_destuffed;
+                                        6'd5: rx_data[12] <= rx_bit_destuffed;
+                                        6'd4: rx_data[11] <= rx_bit_destuffed;
+                                        6'd3: rx_data[10] <= rx_bit_destuffed;
+                                        6'd2: rx_data[9]  <= rx_bit_destuffed;
+                                        6'd1: rx_data[8]  <= rx_bit_destuffed;
+                                        default: begin end
+                                    endcase
+                                end
+
+                                3'd2:
+                                begin
+                                    case(bit_cnt)
+                                        6'd8: rx_data[7] <= rx_bit_destuffed;
+                                        6'd7: rx_data[6] <= rx_bit_destuffed;
+                                        6'd6: rx_data[5] <= rx_bit_destuffed;
+                                        6'd5: rx_data[4] <= rx_bit_destuffed;
+                                        6'd4: rx_data[3] <= rx_bit_destuffed;
+                                        6'd3: rx_data[2] <= rx_bit_destuffed;
+                                        6'd2: rx_data[1] <= rx_bit_destuffed;
+                                        6'd1: rx_data[0] <= rx_bit_destuffed;
+                                        default: begin end
+                                    endcase
+                                end
+
+                                default:
+                                begin
+                                end
+
+                            endcase
+                        end
+
+                        4'd4:
+                        begin
+                            case(byte_idx)
+
+                                3'd0:
+                                begin
+                                    case(bit_cnt)
+                                        6'd8: rx_data[31] <= rx_bit_destuffed;
+                                        6'd7: rx_data[30] <= rx_bit_destuffed;
+                                        6'd6: rx_data[29] <= rx_bit_destuffed;
+                                        6'd5: rx_data[28] <= rx_bit_destuffed;
+                                        6'd4: rx_data[27] <= rx_bit_destuffed;
+                                        6'd3: rx_data[26] <= rx_bit_destuffed;
+                                        6'd2: rx_data[25] <= rx_bit_destuffed;
+                                        6'd1: rx_data[24] <= rx_bit_destuffed;
+                                        default: begin end
+                                    endcase
+                                end
+
+                                3'd1:
+                                begin
+                                    case(bit_cnt)
+                                        6'd8: rx_data[23] <= rx_bit_destuffed;
+                                        6'd7: rx_data[22] <= rx_bit_destuffed;
+                                        6'd6: rx_data[21] <= rx_bit_destuffed;
+                                        6'd5: rx_data[20] <= rx_bit_destuffed;
+                                        6'd4: rx_data[19] <= rx_bit_destuffed;
+                                        6'd3: rx_data[18] <= rx_bit_destuffed;
+                                        6'd2: rx_data[17] <= rx_bit_destuffed;
+                                        6'd1: rx_data[16] <= rx_bit_destuffed;
+                                        default: begin end
+                                    endcase
+                                end
+
+                                3'd2:
+                                begin
+                                    case(bit_cnt)
+                                        6'd8: rx_data[15] <= rx_bit_destuffed;
+                                        6'd7: rx_data[14] <= rx_bit_destuffed;
+                                        6'd6: rx_data[13] <= rx_bit_destuffed;
+                                        6'd5: rx_data[12] <= rx_bit_destuffed;
+                                        6'd4: rx_data[11] <= rx_bit_destuffed;
+                                        6'd3: rx_data[10] <= rx_bit_destuffed;
+                                        6'd2: rx_data[9]  <= rx_bit_destuffed;
+                                        6'd1: rx_data[8]  <= rx_bit_destuffed;
+                                        default: begin end
+                                    endcase
+                                end
+
+                                3'd3:
+                                begin
+                                    case(bit_cnt)
+                                        6'd8: rx_data[7] <= rx_bit_destuffed;
+                                        6'd7: rx_data[6] <= rx_bit_destuffed;
+                                        6'd6: rx_data[5] <= rx_bit_destuffed;
+                                        6'd5: rx_data[4] <= rx_bit_destuffed;
+                                        6'd4: rx_data[3] <= rx_bit_destuffed;
+                                        6'd3: rx_data[2] <= rx_bit_destuffed;
+                                        6'd2: rx_data[1] <= rx_bit_destuffed;
+                                        6'd1: rx_data[0] <= rx_bit_destuffed;
+                                        default: begin end
+                                    endcase
+                                end
+
+                                default:
+                                begin
+                                end
+
+                            endcase
+                        end
+
+                        4'd5:
+                        begin
+                            case(byte_idx)
+
+                                3'd0:
+                                begin
+                                    case(bit_cnt)
+                                        6'd8: rx_data[39] <= rx_bit_destuffed;
+                                        6'd7: rx_data[38] <= rx_bit_destuffed;
+                                        6'd6: rx_data[37] <= rx_bit_destuffed;
+                                        6'd5: rx_data[36] <= rx_bit_destuffed;
+                                        6'd4: rx_data[35] <= rx_bit_destuffed;
+                                        6'd3: rx_data[34] <= rx_bit_destuffed;
+                                        6'd2: rx_data[33] <= rx_bit_destuffed;
+                                        6'd1: rx_data[32] <= rx_bit_destuffed;
+                                        default: begin end
+                                    endcase
+                                end
+
+                                3'd1:
+                                begin
+                                    case(bit_cnt)
+                                        6'd8: rx_data[31] <= rx_bit_destuffed;
+                                        6'd7: rx_data[30] <= rx_bit_destuffed;
+                                        6'd6: rx_data[29] <= rx_bit_destuffed;
+                                        6'd5: rx_data[28] <= rx_bit_destuffed;
+                                        6'd4: rx_data[27] <= rx_bit_destuffed;
+                                        6'd3: rx_data[26] <= rx_bit_destuffed;
+                                        6'd2: rx_data[25] <= rx_bit_destuffed;
+                                        6'd1: rx_data[24] <= rx_bit_destuffed;
+                                        default: begin end
+                                    endcase
+                                end
+
+                                3'd2:
+                                begin
+                                    case(bit_cnt)
+                                        6'd8: rx_data[23] <= rx_bit_destuffed;
+                                        6'd7: rx_data[22] <= rx_bit_destuffed;
+                                        6'd6: rx_data[21] <= rx_bit_destuffed;
+                                        6'd5: rx_data[20] <= rx_bit_destuffed;
+                                        6'd4: rx_data[19] <= rx_bit_destuffed;
+                                        6'd3: rx_data[18] <= rx_bit_destuffed;
+                                        6'd2: rx_data[17] <= rx_bit_destuffed;
+                                        6'd1: rx_data[16] <= rx_bit_destuffed;
+                                        default: begin end
+                                    endcase
+                                end
+
+                                3'd3:
+                                begin
+                                    case(bit_cnt)
+                                        6'd8: rx_data[15] <= rx_bit_destuffed;
+                                        6'd7: rx_data[14] <= rx_bit_destuffed;
+                                        6'd6: rx_data[13] <= rx_bit_destuffed;
+                                        6'd5: rx_data[12] <= rx_bit_destuffed;
+                                        6'd4: rx_data[11] <= rx_bit_destuffed;
+                                        6'd3: rx_data[10] <= rx_bit_destuffed;
+                                        6'd2: rx_data[9]  <= rx_bit_destuffed;
+                                        6'd1: rx_data[8]  <= rx_bit_destuffed;
+                                        default: begin end
+                                    endcase
+                                end
+
+                                3'd4:
+                                begin
+                                    case(bit_cnt)
+                                        6'd8: rx_data[7] <= rx_bit_destuffed;
+                                        6'd7: rx_data[6] <= rx_bit_destuffed;
+                                        6'd6: rx_data[5] <= rx_bit_destuffed;
+                                        6'd5: rx_data[4] <= rx_bit_destuffed;
+                                        6'd4: rx_data[3] <= rx_bit_destuffed;
+                                        6'd3: rx_data[2] <= rx_bit_destuffed;
+                                        6'd2: rx_data[1] <= rx_bit_destuffed;
+                                        6'd1: rx_data[0] <= rx_bit_destuffed;
+                                        default: begin end
+                                    endcase
+                                end
+
+                                default:
+                                begin
+                                end
+
+                            endcase
+                        end
+
+                        4'd6:
+                        begin
+                            case(byte_idx)
+
+                                3'd0:
+                                begin
+                                    case(bit_cnt)
+                                        6'd8: rx_data[47] <= rx_bit_destuffed;
+                                        6'd7: rx_data[46] <= rx_bit_destuffed;
+                                        6'd6: rx_data[45] <= rx_bit_destuffed;
+                                        6'd5: rx_data[44] <= rx_bit_destuffed;
+                                        6'd4: rx_data[43] <= rx_bit_destuffed;
+                                        6'd3: rx_data[42] <= rx_bit_destuffed;
+                                        6'd2: rx_data[41] <= rx_bit_destuffed;
+                                        6'd1: rx_data[40] <= rx_bit_destuffed;
+                                        default: begin end
+                                    endcase
+                                end
+
+                                3'd1:
+                                begin
+                                    case(bit_cnt)
+                                        6'd8: rx_data[39] <= rx_bit_destuffed;
+                                        6'd7: rx_data[38] <= rx_bit_destuffed;
+                                        6'd6: rx_data[37] <= rx_bit_destuffed;
+                                        6'd5: rx_data[36] <= rx_bit_destuffed;
+                                        6'd4: rx_data[35] <= rx_bit_destuffed;
+                                        6'd3: rx_data[34] <= rx_bit_destuffed;
+                                        6'd2: rx_data[33] <= rx_bit_destuffed;
+                                        6'd1: rx_data[32] <= rx_bit_destuffed;
+                                        default: begin end
+                                    endcase
+                                end
+
+                                3'd2:
+                                begin
+                                    case(bit_cnt)
+                                        6'd8: rx_data[31] <= rx_bit_destuffed;
+                                        6'd7: rx_data[30] <= rx_bit_destuffed;
+                                        6'd6: rx_data[29] <= rx_bit_destuffed;
+                                        6'd5: rx_data[28] <= rx_bit_destuffed;
+                                        6'd4: rx_data[27] <= rx_bit_destuffed;
+                                        6'd3: rx_data[26] <= rx_bit_destuffed;
+                                        6'd2: rx_data[25] <= rx_bit_destuffed;
+                                        6'd1: rx_data[24] <= rx_bit_destuffed;
+                                        default: begin end
+                                    endcase
+                                end
+
+                                3'd3:
+                                begin
+                                    case(bit_cnt)
+                                        6'd8: rx_data[23] <= rx_bit_destuffed;
+                                        6'd7: rx_data[22] <= rx_bit_destuffed;
+                                        6'd6: rx_data[21] <= rx_bit_destuffed;
+                                        6'd5: rx_data[20] <= rx_bit_destuffed;
+                                        6'd4: rx_data[19] <= rx_bit_destuffed;
+                                        6'd3: rx_data[18] <= rx_bit_destuffed;
+                                        6'd2: rx_data[17] <= rx_bit_destuffed;
+                                        6'd1: rx_data[16] <= rx_bit_destuffed;
+                                        default: begin end
+                                    endcase
+                                end
+
+                                3'd4:
+                                begin
+                                    case(bit_cnt)
+                                        6'd8: rx_data[15] <= rx_bit_destuffed;
+                                        6'd7: rx_data[14] <= rx_bit_destuffed;
+                                        6'd6: rx_data[13] <= rx_bit_destuffed;
+                                        6'd5: rx_data[12] <= rx_bit_destuffed;
+                                        6'd4: rx_data[11] <= rx_bit_destuffed;
+                                        6'd3: rx_data[10] <= rx_bit_destuffed;
+                                        6'd2: rx_data[9]  <= rx_bit_destuffed;
+                                        6'd1: rx_data[8]  <= rx_bit_destuffed;
+                                        default: begin end
+                                    endcase
+                                end
+
+                                3'd5:
+                                begin
+                                    case(bit_cnt)
+                                        6'd8: rx_data[7] <= rx_bit_destuffed;
+                                        6'd7: rx_data[6] <= rx_bit_destuffed;
+                                        6'd6: rx_data[5] <= rx_bit_destuffed;
+                                        6'd5: rx_data[4] <= rx_bit_destuffed;
+                                        6'd4: rx_data[3] <= rx_bit_destuffed;
+                                        6'd3: rx_data[2] <= rx_bit_destuffed;
+                                        6'd2: rx_data[1] <= rx_bit_destuffed;
+                                        6'd1: rx_data[0] <= rx_bit_destuffed;
+                                        default: begin end
+                                    endcase
+                                end
+
+                                default:
+                                begin
+                                end
+
+                            endcase
+                        end
+
+                        4'd7:
+                        begin
+                            case(byte_idx)
+
+                                3'd0:
+                                begin
+                                    case(bit_cnt)
+                                        6'd8: rx_data[55] <= rx_bit_destuffed;
+                                        6'd7: rx_data[54] <= rx_bit_destuffed;
+                                        6'd6: rx_data[53] <= rx_bit_destuffed;
+                                        6'd5: rx_data[52] <= rx_bit_destuffed;
+                                        6'd4: rx_data[51] <= rx_bit_destuffed;
+                                        6'd3: rx_data[50] <= rx_bit_destuffed;
+                                        6'd2: rx_data[49] <= rx_bit_destuffed;
+                                        6'd1: rx_data[48] <= rx_bit_destuffed;
+                                        default: begin end
+                                    endcase
+                                end
+
+                                3'd1:
+                                begin
+                                    case(bit_cnt)
+                                        6'd8: rx_data[47] <= rx_bit_destuffed;
+                                        6'd7: rx_data[46] <= rx_bit_destuffed;
+                                        6'd6: rx_data[45] <= rx_bit_destuffed;
+                                        6'd5: rx_data[44] <= rx_bit_destuffed;
+                                        6'd4: rx_data[43] <= rx_bit_destuffed;
+                                        6'd3: rx_data[42] <= rx_bit_destuffed;
+                                        6'd2: rx_data[41] <= rx_bit_destuffed;
+                                        6'd1: rx_data[40] <= rx_bit_destuffed;
+                                        default: begin end
+                                    endcase
+                                end
+
+                                3'd2:
+                                begin
+                                    case(bit_cnt)
+                                        6'd8: rx_data[39] <= rx_bit_destuffed;
+                                        6'd7: rx_data[38] <= rx_bit_destuffed;
+                                        6'd6: rx_data[37] <= rx_bit_destuffed;
+                                        6'd5: rx_data[36] <= rx_bit_destuffed;
+                                        6'd4: rx_data[35] <= rx_bit_destuffed;
+                                        6'd3: rx_data[34] <= rx_bit_destuffed;
+                                        6'd2: rx_data[33] <= rx_bit_destuffed;
+                                        6'd1: rx_data[32] <= rx_bit_destuffed;
+                                        default: begin end
+                                    endcase
+                                end
+
+                                3'd3:
+                                begin
+                                    case(bit_cnt)
+                                        6'd8: rx_data[31] <= rx_bit_destuffed;
+                                        6'd7: rx_data[30] <= rx_bit_destuffed;
+                                        6'd6: rx_data[29] <= rx_bit_destuffed;
+                                        6'd5: rx_data[28] <= rx_bit_destuffed;
+                                        6'd4: rx_data[27] <= rx_bit_destuffed;
+                                        6'd3: rx_data[26] <= rx_bit_destuffed;
+                                        6'd2: rx_data[25] <= rx_bit_destuffed;
+                                        6'd1: rx_data[24] <= rx_bit_destuffed;
+                                        default: begin end
+                                    endcase
+                                end
+
+                                3'd4:
+                                begin
+                                    case(bit_cnt)
+                                        6'd8: rx_data[23] <= rx_bit_destuffed;
+                                        6'd7: rx_data[22] <= rx_bit_destuffed;
+                                        6'd6: rx_data[21] <= rx_bit_destuffed;
+                                        6'd5: rx_data[20] <= rx_bit_destuffed;
+                                        6'd4: rx_data[19] <= rx_bit_destuffed;
+                                        6'd3: rx_data[18] <= rx_bit_destuffed;
+                                        6'd2: rx_data[17] <= rx_bit_destuffed;
+                                        6'd1: rx_data[16] <= rx_bit_destuffed;
+                                        default: begin end
+                                    endcase
+                                end
+
+                                3'd5:
+                                begin
+                                    case(bit_cnt)
+                                        6'd8: rx_data[15] <= rx_bit_destuffed;
+                                        6'd7: rx_data[14] <= rx_bit_destuffed;
+                                        6'd6: rx_data[13] <= rx_bit_destuffed;
+                                        6'd5: rx_data[12] <= rx_bit_destuffed;
+                                        6'd4: rx_data[11] <= rx_bit_destuffed;
+                                        6'd3: rx_data[10] <= rx_bit_destuffed;
+                                        6'd2: rx_data[9]  <= rx_bit_destuffed;
+                                        6'd1: rx_data[8]  <= rx_bit_destuffed;
+                                        default: begin end
+                                    endcase
+                                end
+
+                                3'd6:
+                                begin
+                                    case(bit_cnt)
+                                        6'd8: rx_data[7] <= rx_bit_destuffed;
+                                        6'd7: rx_data[6] <= rx_bit_destuffed;
+                                        6'd6: rx_data[5] <= rx_bit_destuffed;
+                                        6'd5: rx_data[4] <= rx_bit_destuffed;
+                                        6'd4: rx_data[3] <= rx_bit_destuffed;
+                                        6'd3: rx_data[2] <= rx_bit_destuffed;
+                                        6'd2: rx_data[1] <= rx_bit_destuffed;
+                                        6'd1: rx_data[0] <= rx_bit_destuffed;
+                                        default: begin end
+                                    endcase
+                                end
+
+                                default:
+                                begin
+                                end
+
+                            endcase
+                        end
+
+                        4'd8:
+                        begin
+                            case(byte_idx)
+
+                                3'd0:
+                                begin
+                                    case(bit_cnt)
+                                        6'd8: rx_data[63] <= rx_bit_destuffed;
+                                        6'd7: rx_data[62] <= rx_bit_destuffed;
+                                        6'd6: rx_data[61] <= rx_bit_destuffed;
+                                        6'd5: rx_data[60] <= rx_bit_destuffed;
+                                        6'd4: rx_data[59] <= rx_bit_destuffed;
+                                        6'd3: rx_data[58] <= rx_bit_destuffed;
+                                        6'd2: rx_data[57] <= rx_bit_destuffed;
+                                        6'd1: rx_data[56] <= rx_bit_destuffed;
+                                        default: begin end
+                                    endcase
+                                end
+
+                                3'd1:
+                                begin
+                                    case(bit_cnt)
+                                        6'd8: rx_data[55] <= rx_bit_destuffed;
+                                        6'd7: rx_data[54] <= rx_bit_destuffed;
+                                        6'd6: rx_data[53] <= rx_bit_destuffed;
+                                        6'd5: rx_data[52] <= rx_bit_destuffed;
+                                        6'd4: rx_data[51] <= rx_bit_destuffed;
+                                        6'd3: rx_data[50] <= rx_bit_destuffed;
+                                        6'd2: rx_data[49] <= rx_bit_destuffed;
+                                        6'd1: rx_data[48] <= rx_bit_destuffed;
+                                        default: begin end
+                                    endcase
+                                end
+
+                                3'd2:
+                                begin
+                                    case(bit_cnt)
+                                        6'd8: rx_data[47] <= rx_bit_destuffed;
+                                        6'd7: rx_data[46] <= rx_bit_destuffed;
+                                        6'd6: rx_data[45] <= rx_bit_destuffed;
+                                        6'd5: rx_data[44] <= rx_bit_destuffed;
+                                        6'd4: rx_data[43] <= rx_bit_destuffed;
+                                        6'd3: rx_data[42] <= rx_bit_destuffed;
+                                        6'd2: rx_data[41] <= rx_bit_destuffed;
+                                        6'd1: rx_data[40] <= rx_bit_destuffed;
+                                        default: begin end
+                                    endcase
+                                end
+
+                                3'd3:
+                                begin
+                                    case(bit_cnt)
+                                        6'd8: rx_data[39] <= rx_bit_destuffed;
+                                        6'd7: rx_data[38] <= rx_bit_destuffed;
+                                        6'd6: rx_data[37] <= rx_bit_destuffed;
+                                        6'd5: rx_data[36] <= rx_bit_destuffed;
+                                        6'd4: rx_data[35] <= rx_bit_destuffed;
+                                        6'd3: rx_data[34] <= rx_bit_destuffed;
+                                        6'd2: rx_data[33] <= rx_bit_destuffed;
+                                        6'd1: rx_data[32] <= rx_bit_destuffed;
+                                        default: begin end
+                                    endcase
+                                end
+
+                                3'd4:
+                                begin
+                                    case(bit_cnt)
+                                        6'd8: rx_data[31] <= rx_bit_destuffed;
+                                        6'd7: rx_data[30] <= rx_bit_destuffed;
+                                        6'd6: rx_data[29] <= rx_bit_destuffed;
+                                        6'd5: rx_data[28] <= rx_bit_destuffed;
+                                        6'd4: rx_data[27] <= rx_bit_destuffed;
+                                        6'd3: rx_data[26] <= rx_bit_destuffed;
+                                        6'd2: rx_data[25] <= rx_bit_destuffed;
+                                        6'd1: rx_data[24] <= rx_bit_destuffed;
+                                        default: begin end
+                                    endcase
+                                end
+
+                                3'd5:
+                                begin
+                                    case(bit_cnt)
+                                        6'd8: rx_data[23] <= rx_bit_destuffed;
+                                        6'd7: rx_data[22] <= rx_bit_destuffed;
+                                        6'd6: rx_data[21] <= rx_bit_destuffed;
+                                        6'd5: rx_data[20] <= rx_bit_destuffed;
+                                        6'd4: rx_data[19] <= rx_bit_destuffed;
+                                        6'd3: rx_data[18] <= rx_bit_destuffed;
+                                        6'd2: rx_data[17] <= rx_bit_destuffed;
+                                        6'd1: rx_data[16] <= rx_bit_destuffed;
+                                        default: begin end
+                                    endcase
+                                end
+
+                                3'd6:
+                                begin
+                                    case(bit_cnt)
+                                        6'd8: rx_data[15] <= rx_bit_destuffed;
+                                        6'd7: rx_data[14] <= rx_bit_destuffed;
+                                        6'd6: rx_data[13] <= rx_bit_destuffed;
+                                        6'd5: rx_data[12] <= rx_bit_destuffed;
+                                        6'd4: rx_data[11] <= rx_bit_destuffed;
+                                        6'd3: rx_data[10] <= rx_bit_destuffed;
+                                        6'd2: rx_data[9]  <= rx_bit_destuffed;
+                                        6'd1: rx_data[8]  <= rx_bit_destuffed;
+                                        default: begin end
+                                    endcase
+                                end
+
+                                3'd7:
+                                begin
+                                    case(bit_cnt)
+                                        6'd8: rx_data[7] <= rx_bit_destuffed;
+                                        6'd7: rx_data[6] <= rx_bit_destuffed;
+                                        6'd6: rx_data[5] <= rx_bit_destuffed;
+                                        6'd5: rx_data[4] <= rx_bit_destuffed;
+                                        6'd4: rx_data[3] <= rx_bit_destuffed;
+                                        6'd3: rx_data[2] <= rx_bit_destuffed;
+                                        6'd2: rx_data[1] <= rx_bit_destuffed;
+                                        6'd1: rx_data[0] <= rx_bit_destuffed;
+                                        default: begin end
+                                    endcase
+                                end
+
+                                default:
+                                begin
+                                end
+
+                            endcase
+                        end
+
+                        default:
+                        begin
+                        end
+
+                    endcase
+
+                end
+
+                default:
+                begin
+                end
+
+            endcase
 
         end
 
     end
+end
 
 endmodule

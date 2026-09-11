@@ -16,12 +16,12 @@ input wire [2:0] byte_idx,
 output reg reg_ide,
 output reg [28:0] reg_identifier,
 output reg [3:0] reg_dlc,
-output reg [63:0] reg_data,
 output reg reg_rtr,
 
 output reg [7:0] tx_byte
 );
 
+reg [63:0] reg_data;
 always @(posedge clk or negedge rst_n)
 begin
     if(!rst_n)
@@ -29,8 +29,8 @@ begin
         reg_ide        <= 1'b0;
         reg_identifier <= 29'd0;
         reg_dlc        <= 4'd0;
-        reg_data       <= 64'd0;
         reg_rtr        <= 1'b0;
+	reg_data	<= 64'd0;
     end
     else
     begin
@@ -39,8 +39,8 @@ begin
             reg_ide        <= ide;
             reg_identifier <= identifier;
             reg_dlc        <= dlc;
-            reg_data       <= data;
             reg_rtr        <= rtr;
+	    reg_data	   <= data;
         end
     end
 end

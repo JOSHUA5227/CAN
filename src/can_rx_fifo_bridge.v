@@ -1,7 +1,5 @@
-`timescale 1ns/1ps
-
 module can_rx_fifo_bridge #(
-    parameter FIFO_DEPTH = 8
+    parameter FIFO_DEPTH = 8 
 )(
     /* =========================================================
      * CAN clock domain

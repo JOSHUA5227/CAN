@@ -62,7 +62,7 @@ wire [PTR_WIDTH-1:0] sync_w_ptr;
  *  * FIFO COUNT
  *   * ============================================================ */
 
-wire [PTR_WIDTH-1:0] fifo_count_full;
+wire [PTR_WIDTH:0] fifo_count_full;
 
 
 /* ============================================================
@@ -172,9 +172,8 @@ fifo_read #(
  *       * For DEPTH = 8, valid FIFO counts are 0 through 8.
  *        * ============================================================ */
 
-assign fifo_count_full = sync_w_ptr - r_ptr;
+assign fifo_count_full = {1'b0,sync_w_ptr} - {1'b0,r_ptr};
 assign fifo_count = fifo_count_full[3:0];
-
 
 /* ============================================================
  *  * MEMORY

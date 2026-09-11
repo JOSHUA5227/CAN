@@ -1,5 +1,3 @@
-`timescale 1ns/1ps
-
 module can_error_latch (
 
     input wire        clk,

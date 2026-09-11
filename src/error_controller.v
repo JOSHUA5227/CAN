@@ -1,5 +1,3 @@
-`timescale 1ns/1ps
-
 module error_controller(
     input wire clk,
     input wire rst_n,
@@ -26,7 +24,7 @@ module error_controller(
     output reg [8:0] tec,
     output reg [7:0] rec,
     output wire [1:0] error_state,
-    output reg error_flag_active,
+    output wire error_flag_active,
     output wire error_flag_request,
     output wire recovery_active
 );
@@ -64,8 +62,8 @@ module error_controller(
     reg error_flag_sent;
     reg error_flag_error_seen;
 
-    reg [8:0] tec_next;
-    reg [7:0] rec_next;
+    wire [8:0] tec_next;
+    wire [7:0] rec_next;
 
     wire error_event;
     wire bus_off_recovery;
@@ -98,9 +96,11 @@ module error_controller(
 
     wire receiver_error_exception;
 
+
     assign error_state = present_state;
 
     assign recovery_active = (present_state == BUS_OFF);
+
 
     assign error_event =
            bit_error_occured ||
@@ -109,23 +109,28 @@ module error_controller(
            stuff_error ||
            crc_error;
 
+
     assign error_flag_request =
            error_event &&
            (present_state != BUS_OFF) &&
            (state != ERROR_FLAG) &&
            (state != WAIT_RECESSIVE);
 
+
     assign error_flag_start =
            bit_en &&
            error_flag_request;
+
 
     assign transmitter_error =
            error_event &&
            is_transmitting;
 
+
     assign receiver_error =
            error_event &&
            !is_transmitting;
+
 
     assign ack_error_exception =
            ack_error &&
@@ -133,10 +138,12 @@ module error_controller(
            (present_state == ERROR_PASSIVE) &&
            (state == ACK);
 
+
     assign stuff_before_rtr =
            (!arb_phase && active_ide) ||
            (!arb_phase && !active_ide && (bit_cnt > 6'd2)) ||
            (arb_phase && (bit_cnt > 6'd1));
+
 
     assign arbitration_stuff_exception =
            stuff_error &&
@@ -146,11 +153,13 @@ module error_controller(
            (tx_bit == 1'b1) &&
            (bit_error == 1'b1);
 
+
     assign first_dominant_after_flag =
            bit_en &&
            error_flag_sent &&
            !error_flag_error_seen &&
            !can_rx_sync;
+
 
     assign dominant_error_plus8 =
            bit_en &&
@@ -178,43 +187,52 @@ module error_controller(
                )
            );
 
-    /*
- *      * Explicit comparison wires.
- *           */
+
     assign recovery_bit_count_is_ten =
            (recovery_bit_count == 4'd10);
+
 
     assign recovery_sequence_count_is_127 =
            (recovery_sequence_count == 7'd127);
 
+
     assign tec_at_504 =
            (tec >= 9'd504);
+
 
     assign tec_nonzero =
            (tec != 9'd0);
 
+
     assign rec_at_248 =
            (rec >= 8'd248);
+
 
     assign rec_nonzero =
            (rec != 8'd0);
 
+
     assign tec_passive_limit =
            (tec >= 9'd128);
+
 
     assign rec_passive_limit =
            (rec >= 8'd128);
 
+
     assign successful_tx =
            tx_done;
 
+
     assign successful_rx =
            rx_done;
+
 
     assign receiver_error_exception =
            bit_error_occured &&
            (state == ERROR_FLAG) &&
            error_flag_active_reg;
+
 
     assign bus_off_recovery =
            (present_state == BUS_OFF) &&
@@ -224,14 +242,14 @@ module error_controller(
 
 
     /*
- *      * =========================================================
- *           * ERROR STATE REGISTER
- *                * =========================================================
- *                     */
+     * ================================================================
+     * ERROR STATE REGISTER
+     * ================================================================
+     */
 
     always @(posedge clk or negedge rst_n)
     begin
-        if (!rst_n)
+        if(!rst_n)
             present_state <= ERROR_ACTIVE;
         else
             present_state <= next_state;
@@ -239,22 +257,22 @@ module error_controller(
 
 
     /*
- *      * =========================================================
- *           * ERROR STATE TRANSITIONS
- *                * =========================================================
- *                     */
+     * ================================================================
+     * ERROR STATE TRANSITIONS
+     * ================================================================
+     */
 
     always @(*)
     begin
         next_state = present_state;
 
-        case (present_state)
+        case(present_state)
 
             ERROR_ACTIVE:
             begin
-                if (tec >= 9'd256)
+                if(tec >= 9'd256)
                     next_state = BUS_OFF;
-                else if (tec_passive_limit || rec_passive_limit)
+                else if(tec_passive_limit || rec_passive_limit)
                     next_state = ERROR_PASSIVE;
                 else
                     next_state = ERROR_ACTIVE;
@@ -262,9 +280,9 @@ module error_controller(
 
             ERROR_PASSIVE:
             begin
-                if (tec >= 9'd256)
+                if(tec >= 9'd256)
                     next_state = BUS_OFF;
-                else if ((tec <= 8'd127) && (rec <= 8'd127))
+                else if((tec <= 8'd127) && (rec <= 8'd127))
                     next_state = ERROR_ACTIVE;
                 else
                     next_state = ERROR_PASSIVE;
@@ -272,7 +290,7 @@ module error_controller(
 
             BUS_OFF:
             begin
-                if (bus_off_recovery)
+                if(bus_off_recovery)
                     next_state = ERROR_ACTIVE;
                 else
                     next_state = BUS_OFF;
@@ -286,105 +304,102 @@ module error_controller(
 
 
     /*
- *      * =========================================================
- *           * ERROR FLAG TYPE
- *                * =========================================================
- *                     */
+     * ================================================================
+     * ERROR FLAG TYPE
+     * ================================================================
+     */
 
     always @(posedge clk or negedge rst_n)
     begin
-        if (!rst_n)
+        if(!rst_n)
             error_flag_active_reg <= 1'b1;
-        else if (error_flag_start)
+        else if(error_flag_start)
             error_flag_active_reg <= (present_state == ERROR_ACTIVE);
     end
 
 
-    always @(*)
-    begin
-        error_flag_active = error_flag_active_reg;
-    end
+    assign error_flag_active = error_flag_active_reg;
 
 
     /*
- *      * =========================================================
- *           * ERROR FLAG TRACKING
- *                * =========================================================
- *                     */
+     * ================================================================
+     * ERROR FLAG TRACKING
+     * ================================================================
+     */
 
     always @(posedge clk or negedge rst_n)
     begin
-        if (!rst_n)
+        if(!rst_n)
         begin
             error_flag_sent      <= 1'b0;
             error_flag_error_seen <= 1'b0;
         end
-        else if ((state != ERROR_FLAG) &&
-                 (state != WAIT_RECESSIVE))
+        else if((state != ERROR_FLAG) &&
+                (state != WAIT_RECESSIVE))
         begin
             error_flag_sent       <= 1'b0;
             error_flag_error_seen <= 1'b0;
         end
-        else if (bit_en)
+        else if(bit_en)
         begin
-            if (state == ERROR_FLAG)
+            if(state == ERROR_FLAG)
                 error_flag_sent <= 1'b1;
 
-            if (error_event)
+            if(error_event)
                 error_flag_error_seen <= 1'b1;
         end
     end
 
 
     /*
- *      * =========================================================
- *           * DOMINANT ERROR FLAG COUNTING
- *                * =========================================================
- *                     */
+     * ================================================================
+     * DOMINANT ERROR FLAG COUNTING
+     * ================================================================
+     */
 
     always @(posedge clk or negedge rst_n)
     begin
-        if (!rst_n)
+        if(!rst_n)
             dominant_count <= 5'd0;
-        else if ((state != ERROR_FLAG) &&
-                 (state != WAIT_RECESSIVE))
+        else if((state != ERROR_FLAG) &&
+                (state != WAIT_RECESSIVE))
             dominant_count <= 5'd0;
-        else if (bit_en)
+        else if(bit_en)
         begin
-            if (can_rx_sync)
+            if(can_rx_sync)
                 dominant_count <= 5'd0;
-            else if (dominant_count != 5'd31)
+            else if(dominant_count != 5'd31)
                 dominant_count <= dominant_count + 5'd1;
         end
     end
 
 
     /*
- *      * =========================================================
- *           * BUS-OFF RECOVERY
- *                *
- *                     * 128 sequences of 11 consecutive recessive bits.
- *                          * =========================================================
- *                               */
+     * ================================================================
+     * BUS-OFF RECOVERY
+     *
+     * 128 sequences of 11 consecutive recessive bits.
+     * ================================================================
+     */
 
     always @(posedge clk or negedge rst_n)
     begin
-        if (!rst_n)
+        if(!rst_n)
         begin
             recovery_bit_count      <= 4'd0;
             recovery_sequence_count <= 7'd0;
         end
-        else if (present_state == BUS_OFF)
+        else if(present_state == BUS_OFF)
         begin
-            if (bit_en)
+            if(bit_en)
             begin
-                if (can_rx_sync)
+                if(can_rx_sync)
                 begin
-                    if (recovery_bit_count_is_ten)
+                    if(recovery_bit_count_is_ten)
                     begin
                         recovery_bit_count <= 4'd0;
 
-                        if (!recovery_sequence_count_is_127)
+                        if(!recovery_sequence_count_is_127)
                             recovery_sequence_count <=
                                 recovery_sequence_count + 7'd1;
                     end
@@ -409,159 +424,101 @@ module error_controller(
 
 
     /*
- *      * =========================================================
- *           * TEC / REC NEXT-STATE LOGIC
- *                * =========================================================
- *                     *
- *                          * All calculations are performed here.
- *                               *
- *                                    * TEC and REC themselves are assigned
- *                                    only once in the
- *                                         * sequential block below.
- *                                              * =========================================================
- *                                                   */
+     * ================================================================
+     * TEC / REC NEXT-STATE LOGIC
+     *
+     * Continuous assignments are used so each next-state signal has
+     * exactly one driver.
+     *
+     * Priority is preserved:
+     *
+     * TEC:
+     *   1. Bus-off recovery
+     *   2. Transmitter error / dominant error extension
+     *   3. Successful transmission
+     *   4. Hold
+     *
+     * REC:
+     *   1. Bus-off recovery
+     *   2. Dominant error extension
+     *   3. First dominant after error flag
+     *   4. Receiver error
+     *   5. Successful reception
+     *   6. Hold
+     * ================================================================
+     */
 
-    always @(*)
-    begin
-        tec_next = tec;
-        rec_next = rec;
+    assign tec_next =
+        bus_off_recovery ?
+            9'd0 :
+        (
+            error_event &&
+            (
+                (
+                    transmitter_error &&
+                    !ack_error_exception &&
+                    !arbitration_stuff_exception
+                ) ||
+                (
+                    dominant_error_plus8 &&
+                    is_transmitting
+                )
+            )
+        ) ?
+            (tec_at_504 ? 9'd511 : tec + 9'd8) :
+        successful_tx ?
+            (tec_nonzero ? tec - 9'd1 : 9'd0) :
+            tec;
 
-        /*
- *          * -----------------------------------------------------
- *                   * BUS-OFF RECOVERY COMPLETE
- *                            * -----------------------------------------------------
- *                                     */
 
-        if (bus_off_recovery)
-        begin
-            tec_next = 9'd0;
-            rec_next = 8'd0;
-        end
-
-        /*
- *          * -----------------------------------------------------
- *                   * ERROR OCCURRED
- *                            * -----------------------------------------------------
- *                                     */
-
-        else if (error_event)
-        begin
-
-            /*
- *              * -------------------------------------------------
- *                           * TRANSMITTER ERROR
- *                                        * -------------------------------------------------
- *                                                     */
-
-            if (transmitter_error &&
-                !ack_error_exception &&
-                !arbitration_stuff_exception)
-            begin
-                if (tec_at_504)
-                    tec_next = 9'd511;
-                else
-                    tec_next = tec + 9'd8;
-            end
-
-            /*
- *              * -------------------------------------------------
- *                           * RECEIVER ERROR
- *                                        * -------------------------------------------------
- *                                                     */
-
-            else if (receiver_error &&
-                     !receiver_error_exception)
-            begin
-                if (rec != 8'd255)
-                    rec_next = rec + 8'd1;
-            end
-
-            /*
- *              * -------------------------------------------------
- *                           * FIRST DOMINANT BIT AFTER ERROR FLAG
- *                                        * -------------------------------------------------
- *                                                     */
-
-            if (first_dominant_after_flag)
-            begin
-                if (rec_at_248)
-                    rec_next = 8'd255;
-                else
-                    rec_next = rec + 8'd8;
-            end
-
-            /*
- *              * -------------------------------------------------
- *                           * DOMINANT ERROR FLAG EXTENSION
- *                                        * -------------------------------------------------
- *                                                     */
-
-            if (dominant_error_plus8)
-            begin
-                if (is_transmitting)
-                begin
-                    if (tec_at_504)
-                        tec_next = 9'd511;
-                    else
-                        tec_next = tec + 9'd8;
-                end
-                else
-                begin
-                    if (rec_at_248)
-                        rec_next = 8'd255;
-                    else
-                        rec_next = rec + 8'd8;
-                end
-            end
-        end
-
-        /*
- *          * -----------------------------------------------------
- *                   * SUCCESSFUL TRANSMISSION
- *                            * -----------------------------------------------------
- *                                     */
-
-        else if (successful_tx)
-        begin
-            if (tec_nonzero)
-                tec_next = tec - 9'd1;
-        end
-
-        /*
- *          * -----------------------------------------------------
- *                   * SUCCESSFUL RECEPTION
- *                            * -----------------------------------------------------
- *                                     */
-
-        else if (successful_rx)
-        begin
-            if (!rec_nonzero)
-                rec_next = 8'd0;
-            else if (rec <= 8'd127)
-                rec_next = rec - 8'd1;
-            else
-                rec_next = 8'd127;
-        end
-    end
+    assign rec_next =
+        bus_off_recovery ?
+            8'd0 :
+        (
+            error_event &&
+            dominant_error_plus8 &&
+            !is_transmitting
+        ) ?
+            (rec_at_248 ? 8'd255 : rec + 8'd8) :
+        (
+            error_event &&
+            first_dominant_after_flag
+        ) ?
+            (rec_at_248 ? 8'd255 : rec + 8'd8) :
+        (
+            error_event &&
+            receiver_error &&
+            !receiver_error_exception
+        ) ?
+            (rec != 8'd255 ? rec + 8'd1 : 8'd255) :
+        successful_rx ?
+            (
+                !rec_nonzero ?
+                    8'd0 :
+                (rec <= 8'd127) ?
+                    rec - 8'd1 :
+                    8'd127
+            ) :
+            rec;
 
 
     /*
- *      * =========================================================
- *           * TEC / REC REGISTERS
- *                * =========================================================
- *                     *
- *                          * One sequential assignment per register.
- *                               * =========================================================
- *                                    */
+     * ================================================================
+     * TEC / REC REGISTERS
+     * ================================================================
+     *
+     * One sequential assignment per register.
+     * ================================================================
+     */
 
     always @(posedge clk or negedge rst_n)
     begin
-        if (!rst_n)
+        if(!rst_n)
         begin
             tec <= 9'd0;
             rec <= 8'd0;
         end
-        else if (bit_en)
+        else if(bit_en)
         begin
             tec <= tec_next;
             rec <= rec_next;

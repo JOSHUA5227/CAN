@@ -1,5 +1,3 @@
-`timescale 1ns/1ps
-
 module can_frame_controller(
     input  wire        clk,
     input  wire        rst_n,
@@ -21,7 +19,6 @@ module can_frame_controller(
 
     input  wire        rx_rtr,
     input  wire [3:0]  rx_dlc,
-    input  wire        rx_ide,
     input  wire [1:0]  error_state,
 
     output reg         ack_drive,

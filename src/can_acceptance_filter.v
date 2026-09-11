@@ -1,5 +1,3 @@
-`timescale 1ns/1ps
-
 /*
  * CAN 2.0B acceptance filter
  *

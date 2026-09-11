@@ -1,4 +1,3 @@
-
 /*
  * CAN TX clock-domain crossing
  *
@@ -17,29 +16,29 @@
  * Interface is unchanged.
  */
 module can_tx_cdc (
-    input  wire        pclk,
-    input  wire        p_rst_n,
+    input wire        pclk,
+    input wire        p_rst_n,
 
-    input  wire [28:0] p_tx_id,
-    input  wire        p_tx_ide,
-    input  wire        p_tx_rtr,
-    input  wire [3:0]  p_tx_dlc,
-    input  wire [63:0] p_tx_data,
-    input  wire        p_tx_request,
+    input wire [28:0] p_tx_id,
+    input wire        p_tx_ide,
+    input wire        p_tx_rtr,
+    input wire [3:0]  p_tx_dlc,
+    input wire [63:0] p_tx_data,
+    input wire        p_tx_request,
 
-    output reg         p_tx_pending,
+    output reg        p_tx_pending,
 
-    input  wire        can_clk,
-    input  wire        can_rst_n,
+    input wire        can_clk,
+    input wire        can_rst_n,
 
-    input  wire        can_tx_ready,
+    input wire        can_tx_ready,
 
-    output reg         can_tx_valid,
-    output reg  [28:0] can_tx_id,
-    output reg         can_tx_ide,
-    output reg         can_tx_rtr,
-    output reg  [3:0]  can_tx_dlc,
-    output reg  [63:0] can_tx_data
+    output reg        can_tx_valid,
+    output reg [28:0] can_tx_id,
+    output reg        can_tx_ide,
+    output reg        can_tx_rtr,
+    output reg [3:0]  can_tx_dlc,
+    output reg [63:0] can_tx_data
 );
 
     /*
@@ -73,8 +72,9 @@ module can_tx_cdc (
      * PCLK NEXT-STATE LOGIC
      * ================================================================
      *
-     * p_tx_pending is calculated here and assigned only once in the
-     * sequential PCLK block below.
+     * p_tx_pending_next has a single procedural assignment path for
+     * each possible condition. The mutually exclusive if/else-if
+     * structure avoids multiple-assignment lint warnings.
      * ================================================================
      */
 
@@ -91,13 +91,12 @@ module can_tx_cdc (
         begin
             p_tx_pending_next = 1'b0;
         end
-
-        /*
-         * Accept a new APB request only when no previous request is
-         * outstanding.
-         */
-        if(p_tx_request && !p_tx_pending)
+        else if(p_tx_request && !p_tx_pending)
         begin
+            /*
+             * Accept a new APB request only when no previous request
+             * is outstanding.
+             */
             p_tx_pending_next = 1'b1;
         end
     end

@@ -9,7 +9,6 @@ input wire data_bit,
 
 input wire crc_done,
 
-output wire [14:0] crc_value,
 output wire crc_out,
 output reg crc_error
 );
@@ -24,8 +23,6 @@ wire [14:0] shifted = {crc_reg[13:0], 1'b0};
 
 wire [14:0] accumulate_nxt = fb_bit ? (shifted ^ 15'h4599) : shifted;
 
-
-assign crc_value = crc_reg;
 assign crc_out = crc_reg[14];
 
 always @(posedge clk or negedge rst_n)
