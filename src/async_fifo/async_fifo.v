@@ -37,7 +37,6 @@ output wire empty;
 output wire [3:0] fifo_count;
 
 output wire r_full;
-assign r_full = (sync_w_ptr == {~r_ptr[PTR_WIDTH-1], r_ptr[PTR_WIDTH-2:0]});
 /* ============================================================
  *  * POINTERS
  *   * ============================================================ */
@@ -65,6 +64,7 @@ wire [PTR_WIDTH-1:0] sync_w_ptr;
  *   * ============================================================ */
 
 wire [PTR_WIDTH:0] fifo_count_full;
+assign r_full = (sync_w_ptr == {~r_ptr[PTR_WIDTH-1], r_ptr[PTR_WIDTH-2:0]});
 
 
 /* ============================================================
