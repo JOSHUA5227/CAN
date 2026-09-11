@@ -189,8 +189,12 @@ module can_apb_slave #(
      */
 
     wire apb_access;
+    wire tx_command_start;
 
     assign apb_access = PSEL && PENABLE;
+    assign tx_command_start = apb_access && PWRITE &&
+                              (PADDR == ADDR_TX_COMMAND) &&
+                              PSTRB[0] && PWDATA[0];
 
 
     /*
@@ -272,24 +276,26 @@ module can_apb_slave #(
              * CAPTURE CDC TX EVENTS INTO STICKY PCLK REGISTERS
              */
 
-            if(tx_done)
-                tx_done_latched <= 1'b1;
+            tx_done_latched <= tx_command_start ? 1'b0 :
+                               (tx_done ? 1'b1 : tx_done_latched);
 
-            if(tx_ack_received)
-                tx_ack_received_latched <= 1'b1;
+            tx_ack_received_latched <= tx_command_start ? 1'b0 :
+                                       (tx_ack_received ? 1'b1 :
+                                        tx_ack_received_latched);
 
-            if(tx_arbitration_lost)
-                tx_arbitration_lost_latched <= 1'b1;
+            tx_arbitration_lost_latched <= tx_command_start ? 1'b0 :
+                                           (tx_arbitration_lost ? 1'b1 :
+                                            tx_arbitration_lost_latched);
 
-            if(tx_error)
-                tx_error_latched <= 1'b1;
+            tx_error_latched <= tx_command_start ? 1'b0 :
+                                (tx_error ? 1'b1 : tx_error_latched);
 
 
             /*
              * APB WRITE
              */
 
-            if(PSEL && PENABLE && PWRITE)
+            if(apb_access && PWRITE)
             begin
                 case(PADDR)
 
@@ -458,11 +464,6 @@ module can_apb_slave #(
                         if(PSTRB[0] && PWDATA[0])
                         begin
                             tx_request <= 1'b1;
-
-                            tx_done_latched <= 1'b0;
-                            tx_ack_received_latched <= 1'b0;
-                            tx_arbitration_lost_latched <= 1'b0;
-                            tx_error_latched <= 1'b0;
                         end
                     end
 
@@ -678,7 +679,7 @@ module can_apb_slave #(
         PRDATA = 32'd0;
         PREADY = 1'b1;
 
-        if(PSEL && PENABLE && !PWRITE)
+        if(apb_access && !PWRITE)
         begin
             case(PADDR)
 
@@ -698,10 +699,7 @@ module can_apb_slave #(
 
                 ADDR_CONTROL:
                 begin
-                    PRDATA = 32'd0;
-                    PRDATA[0] = can_enable;
-                    PRDATA[1] = loopback;
-                    PRDATA[2] = listen_only;
+                    PRDATA = {29'd0, listen_only, loopback, can_enable};
                 end
 
 
@@ -711,19 +709,10 @@ module can_apb_slave #(
 
                 ADDR_STATUS:
                 begin
-                    PRDATA = 32'd0;
-
-                    PRDATA[0] = tx_busy;
-                    PRDATA[1] = tx_done_latched;
-                    PRDATA[2] = rx_available;
-                    PRDATA[3] = rx_fifo_full_pclk;
-                    PRDATA[4] = arb_lost;
-                    PRDATA[5] = ack_error;
-                    PRDATA[6] = crc_error;
-                    PRDATA[7] = stuff_error;
-                    PRDATA[8] = form_error;
-                    PRDATA[9] = bit_error;
-                    PRDATA[10] = rx_overflow_sync2;
+                    PRDATA = {21'd0, rx_overflow_sync2, bit_error, form_error,
+                              stuff_error, crc_error, ack_error, arb_lost,
+                              rx_fifo_full_pclk, rx_available,
+                              tx_done_latched, tx_busy};
                 end
 
 
@@ -733,12 +722,8 @@ module can_apb_slave #(
 
                 ADDR_ERROR_STATUS:
                 begin
-                    PRDATA = 32'd0;
-
-                    PRDATA[1:0] = error_state;
-                    PRDATA[2] = recovery_active;
-                    PRDATA[3] = last_error_valid;
-                    PRDATA[7:4] = last_error_type;
+                    PRDATA = {24'd0, last_error_type, last_error_valid,
+                              recovery_active, error_state};
                 end
 
 
@@ -758,10 +743,7 @@ module can_apb_slave #(
 
                 ADDR_SEGMENTS:
                 begin
-                    PRDATA = 32'd0;
-                    PRDATA[7:0] = prop_seg;
-                    PRDATA[15:8] = phase_seg1;
-                    PRDATA[23:16] = phase_seg2;
+                    PRDATA = {8'd0, phase_seg2, phase_seg1, prop_seg};
                 end
 
 
@@ -771,8 +753,7 @@ module can_apb_slave #(
 
                 ADDR_SJW_CONTROL:
                 begin
-                    PRDATA = 32'd0;
-                    PRDATA[3:0] = sjw;
+                    PRDATA = {28'd0, sjw};
                 end
 
 
@@ -782,8 +763,7 @@ module can_apb_slave #(
 
                 ADDR_TX_ID:
                 begin
-                    PRDATA = 32'd0;
-                    PRDATA[28:0] = tx_identifier;
+                    PRDATA = {3'd0, tx_identifier};
                 end
 
 
@@ -793,10 +773,7 @@ module can_apb_slave #(
 
                 ADDR_TX_CTRL:
                 begin
-                    PRDATA = 32'd0;
-                    PRDATA[0] = tx_ide;
-                    PRDATA[1] = tx_rtr;
-                    PRDATA[5:2] = tx_dlc;
+                    PRDATA = {26'd0, tx_dlc, tx_rtr, tx_ide};
                 end
 
 
@@ -836,14 +813,10 @@ module can_apb_slave #(
 
                 ADDR_TX_STATUS:
                 begin
-                    PRDATA = 32'd0;
-
-                    PRDATA[0] = tx_pending;
-                    PRDATA[1] = tx_busy;
-                    PRDATA[2] = tx_done_latched;
-                    PRDATA[3] = tx_ack_received_latched;
-                    PRDATA[4] = tx_arbitration_lost_latched;
-                    PRDATA[5] = tx_error_latched;
+                    PRDATA = {26'd0, tx_error_latched,
+                              tx_arbitration_lost_latched,
+                              tx_ack_received_latched, tx_done_latched,
+                              tx_busy, tx_pending};
                 end
 
 
@@ -853,12 +826,8 @@ module can_apb_slave #(
 
                 ADDR_RX_STATUS:
                 begin
-                    PRDATA = 32'd0;
-
-                    PRDATA[7:0] = fifo_count;
-                    PRDATA[8] = !rx_available;
-                    PRDATA[9] = rx_fifo_full_pclk;
-                    PRDATA[10] = rx_overflow_sync2;
+                    PRDATA = {21'd0, rx_overflow_sync2, rx_fifo_full_pclk,
+                              !rx_available, fifo_count};
                 end
 
 
@@ -868,8 +837,7 @@ module can_apb_slave #(
 
                 ADDR_RX_ID:
                 begin
-                    PRDATA = 32'd0;
-                    PRDATA[28:0] = rx_identifier;
+                    PRDATA = {3'd0, rx_identifier};
                 end
 
 
@@ -879,10 +847,7 @@ module can_apb_slave #(
 
                 ADDR_RX_CTRL:
                 begin
-                    PRDATA = 32'd0;
-                    PRDATA[0] = rx_ide;
-                    PRDATA[1] = rx_rtr;
-                    PRDATA[5:2] = rx_dlc;
+                    PRDATA = {26'd0, rx_dlc, rx_rtr, rx_ide};
                 end
 
 
@@ -922,8 +887,7 @@ module can_apb_slave #(
 
                 ADDR_FILTER0_ID:
                 begin
-                    PRDATA = 32'd0;
-                    PRDATA[28:0] = filter0_id;
+                    PRDATA = {3'd0, filter0_id};
                 end
 
 
@@ -933,8 +897,7 @@ module can_apb_slave #(
 
                 ADDR_FILTER0_MASK:
                 begin
-                    PRDATA = 32'd0;
-                    PRDATA[28:0] = filter0_mask;
+                    PRDATA = {3'd0, filter0_mask};
                 end
 
 
@@ -944,9 +907,7 @@ module can_apb_slave #(
 
                 ADDR_FILTER0_CTRL:
                 begin
-                    PRDATA = 32'd0;
-                    PRDATA[0] = filter0_enable;
-                    PRDATA[1] = filter0_ide;
+                    PRDATA = {30'd0, filter0_ide, filter0_enable};
                 end
 
 
@@ -956,8 +917,7 @@ module can_apb_slave #(
 
                 ADDR_FILTER1_ID:
                 begin
-                    PRDATA = 32'd0;
-                    PRDATA[28:0] = filter1_id;
+                    PRDATA = {3'd0, filter1_id};
                 end
 
 
@@ -967,8 +927,7 @@ module can_apb_slave #(
 
                 ADDR_FILTER1_MASK:
                 begin
-                    PRDATA = 32'd0;
-                    PRDATA[28:0] = filter1_mask;
+                    PRDATA = {3'd0, filter1_mask};
                 end
 
 
@@ -978,9 +937,7 @@ module can_apb_slave #(
 
                 ADDR_FILTER1_CTRL:
                 begin
-                    PRDATA = 32'd0;
-                    PRDATA[0] = filter1_enable;
-                    PRDATA[1] = filter1_ide;
+                    PRDATA = {30'd0, filter1_ide, filter1_enable};
                 end
 
 
@@ -990,8 +947,7 @@ module can_apb_slave #(
 
                 ADDR_TEC:
                 begin
-                    PRDATA = 32'd0;
-                    PRDATA[8:0] = tec;
+                    PRDATA = {23'd0, tec};
                 end
 
 
@@ -1001,8 +957,7 @@ module can_apb_slave #(
 
                 ADDR_REC:
                 begin
-                    PRDATA = 32'd0;
-                    PRDATA[7:0] = rec;
+                    PRDATA = {24'd0, rec};
                 end
 
 
@@ -1119,3 +1074,4 @@ module can_apb_slave #(
     end
 
 endmodule
+

@@ -24,7 +24,6 @@ module can_tx_cdc (
     output reg [63:0] can_tx_data
 );
 
-
     reg        tx_req_toggle_p;
 
     reg [28:0] tx_id_hold_p;
@@ -33,12 +32,15 @@ module can_tx_cdc (
     reg [3:0]  tx_dlc_hold_p;
     reg [63:0] tx_data_hold_p;
 
-    reg tx_ack_toggle_can;
-    reg tx_ack_sync1_p;
-    reg tx_ack_sync2_p;
+    reg        tx_ack_toggle_can;
+    reg        tx_ack_sync1_p;
+    reg        tx_ack_sync2_p;
 
-    reg p_tx_pending_next;
+    reg        p_tx_pending_next;
 
+    reg        tx_req_sync1_can;
+    reg        tx_req_sync2_can;
+    reg        tx_req_seen_can;
 
     always @(*)
     begin
@@ -61,16 +63,16 @@ module can_tx_cdc (
         begin
             tx_req_toggle_p <= 1'b0;
 
-            tx_id_hold_p    <= 29'd0;
-            tx_ide_hold_p   <= 1'b0;
-            tx_rtr_hold_p   <= 1'b0;
-            tx_dlc_hold_p   <= 4'd0;
-            tx_data_hold_p  <= 64'd0;
+            tx_id_hold_p   <= 29'd0;
+            tx_ide_hold_p  <= 1'b0;
+            tx_rtr_hold_p  <= 1'b0;
+            tx_dlc_hold_p  <= 4'd0;
+            tx_data_hold_p <= 64'd0;
 
-            tx_ack_sync1_p  <= 1'b0;
-            tx_ack_sync2_p  <= 1'b0;
+            tx_ack_sync1_p <= 1'b0;
+            tx_ack_sync2_p <= 1'b0;
 
-            p_tx_pending    <= 1'b0;
+            p_tx_pending <= 1'b0;
         end
         else
         begin
@@ -92,10 +94,6 @@ module can_tx_cdc (
         end
     end
 
-    reg tx_req_sync1_can;
-    reg tx_req_sync2_can;
-    reg tx_req_seen_can;
-
     always @(posedge can_clk or negedge can_rst_n)
     begin
         if(!can_rst_n)
@@ -115,6 +113,7 @@ module can_tx_cdc (
         end
         else
         begin
+            tx_req_sync1_can <= tx_req_toggle_p;
             tx_req_sync2_can <= tx_req_sync1_can;
 
             can_tx_valid <= 1'b0;
@@ -122,11 +121,11 @@ module can_tx_cdc (
             if((tx_req_sync2_can != tx_req_seen_can) &&
                can_tx_ready)
             begin
-                can_tx_id    <= tx_id_hold_p;
-                can_tx_ide   <= tx_ide_hold_p;
-                can_tx_rtr   <= tx_rtr_hold_p;
-                can_tx_dlc   <= tx_dlc_hold_p;
-                can_tx_data  <= tx_data_hold_p;
+                can_tx_id   <= tx_id_hold_p;
+                can_tx_ide  <= tx_ide_hold_p;
+                can_tx_rtr  <= tx_rtr_hold_p;
+                can_tx_dlc  <= tx_dlc_hold_p;
+                can_tx_data <= tx_data_hold_p;
 
                 can_tx_valid <= 1'b1;
 
@@ -137,3 +136,4 @@ module can_tx_cdc (
     end
 
 endmodule
+
