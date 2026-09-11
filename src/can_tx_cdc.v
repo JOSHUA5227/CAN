@@ -1,20 +1,3 @@
-/*
- * CAN TX clock-domain crossing
- *
- * PCLK -> CAN_CLK
- *
- * The APB-side request is converted to a toggle event rather than being
- * synchronized as a one-cycle pulse. This prevents a PCLK pulse from
- * being missed by CAN_CLK.
- *
- * Payload/control are captured in the PCLK domain and held stable while
- * the request is pending. The CAN domain consumes the request only after
- * the toggle has passed through a 2-FF synchronizer.
- *
- * The acknowledgement toggle returns to PCLK and clears p_tx_pending.
- *
- * Interface is unchanged.
- */
 module can_tx_cdc (
     input wire        pclk,
     input wire        p_rst_n,
@@ -41,11 +24,6 @@ module can_tx_cdc (
     output reg [63:0] can_tx_data
 );
 
-    /*
-     * ================================================================
-     * PCLK DOMAIN
-     * ================================================================
-     */
 
     reg        tx_req_toggle_p;
 
@@ -55,37 +33,17 @@ module can_tx_cdc (
     reg [3:0]  tx_dlc_hold_p;
     reg [63:0] tx_data_hold_p;
 
-    /*
-     * CAN-domain acknowledgement toggle synchronized back to PCLK.
-     */
     reg tx_ack_toggle_can;
     reg tx_ack_sync1_p;
     reg tx_ack_sync2_p;
 
-    /*
-     * Next-state version of p_tx_pending.
-     */
     reg p_tx_pending_next;
 
-    /*
-     * ================================================================
-     * PCLK NEXT-STATE LOGIC
-     * ================================================================
-     *
-     * p_tx_pending_next has a single procedural assignment path for
-     * each possible condition. The mutually exclusive if/else-if
-     * structure avoids multiple-assignment lint warnings.
-     * ================================================================
-     */
 
     always @(*)
     begin
         p_tx_pending_next = p_tx_pending;
 
-        /*
-         * Acknowledgement means that the CAN domain has consumed the
-         * current request.
-         */
         if(p_tx_pending &&
            (tx_ack_sync2_p == tx_req_toggle_p))
         begin
@@ -93,19 +51,9 @@ module can_tx_cdc (
         end
         else if(p_tx_request && !p_tx_pending)
         begin
-            /*
-             * Accept a new APB request only when no previous request
-             * is outstanding.
-             */
             p_tx_pending_next = 1'b1;
         end
     end
-
-    /*
-     * ================================================================
-     * PCLK DOMAIN
-     * ================================================================
-     */
 
     always @(posedge pclk or negedge p_rst_n)
     begin
@@ -126,17 +74,9 @@ module can_tx_cdc (
         end
         else
         begin
-            /*
-             * Synchronize CAN acknowledgement.
-             */
             tx_ack_sync1_p <= tx_ack_toggle_can;
             tx_ack_sync2_p <= tx_ack_sync1_p;
 
-            /*
-             * Capture the complete frame before changing the request
-             * toggle. The payload remains stable while the request is
-             * pending.
-             */
             if(p_tx_request && !p_tx_pending)
             begin
                 tx_id_hold_p   <= p_tx_id;
@@ -148,27 +88,14 @@ module can_tx_cdc (
                 tx_req_toggle_p <= ~tx_req_toggle_p;
             end
 
-            /*
-             * Single sequential assignment to p_tx_pending.
-             */
             p_tx_pending <= p_tx_pending_next;
         end
     end
-
-    /*
-     * ================================================================
-     * CAN_CLK DOMAIN
-     * ================================================================
-     */
 
     reg tx_req_sync1_can;
     reg tx_req_sync2_can;
     reg tx_req_seen_can;
 
-    /*
-     * Acknowledgement is initialized to the same state as the request
-     * history. After reset both are zero.
-     */
     always @(posedge can_clk or negedge can_rst_n)
     begin
         if(!can_rst_n)
@@ -188,23 +115,10 @@ module can_tx_cdc (
         end
         else
         begin
-            /*
-             * Synchronize request toggle into CAN clock domain.
-             */
-            tx_req_sync1_can <= tx_req_toggle_p;
             tx_req_sync2_can <= tx_req_sync1_can;
 
-            /*
-             * can_tx_valid is a one-CAN-clock pulse.
-             */
             can_tx_valid <= 1'b0;
 
-            /*
-             * A new request is held until the CAN controller is ready.
-             *
-             * The PCLK-side payload registers remain stable while
-             * p_tx_pending is asserted.
-             */
             if((tx_req_sync2_can != tx_req_seen_can) &&
                can_tx_ready)
             begin
@@ -216,9 +130,6 @@ module can_tx_cdc (
 
                 can_tx_valid <= 1'b1;
 
-                /*
-                 * Mark the request consumed and acknowledge it.
-                 */
                 tx_req_seen_can   <= tx_req_sync2_can;
                 tx_ack_toggle_can <= tx_req_sync2_can;
             end

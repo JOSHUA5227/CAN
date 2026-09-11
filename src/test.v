@@ -1,819 +1,556 @@
 `timescale 1ns/1ps
 
-module tb_can_controller_arbitration;
+module tb_can_controller_top;
 
-    parameter CAN_CLK_FREQ = 10_000_000;
-    parameter CAN_BIT_RATE = 1_000_000;
+reg pclk;
+reg can_clk;
 
-    /*
-     * ================================================================
-     * CLOCK AND RESET
-     * ================================================================
-     */
+reg p_rst_n;
+reg can_rst_n;
 
-    reg clk;
-    reg rst_n;
+reg [11:0] PADDR_A;
+reg PSEL_A;
+reg PENABLE_A;
+reg PWRITE_A;
+reg [31:0] PWDATA_A;
+reg [3:0] PSTRB_A;
 
+wire [31:0] PRDATA_A;
+wire PREADY_A;
+wire PSLVERR_A;
 
-    /*
-     * ================================================================
-     * CAN BUS
-     * ================================================================
-     *
-     * CAN bus is wired AND:
-     *
-     * TX = 0 -> dominant
-     * TX = 1 -> recessive
-     *
-     * Therefore:
-     *
-     * bus = TX_A & TX_B
-     *
-     * ================================================================
-     */
+reg [11:0] PADDR_B;
+reg PSEL_B;
+reg PENABLE_B;
+reg PWRITE_B;
+reg [31:0] PWDATA_B;
+reg [3:0] PSTRB_B;
 
-    wire can_bus;
-    wire can_tx_a;
-    wire can_tx_b;
+wire [31:0] PRDATA_B;
+wire PREADY_B;
+wire PSLVERR_B;
 
-    assign can_bus = can_tx_a & can_tx_b;
+wire can_tx_A;
+wire can_tx_B;
+wire can_bus;
 
+integer pass_count;
+integer fail_count;
+integer i;
 
-    /*
-     * ================================================================
-     * COMMON BIT TIMING
-     * ================================================================
-     *
-     * 10 MHz CAN clock
-     * 1 MHz CAN bit rate
-     *
-     * BRP       = 1
-     * PROP_SEG  = 5
-     * PHASE_SEG1 = 2
-     * PHASE_SEG2 = 2
-     * SJW       = 1
-     *
-     * Total = 10 TQ per CAN bit.
-     * ================================================================
-     */
+reg [31:0] rdata_A;
+reg [31:0] rdata_B;
 
-    reg [31:0] brp;
-    reg [7:0]  prop_seg;
-    reg [7:0]  phase_seg1;
-    reg [7:0]  phase_seg2;
-    reg [3:0]  sjw;
+reg tx_done_seen;
+reg ack_seen;
+reg rx_fifo_seen;
 
+reg [31:0] tx_status_A;
+reg [31:0] rx_status_B;
+reg [31:0] status_A;
+reg [31:0] status_B;
 
-    /*
-     * ================================================================
-     * NODE A TRANSMIT
-     *
-     * ID = 0x200
-     *
-     * Expected:
-     *
-     * NODE A loses arbitration.
-     * ================================================================
-     */
+reg [31:0] rx_id_B;
+reg [31:0] rx_ctrl_B;
+reg [31:0] rx_data_lo_B;
+reg [31:0] rx_data_hi_B;
 
-    reg        tx_valid_a;
-    reg        tx_ide_a;
-    reg [28:0] tx_identifier_a;
-    reg [3:0]  tx_dlc_a;
-    reg [63:0] tx_data_a;
-    reg        tx_rtr_a;
+assign can_bus = can_tx_A & can_tx_B;
 
+can_controller_top #(
+    .CAN_CLK_FREQ(100_000_000),
+    .CAN_BIT_RATE(1_000_000),
+    .FIFO_DEPTH(8)
+) dut_A (
+    .pclk      (pclk),
+    .p_rst_n   (p_rst_n),
+    .can_clk   (can_clk),
+    .can_rst_n (can_rst_n),
+    .PADDR     (PADDR_A),
+    .PSEL      (PSEL_A),
+    .PENABLE   (PENABLE_A),
+    .PWRITE    (PWRITE_A),
+    .PWDATA    (PWDATA_A),
+    .PSTRB     (PSTRB_A),
+    .PRDATA    (PRDATA_A),
+    .PREADY    (PREADY_A),
+    .PSLVERR   (PSLVERR_A),
+    .can_rx    (can_bus),
+    .can_tx    (can_tx_A)
+);
 
-    /*
-     * ================================================================
-     * NODE B TRANSMIT
-     *
-     * ID = 0x100
-     *
-     * Expected:
-     *
-     * NODE B wins arbitration.
-     * ================================================================
-     */
+can_controller_top #(
+    .CAN_CLK_FREQ(100_000_000),
+    .CAN_BIT_RATE(1_000_000),
+    .FIFO_DEPTH(8)
+) dut_B (
+    .pclk      (pclk),
+    .p_rst_n   (p_rst_n),
+    .can_clk   (can_clk),
+    .can_rst_n (can_rst_n),
+    .PADDR     (PADDR_B),
+    .PSEL      (PSEL_B),
+    .PENABLE   (PENABLE_B),
+    .PWRITE    (PWRITE_B),
+    .PWDATA    (PWDATA_B),
+    .PSTRB     (PSTRB_B),
+    .PRDATA    (PRDATA_B),
+    .PREADY    (PREADY_B),
+    .PSLVERR   (PSLVERR_B),
+    .can_rx    (can_bus),
+    .can_tx    (can_tx_B)
+);
 
-    reg        tx_valid_b;
-    reg        tx_ide_b;
-    reg [28:0] tx_identifier_b;
-    reg [3:0]  tx_dlc_b;
-    reg [63:0] tx_data_b;
-    reg        tx_rtr_b;
+initial
+begin
+    pclk = 1'b0;
+end
 
+always #5 pclk = ~pclk;
 
-    /*
-     * ================================================================
-     * NODE A RECEIVE / STATUS
-     * ================================================================
-     */
+initial
+begin
+    can_clk = 1'b0;
+end
 
-    wire [28:0] rx_identifier_a;
-    wire        rx_rtr_a;
-    wire        rx_ide_a;
-    wire [3:0]  rx_dlc_a;
-    wire [63:0] rx_data_a;
-    wire        rx_frame_valid_a;
+always #50 can_clk = ~can_clk;
 
-    wire        tx_done_a;
-    wire        rx_done_a;
-    wire        line_busy_a;
+task apb_write_A;
+input [11:0] addr;
+input [31:0] data;
+begin
+    @(posedge pclk);
+    PADDR_A <= addr;
+    PWDATA_A <= data;
+    PWRITE_A <= 1'b1;
+    PSEL_A <= 1'b1;
+    PENABLE_A <= 1'b0;
+    PSTRB_A <= 4'hF;
 
-    wire [8:0]  tec_a;
-    wire [7:0]  rec_a;
-    wire [1:0]  error_state_a;
+    @(posedge pclk);
+    PENABLE_A <= 1'b1;
 
-    wire        ack_received_a;
+    @(posedge pclk);
+    while(!PREADY_A)
+        @(posedge pclk);
 
-    wire        arbitration_lost_a;
-    wire        ack_error_a;
-    wire        crc_error_a;
-    wire        stuff_error_a;
-    wire        form_error_a;
-    wire        bit_error_a;
+    PSEL_A <= 1'b0;
+    PENABLE_A <= 1'b0;
+    PWRITE_A <= 1'b0;
+    PADDR_A <= 12'd0;
+    PWDATA_A <= 32'd0;
+    PSTRB_A <= 4'd0;
+end
+endtask
 
-    wire [3:0]  can_state_a;
+task apb_write_B;
+input [11:0] addr;
+input [31:0] data;
+begin
+    @(posedge pclk);
+    PADDR_B <= addr;
+    PWDATA_B <= data;
+    PWRITE_B <= 1'b1;
+    PSEL_B <= 1'b1;
+    PENABLE_B <= 1'b0;
+    PSTRB_B <= 4'hF;
 
+    @(posedge pclk);
+    PENABLE_B <= 1'b1;
 
-    /*
-     * ================================================================
-     * NODE B RECEIVE / STATUS
-     * ================================================================
-     */
+    @(posedge pclk);
+    while(!PREADY_B)
+        @(posedge pclk);
 
-    wire [28:0] rx_identifier_b;
-    wire        rx_rtr_b;
-    wire        rx_ide_b;
-    wire [3:0]  rx_dlc_b;
-    wire [63:0] rx_data_b;
-    wire        rx_frame_valid_b;
+    PSEL_B <= 1'b0;
+    PENABLE_B <= 1'b0;
+    PWRITE_B <= 1'b0;
+    PADDR_B <= 12'd0;
+    PWDATA_B <= 32'd0;
+    PSTRB_B <= 4'd0;
+end
+endtask
 
-    wire        tx_done_b;
-    wire        rx_done_b;
-    wire        line_busy_b;
+task apb_read_A;
+input [11:0] addr;
+output [31:0] data;
+begin
+    @(posedge pclk);
+    PADDR_A <= addr;
+    PWRITE_A <= 1'b0;
+    PSEL_A <= 1'b1;
+    PENABLE_A <= 1'b0;
+    PSTRB_A <= 4'hF;
 
-    wire [8:0]  tec_b;
-    wire [7:0]  rec_b;
-    wire [1:0]  error_state_b;
+    @(posedge pclk);
+    PENABLE_A <= 1'b1;
 
-    wire        ack_received_b;
+    @(posedge pclk);
+    while(!PREADY_A)
+        @(posedge pclk);
 
-    wire        arbitration_lost_b;
-    wire        ack_error_b;
-    wire        crc_error_b;
-    wire        stuff_error_b;
-    wire        form_error_b;
-    wire        bit_error_b;
+    data = PRDATA_A;
 
-    wire [3:0]  can_state_b;
+    PSEL_A <= 1'b0;
+    PENABLE_A <= 1'b0;
+    PADDR_A <= 12'd0;
+    PSTRB_A <= 4'd0;
+end
+endtask
 
+task apb_read_B;
+input [11:0] addr;
+output [31:0] data;
+begin
+    @(posedge pclk);
+    PADDR_B <= addr;
+    PWRITE_B <= 1'b0;
+    PSEL_B <= 1'b1;
+    PENABLE_B <= 1'b0;
+    PSTRB_B <= 4'hF;
 
-    /*
-     * ================================================================
-     * NODE A DUT
-     * ================================================================
-     */
+    @(posedge pclk);
+    PENABLE_B <= 1'b1;
 
-    can_controller #(
-        .CAN_CLK_FREQ(CAN_CLK_FREQ),
-        .CAN_BIT_RATE(CAN_BIT_RATE)
-    ) dut_a (
-        .clk(clk),
-        .rst_n(rst_n),
+    @(posedge pclk);
+    while(!PREADY_B)
+        @(posedge pclk);
 
-        .can_rx(can_bus),
-        .can_tx(can_tx_a),
+    data = PRDATA_B;
 
-        .brp(brp),
-        .prop_seg(prop_seg),
-        .phase_seg1(phase_seg1),
-        .phase_seg2(phase_seg2),
-        .sjw(sjw),
+    PSEL_B <= 1'b0;
+    PENABLE_B <= 1'b0;
+    PADDR_B <= 12'd0;
+    PSTRB_B <= 4'd0;
+end
+endtask
 
-        .tx_valid(tx_valid_a),
-        .tx_ide(tx_ide_a),
-        .tx_identifier(tx_identifier_a),
-        .tx_dlc(tx_dlc_a),
-        .tx_data(tx_data_a),
-        .tx_rtr(tx_rtr_a),
-
-        .rx_identifier(rx_identifier_a),
-        .rx_rtr(rx_rtr_a),
-        .rx_ide(rx_ide_a),
-        .rx_dlc(rx_dlc_a),
-        .rx_data(rx_data_a),
-        .rx_frame_valid(rx_frame_valid_a),
-
-        .tx_done(tx_done_a),
-        .rx_done(rx_done_a),
-        .line_busy(line_busy_a),
-
-        .tec(tec_a),
-        .rec(rec_a),
-        .error_state(error_state_a),
-
-        .ack_received(ack_received_a),
-
-        .arbitration_lost(arbitration_lost_a),
-        .ack_error(ack_error_a),
-        .crc_error(crc_error_a),
-        .stuff_error(stuff_error_a),
-        .form_error(form_error_a),
-        .bit_error(bit_error_a),
-
-        .can_state(can_state_a)
-    );
-
-
-    /*
-     * ================================================================
-     * NODE B DUT
-     * ================================================================
-     */
-
-    can_controller #(
-        .CAN_CLK_FREQ(CAN_CLK_FREQ),
-        .CAN_BIT_RATE(CAN_BIT_RATE)
-    ) dut_b (
-        .clk(clk),
-        .rst_n(rst_n),
-
-        .can_rx(can_bus),
-        .can_tx(can_tx_b),
-
-        .brp(brp),
-        .prop_seg(prop_seg),
-        .phase_seg1(phase_seg1),
-        .phase_seg2(phase_seg2),
-        .sjw(sjw),
-
-        .tx_valid(tx_valid_b),
-        .tx_ide(tx_ide_b),
-        .tx_identifier(tx_identifier_b),
-        .tx_dlc(tx_dlc_b),
-        .tx_data(tx_data_b),
-        .tx_rtr(tx_rtr_b),
-
-        .rx_identifier(rx_identifier_b),
-        .rx_rtr(rx_rtr_b),
-        .rx_ide(rx_ide_b),
-        .rx_dlc(rx_dlc_b),
-        .rx_data(rx_data_b),
-        .rx_frame_valid(rx_frame_valid_b),
-
-        .tx_done(tx_done_b),
-        .rx_done(rx_done_b),
-        .line_busy(line_busy_b),
-
-        .tec(tec_b),
-        .rec(rec_b),
-        .error_state(error_state_b),
-
-        .ack_received(ack_received_b),
-
-        .arbitration_lost(arbitration_lost_b),
-        .ack_error(ack_error_b),
-        .crc_error(crc_error_b),
-        .stuff_error(stuff_error_b),
-        .form_error(form_error_b),
-        .bit_error(bit_error_b),
-
-        .can_state(can_state_b)
-    );
-
-
-    /*
-     * ================================================================
-     * CLOCK GENERATION
-     * ================================================================
-     *
-     * 100 ns clock period = 10 MHz.
-     * ================================================================
-     */
-
-    initial
+task check_value;
+input [31:0] actual;
+input [31:0] expected;
+input [127:0] name;
+begin
+    if(actual === expected)
     begin
-        clk = 1'b0;
+        pass_count = pass_count + 1;
+        $display("PASS: %s expected=%h actual=%h", name, expected, actual);
+    end
+    else
+    begin
+        fail_count = fail_count + 1;
+        $display("FAIL: %s expected=%h actual=%h", name, expected, actual);
+    end
+end
+endtask
+
+task check_bit;
+input actual;
+input expected;
+input [127:0] name;
+begin
+    if(actual === expected)
+    begin
+        pass_count = pass_count + 1;
+        $display("PASS: %s expected=%b actual=%b", name, expected, actual);
+    end
+    else
+    begin
+        fail_count = fail_count + 1;
+        $display("FAIL: %s expected=%b actual=%b", name, expected, actual);
+    end
+end
+endtask
+
+initial
+begin
+    PADDR_A = 12'd0;
+    PSEL_A = 1'b0;
+    PENABLE_A = 1'b0;
+    PWRITE_A = 1'b0;
+    PWDATA_A = 32'd0;
+    PSTRB_A = 4'd0;
+
+    PADDR_B = 12'd0;
+    PSEL_B = 1'b0;
+    PENABLE_B = 1'b0;
+    PWRITE_B = 1'b0;
+    PWDATA_B = 32'd0;
+    PSTRB_B = 4'd0;
+
+    p_rst_n = 1'b0;
+    can_rst_n = 1'b0;
+
+    pass_count = 0;
+    fail_count = 0;
+
+    tx_done_seen = 1'b0;
+    ack_seen = 1'b0;
+    rx_fifo_seen = 1'b0;
+
+    tx_status_A = 32'd0;
+    rx_status_B = 32'd0;
+    status_A = 32'd0;
+    status_B = 32'd0;
+
+    rx_id_B = 32'd0;
+    rx_ctrl_B = 32'd0;
+    rx_data_lo_B = 32'd0;
+    rx_data_hi_B = 32'd0;
+
+    $display("==============================================");
+    $display("CAN 2.0B SINGLE-FRAME TOP-LEVEL TEST");
+    $display("==============================================");
+
+    repeat(10)
+        @(posedge pclk);
+
+    p_rst_n = 1'b1;
+    can_rst_n = 1'b1;
+
+    repeat(20)
+        @(posedge pclk);
+
+    $display("STEP 1: VERIFY RESET STATE");
+
+    apb_read_A(12'h004, rdata_A);
+    check_value(rdata_A, 32'h00000000, "NODE A CONTROL RESET");
+
+    apb_read_B(12'h004, rdata_B);
+    check_value(rdata_B, 32'h00000000, "NODE B CONTROL RESET");
+
+    apb_read_A(12'h000, rdata_A);
+    check_value(rdata_A, 32'h01002001, "NODE A VERSION");
+
+    apb_read_B(12'h000, rdata_B);
+    check_value(rdata_B, 32'h01002001, "NODE B VERSION");
+
+    $display("STEP 2: CONFIGURE NODE A WHILE DISABLED");
+
+    apb_write_A(12'h010, 32'd1);
+    apb_write_A(12'h014, 32'h00020205);
+    apb_write_A(12'h018, 32'd1);
+
+    apb_write_A(12'h04C, 32'h00000155);
+    apb_write_A(12'h050, 32'h000007FF);
+    apb_write_A(12'h054, 32'h00000001);
+
+    apb_write_A(12'h058, 32'h00000000);
+    apb_write_A(12'h05C, 32'h00000000);
+    apb_write_A(12'h060, 32'h00000000);
+
+    apb_write_A(12'h01C, 32'h00000155);
+    apb_write_A(12'h020, 32'h00000010);
+    apb_write_A(12'h024, 32'hA5A5A5A5);
+    apb_write_A(12'h028, 32'h00000000);
+
+    apb_read_A(12'h010, rdata_A);
+    check_value(rdata_A, 32'd1, "NODE A BRP");
+
+    apb_read_A(12'h014, rdata_A);
+    check_value(rdata_A, 32'h00020205, "NODE A SEGMENTS");
+
+    apb_read_A(12'h018, rdata_A);
+    check_value(rdata_A, 32'd1, "NODE A SJW");
+
+    apb_read_A(12'h04C, rdata_A);
+    check_value(rdata_A, 32'h00000155, "NODE A FILTER ID");
+
+    apb_read_A(12'h050, rdata_A);
+    check_value(rdata_A, 32'h000007FF, "NODE A FILTER MASK");
+
+    apb_read_A(12'h054, rdata_A);
+    check_bit(rdata_A[0], 1'b1, "NODE A FILTER ENABLE");
+
+    $display("STEP 3: CONFIGURE NODE B WHILE DISABLED");
+
+    apb_write_B(12'h010, 32'd1);
+    apb_write_B(12'h014, 32'h00020205);
+    apb_write_B(12'h018, 32'd1);
+
+    apb_write_B(12'h04C, 32'h00000155);
+    apb_write_B(12'h050, 32'h000007FF);
+    apb_write_B(12'h054, 32'h00000001);
+
+    apb_write_B(12'h058, 32'h00000000);
+    apb_write_B(12'h05C, 32'h00000000);
+    apb_write_B(12'h060, 32'h00000000);
+
+    apb_read_B(12'h010, rdata_B);
+    check_value(rdata_B, 32'd1, "NODE B BRP");
+
+    apb_read_B(12'h014, rdata_B);
+    check_value(rdata_B, 32'h00020205, "NODE B SEGMENTS");
+
+    apb_read_B(12'h018, rdata_B);
+    check_value(rdata_B, 32'd1, "NODE B SJW");
+
+    apb_read_B(12'h04C, rdata_B);
+    check_value(rdata_B, 32'h00000155, "NODE B FILTER ID");
+
+    apb_read_B(12'h050, rdata_B);
+    check_value(rdata_B, 32'h000007FF, "NODE B FILTER MASK");
+
+    apb_read_B(12'h054, rdata_B);
+    check_bit(rdata_B[0], 1'b1, "NODE B FILTER ENABLE");
+
+    $display("STEP 4: ENABLE BOTH NODES");
+
+    apb_write_A(12'h004, 32'h00000001);
+    apb_write_B(12'h004, 32'h00000001);
+
+    repeat(20)
+        @(posedge can_clk);
+
+    apb_read_A(12'h004, rdata_A);
+    check_bit(rdata_A[0], 1'b1, "NODE A ENABLED");
+
+    apb_read_B(12'h004, rdata_B);
+    check_bit(rdata_B[0], 1'b1, "NODE B ENABLED");
+
+    $display("STEP 5: VERIFY TX REGISTERS");
+
+    apb_read_A(12'h01C, rdata_A);
+    check_value(rdata_A, 32'h00000155, "NODE A TX ID");
+
+    apb_read_A(12'h020, rdata_A);
+    check_value(rdata_A, 32'h00000010, "NODE A TX CTRL");
+
+    apb_read_A(12'h024, rdata_A);
+    check_value(rdata_A, 32'hA5A5A5A5, "NODE A TX DATA LO");
+
+    apb_read_A(12'h028, rdata_A);
+    check_value(rdata_A, 32'h00000000, "NODE A TX DATA HI");
+
+    $display("STEP 6: ISSUE TX COMMAND");
+
+    apb_write_A(12'h02C, 32'h00000001);
+
+    repeat(20)
+        @(posedge pclk);
+
+    apb_read_A(12'h030, tx_status_A);
+
+    $display("DEBUG: NODE A TX STATUS AFTER COMMAND=%h", tx_status_A);
+
+    $display("STEP 7: WAIT FOR NODE A TX COMPLETION");
+
+    tx_done_seen = 1'b0;
+    ack_seen = 1'b0;
+
+    for(i = 0; i < 1500; i = i + 1)
+    begin
+        @(posedge pclk);
+
+        apb_read_A(12'h030, tx_status_A);
+
+        if(tx_status_A[2])
+            tx_done_seen = 1'b1;
+
+        if(tx_status_A[3])
+            ack_seen = 1'b1;
+
+        if(tx_done_seen)
+            i = 1500;
     end
 
-    always #50 clk = ~clk;
+    check_bit(tx_done_seen, 1'b1, "NODE A TX DONE");
+    check_bit(ack_seen, 1'b1, "NODE A ACK RECEIVED");
 
+    apb_read_A(12'h030, tx_status_A);
 
-    /*
-     * ================================================================
-     * TEST VARIABLES
-     * ================================================================
-     */
+    check_bit(tx_status_A[4], 1'b0, "NODE A ARBITRATION LOST");
+    check_bit(tx_status_A[5], 1'b0, "NODE A TX ERROR");
 
-    integer pass_count;
-    integer fail_count;
-    integer timeout_count;
+    $display("STEP 8: WAIT FOR NODE B RX FIFO");
 
-    reg arbitration_seen;
-    reg winner_done_seen;
-    reg loser_rx_seen;
+    rx_fifo_seen = 1'b0;
 
-
-    /*
-     * ================================================================
-     * MAIN TEST
-     * ================================================================
-     */
-
-    initial
+    for(i = 0; i < 1500; i = i + 1)
     begin
+        @(posedge pclk);
 
-        pass_count = 0;
-        fail_count = 0;
-        timeout_count = 0;
+        apb_read_B(12'h034, rx_status_B);
 
-        arbitration_seen = 1'b0;
-        winner_done_seen = 1'b0;
-        loser_rx_seen = 1'b0;
-
-
-        /*
-         * ------------------------------------------------------------
-         * BIT TIMING
-         * ------------------------------------------------------------
-         */
-
-        brp = 32'd1;
-        prop_seg = 8'd5;
-        phase_seg1 = 8'd2;
-        phase_seg2 = 8'd2;
-        sjw = 4'd1;
-
-
-        /*
-         * ------------------------------------------------------------
-         * NODE A MESSAGE
-         * ------------------------------------------------------------
-         *
-         * ID = 0x200
-         * DLC = 1
-         * DATA = A5
-         *
-         * This node must lose to 0x100.
-         */
-
-        tx_valid_a = 1'b0;
-        tx_ide_a = 1'b0;
-        tx_identifier_a = 29'h00000200;
-        tx_dlc_a = 4'd1;
-        tx_data_a = 64'h00000000000000A5;
-        tx_rtr_a = 1'b0;
-
-
-        /*
-         * ------------------------------------------------------------
-         * NODE B MESSAGE
-         * ------------------------------------------------------------
-         *
-         * ID = 0x100
-         * DLC = 1
-         * DATA = 5A
-         *
-         * This node must win arbitration.
-         */
-
-        tx_valid_b = 1'b0;
-        tx_ide_b = 1'b0;
-        tx_identifier_b = 29'h00000100;
-        tx_dlc_b = 4'd1;
-        tx_data_b = 64'h000000000000005A;
-        tx_rtr_b = 1'b0;
-
-
-        /*
-         * ------------------------------------------------------------
-         * RESET
-         * ------------------------------------------------------------
-         */
-
-        rst_n = 1'b0;
-
-        repeat(20)
-            @(posedge clk);
-
-        rst_n = 1'b1;
-
-        repeat(20)
-            @(posedge clk);
-
-
-        $display("============================================================");
-        $display("CAN 2-NODE ARBITRATION TEST");
-        $display("============================================================");
-        $display("NODE A ID  = 0x200");
-        $display("NODE B ID  = 0x100");
-        $display("EXPECTED   = NODE B WINS");
-        $display("EXPECTED   = NODE A LOSES");
-        $display("BUS        = TX_A & TX_B");
-        $display("============================================================");
-
-
-        /*
-         * ------------------------------------------------------------
-         * START BOTH TRANSMISSIONS ON THE SAME CLOCK EDGE
-         * ------------------------------------------------------------
-         */
-
-        @(posedge clk);
-
-        tx_valid_a <= 1'b1;
-        tx_valid_b <= 1'b1;
-
-        @(posedge clk);
-
-        tx_valid_a <= 1'b0;
-        tx_valid_b <= 1'b0;
-
-
-        /*
-         * ------------------------------------------------------------
-         * WAIT FOR ARBITRATION LOSS AND WINNER COMPLETION
-         * ------------------------------------------------------------
-         */
-
-        while((!arbitration_seen || !winner_done_seen) && (timeout_count < 100000))
+        if(!rx_status_B[8])
         begin
-
-            @(posedge clk);
-
-            timeout_count = timeout_count + 1;
-
-
-            /*
-             * NODE A MUST LOSE
-             */
-
-            if(arbitration_lost_a && !arbitration_seen)
-            begin
-                arbitration_seen = 1'b1;
-                pass_count = pass_count + 1;
-
-                $display("PASS: NODE A detected arbitration loss");
-            end
-
-
-            /*
-             * NODE B MUST COMPLETE
-             */
-
-            if(tx_done_b && !winner_done_seen)
-            begin
-                winner_done_seen = 1'b1;
-                pass_count = pass_count + 1;
-
-                $display("PASS: NODE B completed transmission");
-            end
-
-
-            /*
-             * NODE A SHOULD EVENTUALLY RECEIVE NODE B'S FRAME
-             */
-
-            if(rx_frame_valid_a && !loser_rx_seen)
-            begin
-                loser_rx_seen = 1'b1;
-
-                $display("INFO: NODE A received a frame after losing arbitration");
-            end
-
+            rx_fifo_seen = 1'b1;
+            i = 1500;
         end
-
-
-        /*
-         * ============================================================
-         * FINAL NODE A STATUS
-         * ============================================================
-         */
-
-        $display("============================================================");
-        $display("FINAL NODE A STATUS");
-        $display("TX_DONE=%b", tx_done_a);
-        $display("RX_FRAME_VALID=%b", rx_frame_valid_a);
-        $display("ARBITRATION_LOST=%b", arbitration_lost_a);
-        $display("ACK_RECEIVED=%b", ack_received_a);
-        $display("LINE_BUSY=%b", line_busy_a);
-        $display("TEC=%0d", tec_a);
-        $display("REC=%0d", rec_a);
-        $display("ERROR_STATE=%0d", error_state_a);
-        $display("ACK_ERROR=%b", ack_error_a);
-        $display("CRC_ERROR=%b", crc_error_a);
-        $display("STUFF_ERROR=%b", stuff_error_a);
-        $display("FORM_ERROR=%b", form_error_a);
-        $display("BIT_ERROR=%b", bit_error_a);
-        $display("RX_ID=%h", rx_identifier_a);
-        $display("RX_IDE=%b", rx_ide_a);
-        $display("RX_RTR=%b", rx_rtr_a);
-        $display("RX_DLC=%0d", rx_dlc_a);
-        $display("RX_DATA=%h", rx_data_a);
-
-
-        /*
-         * ============================================================
-         * FINAL NODE B STATUS
-         * ============================================================
-         */
-
-        $display("============================================================");
-        $display("FINAL NODE B STATUS");
-        $display("TX_DONE=%b", tx_done_b);
-        $display("RX_FRAME_VALID=%b", rx_frame_valid_b);
-        $display("ARBITRATION_LOST=%b", arbitration_lost_b);
-        $display("ACK_RECEIVED=%b", ack_received_b);
-        $display("LINE_BUSY=%b", line_busy_b);
-        $display("TEC=%0d", tec_b);
-        $display("REC=%0d", rec_b);
-        $display("ERROR_STATE=%0d", error_state_b);
-        $display("ACK_ERROR=%b", ack_error_b);
-        $display("CRC_ERROR=%b", crc_error_b);
-        $display("STUFF_ERROR=%b", stuff_error_b);
-        $display("FORM_ERROR=%b", form_error_b);
-        $display("BIT_ERROR=%b", bit_error_b);
-        $display("RX_ID=%h", rx_identifier_b);
-        $display("RX_IDE=%b", rx_ide_b);
-        $display("RX_RTR=%b", rx_rtr_b);
-        $display("RX_DLC=%0d", rx_dlc_b);
-        $display("RX_DATA=%h", rx_data_b);
-
-
-        /*
-         * ============================================================
-         * CHECK 1
-         * NODE A LOST ARBITRATION
-         * ============================================================
-         */
-
-        if(arbitration_lost_a)
-        begin
-            $display("PASS: NODE A lost arbitration");
-        end
-        else
-        begin
-            $display("FAIL: NODE A did not lose arbitration");
-            fail_count = fail_count + 1;
-        end
-
-
-        /*
-         * ============================================================
-         * CHECK 2
-         * NODE B DID NOT LOSE
-         * ============================================================
-         */
-
-        if(!arbitration_lost_b)
-        begin
-            $display("PASS: NODE B won arbitration");
-        end
-        else
-        begin
-            $display("FAIL: NODE B incorrectly lost arbitration");
-            fail_count = fail_count + 1;
-        end
-
-
-        /*
-         * ============================================================
-         * CHECK 3
-         * NODE B COMPLETED TRANSMISSION
-         * ============================================================
-         */
-
-        if(tx_done_b)
-        begin
-            $display("PASS: NODE B TX_DONE asserted");
-        end
-        else
-        begin
-            $display("FAIL: NODE B did not complete transmission");
-            fail_count = fail_count + 1;
-        end
-
-
-        /*
-         * ============================================================
-         * CHECK 4
-         * ARBITRATION LOSS IS NOT A CAN ERROR
-         * ============================================================
-         */
-
-        if(!ack_error_a &&
-           !crc_error_a &&
-           !stuff_error_a &&
-           !form_error_a &&
-           !bit_error_a)
-        begin
-            $display("PASS: NODE A generated no CAN protocol error");
-        end
-        else
-        begin
-            $display("FAIL: NODE A generated a CAN error during arbitration");
-            fail_count = fail_count + 1;
-        end
-
-
-        /*
-         * ============================================================
-         * CHECK 5
-         * NODE A RECEIVED WINNING FRAME
-         * ============================================================
-         */
-
-        if(rx_frame_valid_a)
-        begin
-
-            if(rx_identifier_a == 29'h00000100)
-            begin
-                $display("PASS: NODE A received ID 0x100");
-            end
-            else
-            begin
-                $display("FAIL: NODE A received incorrect ID");
-                fail_count = fail_count + 1;
-            end
-
-
-            if(rx_dlc_a == 4'd1)
-            begin
-                $display("PASS: NODE A received correct DLC");
-            end
-            else
-            begin
-                $display("FAIL: NODE A received incorrect DLC");
-                fail_count = fail_count + 1;
-            end
-
-
-            if(rx_data_a == 64'h000000000000005A)
-            begin
-                $display("PASS: NODE A received correct data");
-            end
-            else
-            begin
-                $display("FAIL: NODE A received incorrect data");
-                fail_count = fail_count + 1;
-            end
-
-
-            if(rx_ide_a == 1'b0)
-            begin
-                $display("PASS: NODE A received standard frame");
-            end
-            else
-            begin
-                $display("FAIL: NODE A received incorrect IDE");
-                fail_count = fail_count + 1;
-            end
-
-
-            if(rx_rtr_a == 1'b0)
-            begin
-                $display("PASS: NODE A received data frame");
-            end
-            else
-            begin
-                $display("FAIL: NODE A received incorrect RTR");
-                fail_count = fail_count + 1;
-            end
-
-        end
-        else
-        begin
-            $display("FAIL: NODE A did not receive winning frame");
-            fail_count = fail_count + 1;
-        end
-
-
-        /*
-         * ============================================================
-         * CHECK 6
-         * NODE B MUST NOT REPORT ARBITRATION LOSS
-         * ============================================================
-         */
-
-        if(!arbitration_lost_b)
-        begin
-            $display("PASS: NODE B arbitration_lost remains low");
-        end
-        else
-        begin
-            $display("FAIL: NODE B arbitration_lost asserted");
-            fail_count = fail_count + 1;
-        end
-
-
-        /*
-         * ============================================================
-         * CHECK 7
-         * TIMEOUT
-         * ============================================================
-         */
-
-        if(timeout_count >= 100000)
-        begin
-            $display("FAIL: Test timed out");
-            fail_count = fail_count + 1;
-        end
-        else
-        begin
-            $display("PASS: Test completed before timeout");
-        end
-
-
-        /*
-         * ============================================================
-         * FINAL RESULT
-         * ============================================================
-         */
-
-        $display("============================================================");
-        $display("FINAL RESULTS");
-        $display("PASS COUNT=%0d", pass_count);
-        $display("FAIL COUNT=%0d", fail_count);
-
-        if(fail_count == 0)
-        begin
-            $display("ARBITRATION TEST PASS");
-        end
-        else
-        begin
-            $display("ARBITRATION TEST FAIL");
-        end
-
-        $display("============================================================");
-
-        #1000;
-
-        $finish;
-
     end
 
+    check_bit(rx_fifo_seen, 1'b1, "NODE B RX FIFO AVAILABLE");
 
-    /*
-     * ================================================================
-     * STATE MONITOR
-     *
-     * This uses hierarchical access only for DEBUGGING.
-     * It does not change the DUT interface.
-     *
-     * CAN states:
-     *
-     * 0  IDLE
-     * 1  SOF
-     * 2  ARBITRATION
-     * 3  CONTROL
-     * 4  DATA
-     * 5  CRC
-     * 6  CRC_DELIM
-     * 7  ACK
-     * 8  ACK_DELIM
-     * 9  EOF
-     * 10 INTERMISSION
-     * 11 ERROR_FLAG
-     * 12 WAIT_RECESSIVE
-     * 13 ERROR_DELIM
-     * 14 RX_ONLY
-     * ================================================================
-     */
-
-    reg [3:0] last_state_a;
-    reg [3:0] last_state_b;
-
-    initial
+    if(rx_fifo_seen)
     begin
-        last_state_a = 4'hF;
-        last_state_b = 4'hF;
+        check_value(rx_status_B[7:0], 32'd1, "NODE B FIFO COUNT");
+
+        apb_read_B(12'h038, rx_id_B);
+        check_value(rx_id_B, 32'h00000155, "NODE B RX ID");
+
+        apb_read_B(12'h03C, rx_ctrl_B);
+        check_value(rx_ctrl_B, 32'h00000010, "NODE B RX CTRL");
+
+        apb_read_B(12'h040, rx_data_lo_B);
+        check_value(rx_data_lo_B, 32'hA5A5A5A5, "NODE B RX DATA LO");
+
+        apb_read_B(12'h044, rx_data_hi_B);
+        check_value(rx_data_hi_B, 32'h00000000, "NODE B RX DATA HI");
     end
 
+    $display("STEP 9: VERIFY NODE B CAN STATUS");
 
-    always @(posedge clk)
+    apb_read_B(12'h008, status_B);
+
+    check_bit(status_B[4], 1'b0, "NODE B ARBITRATION LOST");
+    check_bit(status_B[5], 1'b0, "NODE B ACK ERROR");
+    check_bit(status_B[6], 1'b0, "NODE B CRC ERROR");
+    check_bit(status_B[7], 1'b0, "NODE B STUFF ERROR");
+    check_bit(status_B[8], 1'b0, "NODE B FORM ERROR");
+    check_bit(status_B[9], 1'b0, "NODE B BIT ERROR");
+    check_bit(status_B[10], 1'b0, "NODE B RX OVERFLOW");
+
+    $display("STEP 10: POP NODE B RX FIFO");
+
+    apb_write_B(12'h048, 32'h00000001);
+
+    repeat(20)
+        @(posedge pclk);
+
+    apb_read_B(12'h034, rx_status_B);
+
+    check_bit(rx_status_B[8], 1'b1, "NODE B FIFO EMPTY AFTER POP");
+    check_value(rx_status_B[7:0], 32'd0, "NODE B FIFO COUNT AFTER POP");
+
+    $display("STEP 11: FINAL NODE A STATUS");
+
+    apb_read_A(12'h008, status_A);
+
+    check_bit(status_A[4], 1'b0, "NODE A ARBITRATION LOST");
+    check_bit(status_A[5], 1'b0, "NODE A ACK ERROR");
+    check_bit(status_A[6], 1'b0, "NODE A CRC ERROR");
+    check_bit(status_A[7], 1'b0, "NODE A STUFF ERROR");
+    check_bit(status_A[8], 1'b0, "NODE A FORM ERROR");
+    check_bit(status_A[9], 1'b0, "NODE A BIT ERROR");
+
+    $display("==============================================");
+    $display("FINAL RESULTS");
+    $display("PASS COUNT = %0d", pass_count);
+    $display("FAIL COUNT = %0d", fail_count);
+
+    if(fail_count == 0)
     begin
-
-        if(rst_n)
-        begin
-
-            if(can_state_a != last_state_a)
-            begin
-                $display("NODE A STATE %0d -> %0d TX=%b BUS=%b ARB_LOST=%b BUSY=%b", last_state_a, can_state_a, can_tx_a, can_bus, arbitration_lost_a, line_busy_a);
-                last_state_a = can_state_a;
-            end
-
-
-            if(can_state_b != last_state_b)
-            begin
-                $display("NODE B STATE %0d -> %0d TX=%b BUS=%b ARB_LOST=%b BUSY=%b", last_state_b, can_state_b, can_tx_b, can_bus, arbitration_lost_b, line_busy_b);
-                last_state_b = can_state_b;
-            end
-
-        end
-
+        $display("==============================================");
+        $display("SINGLE-FRAME TOP-LEVEL TEST PASSED");
+        $display("==============================================");
+    end
+    else
+    begin
+        $display("==============================================");
+        $display("SINGLE-FRAME TOP-LEVEL TEST FAILED");
+        $display("==============================================");
     end
 
+    $finish;
+end
 
 endmodule

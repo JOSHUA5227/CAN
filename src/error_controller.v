@@ -241,12 +241,6 @@ module error_controller(
            recovery_sequence_count_is_127;
 
 
-    /*
-     * ================================================================
-     * ERROR STATE REGISTER
-     * ================================================================
-     */
-
     always @(posedge clk or negedge rst_n)
     begin
         if(!rst_n)
@@ -256,11 +250,6 @@ module error_controller(
     end
 
 
-    /*
-     * ================================================================
-     * ERROR STATE TRANSITIONS
-     * ================================================================
-     */
 
     always @(*)
     begin
@@ -303,11 +292,6 @@ module error_controller(
     end
 
 
-    /*
-     * ================================================================
-     * ERROR FLAG TYPE
-     * ================================================================
-     */
 
     always @(posedge clk or negedge rst_n)
     begin
@@ -321,11 +305,6 @@ module error_controller(
     assign error_flag_active = error_flag_active_reg;
 
 
-    /*
-     * ================================================================
-     * ERROR FLAG TRACKING
-     * ================================================================
-     */
 
     always @(posedge clk or negedge rst_n)
     begin
@@ -351,11 +330,6 @@ module error_controller(
     end
 
 
-    /*
-     * ================================================================
-     * DOMINANT ERROR FLAG COUNTING
-     * ================================================================
-     */
 
     always @(posedge clk or negedge rst_n)
     begin
@@ -374,13 +348,6 @@ module error_controller(
     end
 
 
-    /*
-     * ================================================================
-     * BUS-OFF RECOVERY
-     *
-     * 128 sequences of 11 consecutive recessive bits.
-     * ================================================================
-     */
 
     always @(posedge clk or negedge rst_n)
     begin
@@ -423,30 +390,6 @@ module error_controller(
     end
 
 
-    /*
-     * ================================================================
-     * TEC / REC NEXT-STATE LOGIC
-     *
-     * Continuous assignments are used so each next-state signal has
-     * exactly one driver.
-     *
-     * Priority is preserved:
-     *
-     * TEC:
-     *   1. Bus-off recovery
-     *   2. Transmitter error / dominant error extension
-     *   3. Successful transmission
-     *   4. Hold
-     *
-     * REC:
-     *   1. Bus-off recovery
-     *   2. Dominant error extension
-     *   3. First dominant after error flag
-     *   4. Receiver error
-     *   5. Successful reception
-     *   6. Hold
-     * ================================================================
-     */
 
     assign tec_next =
         bus_off_recovery ?
@@ -502,14 +445,6 @@ module error_controller(
             rec;
 
 
-    /*
-     * ================================================================
-     * TEC / REC REGISTERS
-     * ================================================================
-     *
-     * One sequential assignment per register.
-     * ================================================================
-     */
 
     always @(posedge clk or negedge rst_n)
     begin

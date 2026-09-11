@@ -80,11 +80,6 @@ begin
             rx_ide          <= 1'b0;
             rx_dlc          <= 4'd0;
 
-            /*
-             * Do not clear rx_data here.
-             * This preserves the previous RX data value
-             * for DLC=0 frames.
-             */
         end
 
         else if(bit_en &&
@@ -107,28 +102,12 @@ begin
                     if(!arb_phase)
                     begin
 
-                        /*
-                         * Base identifier:
-                         *
-                         * bit_cnt 13 -> ID[10]
-                         * bit_cnt 12 -> ID[9]
-                         * ...
-                         * bit_cnt 3  -> ID[0]
-                         */
-
                         if((bit_cnt >= 6'd3) &&
                            (bit_cnt <= 6'd13))
                         begin
                             arb_base_id[arb_base_id_index]
                                 <= rx_bit_destuffed;
                         end
-
-                        /*
-                         * bit_cnt = 2
-                         *
-                         * RTR for standard frame.
-                         * For extended frame this is SRR.
-                         */
 
                         else if(bit_cnt == 6'd2)
                         begin
@@ -137,12 +116,6 @@ begin
                                 rx_rtr <= rx_bit_destuffed;
                             end
                         end
-
-                        /*
-                         * bit_cnt = 1
-                         *
-                         * IDE determines standard or extended.
-                         */
 
                         else if(bit_cnt == 6'd1)
                         begin
@@ -159,17 +132,6 @@ begin
 
                     else
                     begin
-
-                        /*
-                         * Extended arbitration:
-                         *
-                         * bit_cnt 19 -> Extended ID[17]
-                         * bit_cnt 18 -> Extended ID[16]
-                         * ...
-                         * bit_cnt 3  -> Extended ID[1]
-                         * bit_cnt 2  -> Extended ID[0]
-                         * bit_cnt 1  -> RTR
-                         */
 
                         if((bit_cnt >= 6'd2) &&
                            (bit_cnt <= 6'd19))
@@ -193,14 +155,6 @@ begin
                 CONTROL:
                 begin
 
-                    /*
-                     * DLC:
-                     *
-                     * bit_cnt 4 -> DLC[3]
-                     * bit_cnt 3 -> DLC[2]
-                     * bit_cnt 2 -> DLC[1]
-                     * bit_cnt 1 -> DLC[0]
-                     */
 
                     if(bit_cnt == 6'd4)
                     begin
@@ -227,42 +181,10 @@ begin
                 DATA:
                 begin
 
-                    /*
-                     * Right-aligned RX payload.
-                     *
-                     * The first received byte is the MSB
-                     * of the active payload region.
-                     *
-                     * DLC1:
-                     *   byte 0 -> rx_data[7:0]
-                     *
-                     * DLC2:
-                     *   byte 0 -> rx_data[15:8]
-                     *   byte 1 -> rx_data[7:0]
-                     *
-                     * DLC3:
-                     *   byte 0 -> rx_data[23:16]
-                     *   byte 1 -> rx_data[15:8]
-                     *   byte 2 -> rx_data[7:0]
-                     *
-                     * ...
-                     *
-                     * DLC8:
-                     *   byte 0 -> rx_data[63:56]
-                     *   ...
-                     *   byte 7 -> rx_data[7:0]
-                     *
-                     * Each byte is received MSB first.
-                     */
-
                     case(rx_dlc)
 
                         4'd0:
                         begin
-                            /*
-                             * No DATA field.
-                             * Preserve rx_data.
-                             */
                         end
 
                         4'd1:

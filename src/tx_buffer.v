@@ -46,34 +46,6 @@ begin
 end
 
 
-// ------------------------------------------------------------
-// TX byte selection
-//
-// Payload is RIGHT-ALIGNED according to DLC.
-//
-// DLC = 1:
-//   byte_idx 0 -> data[7:0]
-//
-// DLC = 2:
-//   byte_idx 0 -> data[15:8]
-//   byte_idx 1 -> data[7:0]
-//
-// DLC = 3:
-//   byte_idx 0 -> data[23:16]
-//   byte_idx 1 -> data[15:8]
-//   byte_idx 2 -> data[7:0]
-//
-// ...
-//
-// DLC = 8:
-//   byte_idx 0 -> data[63:56]
-//   ...
-//   byte_idx 7 -> data[7:0]
-//
-// Therefore the first transmitted byte is always the MSB
-// of the ACTIVE payload region.
-// ------------------------------------------------------------
-
 always @(*)
 begin
     tx_byte = 8'd0;
