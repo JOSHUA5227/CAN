@@ -1,5 +1,3 @@
-`timescale 1ns/1ps
-
 module can_controller_top #(
     parameter CAN_CLK_FREQ = 100_000_000,
     parameter CAN_BIT_RATE = 1_000_000,
@@ -22,12 +20,6 @@ module can_controller_top #(
     output wire        can_tx
 );
 
-    /*
-     * ================================================================
-     * RESET SYNCHRONIZERS
-     * ================================================================
-     */
-
     wire p_rst_sync;
     wire can_rst_sync;
 
@@ -42,13 +34,6 @@ module can_controller_top #(
         .arst_n (can_rst_n),
         .srst_n (can_rst_sync)
     );
-
-
-    /*
-     * ================================================================
-     * APB REGISTER OUTPUTS - PCLK DOMAIN
-     * ================================================================
-     */
 
     wire        can_enable_p;
     wire        loopback_p;
@@ -78,24 +63,6 @@ module can_controller_top #(
     wire [28:0] filter1_mask_p;
     wire        filter1_enable_p;
     wire        filter1_ide_p;
-
-
-    /*
-     * ================================================================
-     * CONFIGURATION UPDATE SCHEDULER
-     * ================================================================
-     *
-     * APB configuration registers are updated first.
-     *
-     * config_dirty_p records that a configuration register was written.
-     *
-     * On the following PCLK cycle, config_update_p requests
-     * can_config_cdc to capture the complete, already-updated
-     * configuration snapshot.
-     *
-     * The CDC module holds the snapshot stable until the CAN domain
-     * acknowledges it.
-     */
 
     reg  config_dirty_p;
     reg  config_update_p;
@@ -131,25 +98,12 @@ module can_controller_top #(
         end
         else
         begin
-            config_update_p <= 1'b0;
-
-            if(config_write_p)
-                config_dirty_p <= 1'b1;
-
-            if(config_dirty_p && !config_pending_p)
-            begin
-                config_update_p <= 1'b1;
-                config_dirty_p  <= 1'b0;
-            end
+            config_update_p <= config_dirty_p && !config_pending_p;
+            config_dirty_p <= (config_dirty_p && !config_pending_p) ?
+                              1'b0 :
+                              (config_write_p ? 1'b1 : config_dirty_p);
         end
     end
-
-
-    /*
-     * ================================================================
-     * CAN-DOMAIN CONFIGURATION
-     * ================================================================
-     */
 
     wire        can_enable_can;
     wire        loopback_can;
@@ -170,14 +124,6 @@ module can_controller_top #(
     wire [28:0] filter1_mask_can;
     wire        filter1_enable_can;
     wire        filter1_ide_can;
-
-
-    /*
-     * ================================================================
-     * CONFIGURATION CDC
-     * PCLK -> CAN_CLK
-     * ================================================================
-     */
 
     can_config_cdc u_config_cdc (
         .pclk               (pclk),
@@ -230,13 +176,6 @@ module can_controller_top #(
         .can_filter1_ide    (filter1_ide_can)
     );
 
-
-    /*
-     * ================================================================
-     * CAN CONTROLLER STATUS - CAN DOMAIN
-     * ================================================================
-     */
-
     wire        tx_done_can;
     wire        rx_done_can;
     wire        line_busy_can;
@@ -258,14 +197,6 @@ module can_controller_top #(
     wire        recovery_active_can;
 
     wire [3:0]  can_state;
-
-
-    /*
-     * ================================================================
-     * TX CDC
-     * PCLK -> CAN_CLK
-     * ================================================================
-     */
 
     wire        tx_pending_p;
 
@@ -302,13 +233,6 @@ module can_controller_top #(
         .can_tx_data  (can_tx_data)
     );
 
-
-    /*
-     * ================================================================
-     * CAN RX SIGNALS
-     * ================================================================
-     */
-
     wire [28:0] rx_identifier_can;
     wire        rx_rtr_can;
     wire        rx_ide_can;
@@ -316,32 +240,18 @@ module can_controller_top #(
     wire [63:0] rx_data_can;
     wire        rx_frame_valid_can;
 
-
-    /*
-     * ================================================================
-     * CAN BUS ROUTING
-     * ================================================================
-     */
-
     wire can_tx_controller;
     wire can_rx_controller;
 
     assign can_rx_controller =
         loopback_can ?
             ((can_state == 4'd7) ? 1'b0 : can_tx_controller) :
-            can_rx;
+            (can_rx | (rx_done_can & 1'b0));
 
     assign can_tx =
         listen_only_can ?
             1'b1 :
             can_tx_controller;
-
-
-    /*
-     * ================================================================
-     * CAN CONTROLLER
-     * ================================================================
-     */
 
     can_controller #(
         .CAN_CLK_FREQ(CAN_CLK_FREQ),
@@ -395,14 +305,6 @@ module can_controller_top #(
         .can_state      (can_state)
     );
 
-
-    /*
-     * ================================================================
-     * ERROR EVENT LATCH
-     * CAN_CLK DOMAIN
-     * ================================================================
-     */
-
     wire        can_last_error_valid;
     wire [3:0]  can_last_error_type;
     wire        error_event_toggle;
@@ -422,13 +324,6 @@ module can_controller_top #(
         .last_error_type     (can_last_error_type),
         .error_event_toggle  (error_event_toggle)
     );
-
-
-    /*
-     * ================================================================
-     * CAN -> PCLK STATUS CDC
-     * ================================================================
-     */
 
     wire        line_busy_p;
     wire        is_transmitting_p;
@@ -497,14 +392,6 @@ module can_controller_top #(
         .ack_error            (ack_error_p)
     );
 
-
-    /*
-     * ================================================================
-     * RX FIFO CDC
-     * CAN_CLK -> PCLK
-     * ================================================================
-     */
-
     wire [28:0] rx_identifier_p;
     wire        rx_rtr_p;
     wire        rx_ide_p;
@@ -553,14 +440,6 @@ module can_controller_top #(
         .fifo_overflow     (rx_fifo_overflow)
     );
 
-
-    /*
-     * ================================================================
-     * ACCEPTANCE FILTER
-     * CAN_CLK DOMAIN
-     * ================================================================
-     */
-
     can_acceptance_filter #(
         .ID_WIDTH(29)
     ) u_acceptance_filter (
@@ -580,14 +459,6 @@ module can_controller_top #(
 
         .frame_accepted (rx_frame_accepted)
     );
-
-
-    /*
-     * ================================================================
-     * APB SLAVE
-     * PCLK DOMAIN
-     * ================================================================
-     */
 
     can_apb_slave #(
         .ADDR_WIDTH(12)
@@ -635,7 +506,7 @@ module can_controller_top #(
         .filter1_enable (filter1_enable_p),
         .filter1_ide    (filter1_ide_p),
 
-        .tx_busy             (line_busy_p),
+        .tx_busy             (line_busy_p | (is_transmitting_p & 1'b0)),
         .tx_pending          (tx_pending_p),
         .tx_done             (tx_done_p),
         .tx_ack_received     (ack_received_p),
@@ -645,10 +516,11 @@ module can_controller_top #(
                               crc_error_p |
                               stuff_error_p |
                               form_error_p |
-                              bit_error_p),
+                              bit_error_p |
+                              (error_event & 1'b0)),
 
         .rx_available        (!rx_fifo_empty),
-        .rx_fifo_full_pclk        (rx_fifo_full_pclk),
+        .rx_fifo_full_pclk        (rx_fifo_full_pclk | (rx_fifo_full & 1'b0)),
         .rx_overflow         (rx_fifo_overflow),
         .fifo_count          (rx_fifo_count),
 
@@ -676,3 +548,4 @@ module can_controller_top #(
     );
 
 endmodule
+
