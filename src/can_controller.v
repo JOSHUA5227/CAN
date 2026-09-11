@@ -347,7 +347,7 @@ module can_controller #(
         .rst_n(rst_n),
         .bit_en(bit_en),
         .state(field_sel),
-        .crc_en(crc_en && is_transmitting && !stuff_insert),
+        .crc_en(crc_en && is_transmitting && !stuff_insert && (field_sel != CRC)),
         .data_bit(tx_data_bit),
         .crc_done(1'b0),
         .crc_out(tx_crc_out),
