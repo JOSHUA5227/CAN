@@ -76,7 +76,7 @@ module can_apb_slave #(
      * RX FIFO STATUS
      */
     input wire                  rx_available,
-    input wire                  rx_fifo_full,
+    input wire                  rx_fifo_full_pclk,
     input wire                  rx_overflow,
     input wire [7:0]            fifo_count,
 
@@ -84,8 +84,8 @@ module can_apb_slave #(
      * RX DATA
      */
     input wire [28:0]            rx_identifier,
-    input wire                  rx_ide,
-    input wire                  rx_rtr,
+    input wire                   rx_ide,
+    input wire                   rx_rtr,
     input wire [3:0]             rx_dlc,
     input wire [63:0]            rx_data,
 
@@ -171,15 +171,12 @@ module can_apb_slave #(
      * CAN_CLK -> PCLK RX STATUS SYNCHRONIZERS
      * ================================================================
      *
-     * rx_fifo_full and rx_overflow originate in the CAN clock domain.
+     * rx_fifo_full_pclk is already generated in the PCLK domain
+     * by the asynchronous FIFO.
      *
-     * They must not be used directly by the PCLK-domain APB read
-     * mux. Each persistent single-bit status signal therefore passes
-     * through a 2-FF synchronizer.
+     * rx_overflow still originates in the CAN clock domain and
+     * therefore continues to use a 2-FF synchronizer.
      */
-
-    reg rx_fifo_full_sync1;
-    reg rx_fifo_full_sync2;
 
     reg rx_overflow_sync1;
     reg rx_overflow_sync2;
@@ -206,17 +203,11 @@ module can_apb_slave #(
     begin
         if(!PRESETn)
         begin
-            rx_fifo_full_sync1 <= 1'b0;
-            rx_fifo_full_sync2 <= 1'b0;
-
             rx_overflow_sync1 <= 1'b0;
             rx_overflow_sync2 <= 1'b0;
         end
         else
         begin
-            rx_fifo_full_sync1 <= rx_fifo_full;
-            rx_fifo_full_sync2 <= rx_fifo_full_sync1;
-
             rx_overflow_sync1 <= rx_overflow;
             rx_overflow_sync2 <= rx_overflow_sync1;
         end
@@ -241,7 +232,7 @@ module can_apb_slave #(
             prop_seg <= 8'd0;
             phase_seg1 <= 8'd0;
             phase_seg2 <= 8'd0;
-            sjw <= 8'd0;
+            sjw <= 4'd0;
 
             tx_identifier <= 29'd0;
             tx_ide <= 1'b0;
@@ -351,10 +342,6 @@ module can_apb_slave #(
 
                     /*
                      * SEGMENTS
-                     *
-                     * [7:0]   PROP_SEG
-                     * [15:8]  PHASE_SEG1
-                     * [23:16] PHASE_SEG2
                      */
 
                     ADDR_SEGMENTS:
@@ -382,7 +369,7 @@ module can_apb_slave #(
                         if(!can_enable)
                         begin
                             if(PSTRB[0])
-                                sjw <= PWDATA[7:0];
+                                sjw <= PWDATA[3:0];
                         end
                     end
 
@@ -409,10 +396,6 @@ module can_apb_slave #(
 
                     /*
                      * TX CONTROL
-                     *
-                     * bit 0     = IDE
-                     * bit 1     = RTR
-                     * bits 5:2  = DLC
                      */
 
                     ADDR_TX_CTRL:
@@ -468,11 +451,6 @@ module can_apb_slave #(
 
                     /*
                      * TX COMMAND
-                     *
-                     * bit 0 = transmit request
-                     *
-                     * A new TX command also clears the sticky
-                     * status from the previous transmission.
                      */
 
                     ADDR_TX_COMMAND:
@@ -491,8 +469,6 @@ module can_apb_slave #(
 
                     /*
                      * RX COMMAND
-                     *
-                     * bit 0 = pop RX FIFO
                      */
 
                     ADDR_RX_COMMAND:
@@ -550,9 +526,6 @@ module can_apb_slave #(
 
                     /*
                      * FILTER 0 CONTROL
-                     *
-                     * bit 0 = enable
-                     * bit 1 = IDE
                      */
 
                     ADDR_FILTER0_CTRL:
@@ -616,9 +589,6 @@ module can_apb_slave #(
 
                     /*
                      * FILTER 1 CONTROL
-                     *
-                     * bit 0 = enable
-                     * bit 1 = IDE
                      */
 
                     ADDR_FILTER1_CTRL:
@@ -636,8 +606,6 @@ module can_apb_slave #(
 
                     /*
                      * READ-ONLY REGISTERS
-                     *
-                     * Writes to these registers are ignored.
                      */
 
                     ADDR_VERSION:
@@ -703,9 +671,6 @@ module can_apb_slave #(
      * ================================================================
      * APB READ DATA
      * ================================================================
-     *
-     * All CAN_CLK-domain RX status levels used below are now consumed
-     * through their PCLK-domain synchronized copies.
      */
 
     always @(*)
@@ -742,18 +707,6 @@ module can_apb_slave #(
 
                 /*
                  * STATUS
-                 *
-                 * bit 0  = tx_busy
-                 * bit 1  = tx_done
-                 * bit 2  = rx_available
-                 * bit 3  = rx_fifo_full
-                 * bit 4  = arbitration_lost
-                 * bit 5  = ack_error
-                 * bit 6  = crc_error
-                 * bit 7  = stuff_error
-                 * bit 8  = form_error
-                 * bit 9  = bit_error
-                 * bit 10 = rx_overflow
                  */
 
                 ADDR_STATUS:
@@ -763,7 +716,7 @@ module can_apb_slave #(
                     PRDATA[0] = tx_busy;
                     PRDATA[1] = tx_done_latched;
                     PRDATA[2] = rx_available;
-                    PRDATA[3] = rx_fifo_full_sync2;
+                    PRDATA[3] = rx_fifo_full_pclk;
                     PRDATA[4] = arb_lost;
                     PRDATA[5] = ack_error;
                     PRDATA[6] = crc_error;
@@ -776,11 +729,6 @@ module can_apb_slave #(
 
                 /*
                  * ERROR STATUS
-                 *
-                 * bits [1:0] = error_state
-                 * bit  [2]   = recovery_active
-                 * bit  [3]   = last_error_valid
-                 * bits [7:4] = last_error_type
                  */
 
                 ADDR_ERROR_STATUS:
@@ -806,10 +754,6 @@ module can_apb_slave #(
 
                 /*
                  * SEGMENTS
-                 *
-                 * [7:0]   PROP_SEG
-                 * [15:8]  PHASE_SEG1
-                 * [23:16] PHASE_SEG2
                  */
 
                 ADDR_SEGMENTS:
@@ -828,7 +772,7 @@ module can_apb_slave #(
                 ADDR_SJW_CONTROL:
                 begin
                     PRDATA = 32'd0;
-                    PRDATA[7:0] = sjw;
+                    PRDATA[3:0] = sjw;
                 end
 
 
@@ -845,10 +789,6 @@ module can_apb_slave #(
 
                 /*
                  * TX CTRL
-                 *
-                 * bit 0     = IDE
-                 * bit 1     = RTR
-                 * bits 5:2  = DLC
                  */
 
                 ADDR_TX_CTRL:
@@ -882,8 +822,6 @@ module can_apb_slave #(
 
                 /*
                  * TX COMMAND
-                 *
-                 * Write-only command register.
                  */
 
                 ADDR_TX_COMMAND:
@@ -894,15 +832,6 @@ module can_apb_slave #(
 
                 /*
                  * TX STATUS
-                 *
-                 * bit 0 = tx_pending
-                 * bit 1 = tx_busy
-                 * bit 2 = tx_done
-                 * bit 3 = tx_ack_received
-                 * bit 4 = tx_arbitration_lost
-                 * bit 5 = tx_error
-                 *
-                 * Bits 2-5 are sticky PCLK-domain status.
                  */
 
                 ADDR_TX_STATUS:
@@ -920,11 +849,6 @@ module can_apb_slave #(
 
                 /*
                  * RX STATUS
-                 *
-                 * bits [7:0] = fifo_count
-                 * bit 8      = empty
-                 * bit 9      = full
-                 * bit 10     = overflow
                  */
 
                 ADDR_RX_STATUS:
@@ -933,7 +857,7 @@ module can_apb_slave #(
 
                     PRDATA[7:0] = fifo_count;
                     PRDATA[8] = !rx_available;
-                    PRDATA[9] = rx_fifo_full_sync2;
+                    PRDATA[9] = rx_fifo_full_pclk;
                     PRDATA[10] = rx_overflow_sync2;
                 end
 
@@ -951,10 +875,6 @@ module can_apb_slave #(
 
                 /*
                  * RX CTRL
-                 *
-                 * bit 0     = IDE
-                 * bit 1     = RTR
-                 * bits 5:2  = DLC
                  */
 
                 ADDR_RX_CTRL:
@@ -988,8 +908,6 @@ module can_apb_slave #(
 
                 /*
                  * RX COMMAND
-                 *
-                 * Write-only command register.
                  */
 
                 ADDR_RX_COMMAND:
@@ -1022,9 +940,6 @@ module can_apb_slave #(
 
                 /*
                  * FILTER 0 CONTROL
-                 *
-                 * bit 0 = enable
-                 * bit 1 = IDE
                  */
 
                 ADDR_FILTER0_CTRL:
@@ -1059,9 +974,6 @@ module can_apb_slave #(
 
                 /*
                  * FILTER 1 CONTROL
-                 *
-                 * bit 0 = enable
-                 * bit 1 = IDE
                  */
 
                 ADDR_FILTER1_CTRL:
@@ -1096,8 +1008,6 @@ module can_apb_slave #(
 
                 /*
                  * UNMAPPED ADDRESS
-                 *
-                 * Default slave behavior: return zero and no error.
                  */
 
                 default:
@@ -1114,18 +1024,6 @@ module can_apb_slave #(
      * ================================================================
      * APB WRITE ERROR RESPONSE
      * ================================================================
-     *
-     * Illegal writes:
-     *
-     * 1. CONTROL:
-     *       LOOPBACK = 1 and LISTEN_ONLY = 1
-     *
-     * 2. CONTROL:
-     *       CAN_ENABLE cleared while TX is busy
-     *
-     * 3. BIT timing/filter configuration while CAN is enabled
-     *
-     * Read-only registers are treated as ignored writes.
      */
 
     always @(*)

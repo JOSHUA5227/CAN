@@ -14,16 +14,6 @@ module can_rx_fifo_bridge #(
     input  wire [3:0]  rx_dlc,
     input  wire [63:0] rx_data,
 
-    /*
-     * Indicates that this CAN controller is the transmitter
-     * for the current frame.
-     *
-     * Used only to prevent the controller's own transmitted
-     * frame from being written into the RX FIFO.
-     *
-     * The CAN controller still monitors CAN RX internally
-     * during transmission for arbitration, ACK and bit errors.
-     */
     input  wire        is_transmitting,
     input  wire        loopback,
 
@@ -50,9 +40,9 @@ module can_rx_fifo_bridge #(
     output wire [7:0]  fifo_count,
     output wire        fifo_empty,
     output wire        fifo_full,
+    output wire        fifo_full_pclk,
     output reg         fifo_overflow
 );
-
 
     /* =========================================================
      * Parameters
@@ -68,31 +58,18 @@ module can_rx_fifo_bridge #(
     wire [FIFO_WIDTH-1:0] fifo_wdata;
     wire [FIFO_WIDTH-1:0] fifo_rdata;
 
+    wire fifo_rfull;
     wire fifo_wfull;
     wire fifo_rempty;
 
     wire fifo_write_en;
     wire fifo_read_en;
 
-    /*
-     * async_fifo internally uses a 4-bit count for DEPTH=8.
-     * Keep that internal width separate from the 8-bit APB
-     * visible FIFO_COUNT field.
-     */
     wire [3:0] fifo_count_raw;
 
 
     /* =========================================================
      * Pack received CAN frame
-     *
-     * FIFO entry:
-     *
-     * [127:99] RESERVED
-     * [98:70]  ID
-     * [69]     IDE
-     * [68]     RTR
-     * [67:64]  DLC
-     * [63:0]   DATA
      * ========================================================= */
 
     assign fifo_wdata = {
@@ -107,27 +84,6 @@ module can_rx_fifo_bridge #(
 
     /* =========================================================
      * FIFO write control
-     *
-     * A received frame is written only when:
-     *
-     * 1. A valid accepted RX frame exists
-     * 2. This controller is NOT transmitting the frame
-     * 3. The FIFO is not full
-     *
-     * This prevents a controller from placing its own
-     * transmitted frame into its RX FIFO.
-     *
-     * IMPORTANT:
-     *
-     * is_transmitting does NOT disable CAN RX inside the
-     * CAN controller. The CAN controller continues monitoring
-     * the physical bus during TX for:
-     *
-     * - arbitration
-     * - ACK
-     * - bit error detection
-     *
-     * Only the FIFO write is suppressed here.
      * ========================================================= */
 
     assign fifo_write_en =
@@ -138,10 +94,6 @@ module can_rx_fifo_bridge #(
 
     /* =========================================================
      * FIFO read control
-     *
-     * RX_COMMAND.POP generates rx_pop.
-     *
-     * The read only occurs when the FIFO is not empty.
      * ========================================================= */
 
     assign fifo_read_en = rx_pop && !fifo_rempty;
@@ -167,6 +119,7 @@ module can_rx_fifo_bridge #(
         .r_en       (fifo_read_en),
         .w_en       (fifo_write_en),
 
+        .r_full     (fifo_rfull),
         .full       (fifo_wfull),
         .empty      (fifo_rempty),
 
@@ -179,43 +132,23 @@ module can_rx_fifo_bridge #(
      * ========================================================= */
 
     assign fifo_empty = fifo_rempty;
-    assign fifo_full  = fifo_wfull;
+
+    /* CAN clock domain full indication */
+    assign fifo_full = fifo_wfull;
+
+    /* PCLK domain full indication */
+    assign fifo_full_pclk = fifo_rfull;
 
 
-    /*
-     * Expand internal 4-bit count to the 8-bit APB-visible
-     * FIFO_COUNT field.
-     *
-     * DEPTH=8:
-     *
-     *     0 -> 8'h00
-     *     1 -> 8'h01
-     *     ...
-     *     8 -> 8'h08
-     */
+    /* =========================================================
+     * APB-visible FIFO count
+     * ========================================================= */
 
     assign fifo_count = {4'd0, fifo_count_raw};
 
 
     /* =========================================================
      * RX register outputs
-     *
-     * These outputs come directly from the FIFO's registered
-     * read-data register.
-     *
-     * RX_COMMAND.POP
-     *       |
-     *       v
-     * FIFO read enable
-     *       |
-     *       v
-     * next PCLK edge
-     *       |
-     *       v
-     * fifo_rdata updated
-     *       |
-     *       v
-     * RX_ID / RX_CTRL / RX_DATA updated
      * ========================================================= */
 
     assign rx_identifier_out = fifo_rdata[98:70];
@@ -231,15 +164,6 @@ module can_rx_fifo_bridge #(
 
     /* =========================================================
      * RX FIFO overflow
-     *
-     * If a valid CAN frame arrives while the FIFO is full,
-     * the frame is discarded and overflow is latched.
-     *
-     * No REC penalty is applied here.
-     *
-     * A self-transmitted frame is not considered an RX FIFO
-     * overflow condition because it is intentionally suppressed
-     * by fifo_write_en above.
      * ========================================================= */
 
     always @(posedge can_clk or negedge can_rst_n)
