@@ -43,6 +43,7 @@ module can_controller #(
     output wire stuff_error,
     output wire form_error,
     output wire bit_error,
+    output wire recovery_active,
 
     output wire [3:0] can_state
 );
@@ -111,7 +112,6 @@ module can_controller #(
     wire error_event;
     wire error_flag_request;
     wire error_flag_active;
-    wire recovery_active;
 
 
     wire tx_crc_select;

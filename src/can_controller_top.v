@@ -17,7 +17,7 @@ module can_controller_top #(
     output wire        PREADY,
     output wire        PSLVERR,
     input wire        can_rx,
-    output wire        can_tx
+    output wire       can_tx
 );
 
     /* ================================================================
@@ -41,7 +41,7 @@ module can_controller_top #(
 
 
     /* ================================================================
-     * APB REGISTER OUTPUTS
+     * APB REGISTER OUTPUTS - PCLK DOMAIN
      * ================================================================ */
 
     wire        can_enable_p;
@@ -79,7 +79,6 @@ module can_controller_top #(
      * ================================================================ */
 
     reg config_update_pending;
-
     wire config_write;
 
     assign config_write =
@@ -111,7 +110,8 @@ module can_controller_top #(
 
 
     /* ================================================================
-     * CAN-DOMAIN CONFIGURATION
+     * CONFIGURATION CDC
+     * PCLK -> CAN_CLK
      * ================================================================ */
 
     wire        can_enable_can;
@@ -134,15 +134,7 @@ module can_controller_top #(
     wire        filter1_enable_can;
     wire        filter1_ide_can;
 
-    wire        config_pending_can;
-
-
-    /* ================================================================
-     * CONFIGURATION CDC
-     *
-     * Configuration is transferred from pclk to can_clk using the
-     * dedicated configuration CDC block.
-     * ================================================================ */
+    wire config_pending_can;
 
     can_config_cdc u_config_cdc (
         .pclk               (pclk),
@@ -198,11 +190,13 @@ module can_controller_top #(
 
     /* ================================================================
      * TX CDC
+     * PCLK -> CAN_CLK
      * ================================================================ */
 
-    wire        tx_pending_p;
+    wire tx_pending_p;
 
-    wire        line_busy;
+    wire line_busy_can;
+
     wire        can_tx_valid;
     wire [28:0] can_tx_id;
     wire        can_tx_ide;
@@ -226,7 +220,7 @@ module can_controller_top #(
         .can_clk      (can_clk),
         .can_rst_n    (can_rst_sync),
 
-        .can_tx_ready (can_enable_can && !line_busy),
+        .can_tx_ready (can_enable_can && !line_busy_can),
 
         .can_tx_valid (can_tx_valid),
         .can_tx_id    (can_tx_id),
@@ -238,41 +232,33 @@ module can_controller_top #(
 
 
     /* ================================================================
-     * CAN CONTROLLER STATUS
+     * CAN CONTROLLER - CAN DOMAIN
      * ================================================================ */
 
-    wire        tx_done;
-    wire        rx_done;
-    wire        is_transmitting;
+    wire        tx_done_can;
+    wire        rx_done_can;
+    wire        is_transmitting_can;
 
-    wire [8:0]  tec;
-    wire [7:0]  rec;
-    wire [1:0]  error_state;
+    wire [8:0]  tec_can;
+    wire [7:0]  rec_can;
+    wire [1:0]  error_state_can;
 
-    wire        ack_received;
+    wire        ack_received_can;
 
-    wire        arbitration_lost;
-    wire        ack_error;
-    wire        crc_error;
-    wire        stuff_error;
-    wire        form_error;
-    wire        bit_error;
+    wire        arbitration_lost_can;
+    wire        ack_error_can;
+    wire        crc_error_can;
+    wire        stuff_error_can;
+    wire        form_error_can;
+    wire        bit_error_can;
 
-
-    /* ================================================================
-     * CAN CONTROLLER STATE / TIMING
-     * ================================================================ */
+    wire        recovery_active_can;
 
     wire [3:0] can_state;
 
-    wire bit_en;
-    wire sample_en;
-    wire can_rx_sync;
-    wire can_rx_sample;
-
 
     /* ================================================================
-     * CAN CONTROLLER RX
+     * CAN RX
      * ================================================================ */
 
     wire [28:0] rx_identifier_can;
@@ -284,7 +270,7 @@ module can_controller_top #(
 
 
     /* ================================================================
-     * LOOPBACK / LISTEN-ONLY BUS ROUTING
+     * CAN BUS ROUTING
      * ================================================================ */
 
     wire can_tx_controller;
@@ -302,34 +288,23 @@ module can_controller_top #(
 
 
     /* ================================================================
-     * ERROR STATUS CDC
+     * ERROR EVENT LATCH - CAN DOMAIN
      * ================================================================ */
 
-    wire can_last_error_valid;
-    wire [3:0] can_last_error_type;
-    wire error_event_toggle;
-
-    wire last_error_valid;
-    wire [3:0] last_error_type;
-    wire error_event;
-
-    wire arbitration_lost_p;
-    wire bit_error_p;
-    wire stuff_error_p;
-    wire crc_error_p;
-    wire form_error_p;
-    wire ack_error_p;
+    wire        can_last_error_valid;
+    wire [3:0]  can_last_error_type;
+    wire        error_event_toggle;
 
     can_error_latch u_error_latch (
         .clk                 (can_clk),
         .rst_n               (can_rst_sync),
 
-        .bit_error           (bit_error),
-        .stuff_error         (stuff_error),
-        .crc_error           (crc_error),
-        .form_error          (form_error),
-        .ack_error           (ack_error),
-        .arbitration_lost    (arbitration_lost),
+        .bit_error           (bit_error_can),
+        .stuff_error         (stuff_error_can),
+        .crc_error           (crc_error_can),
+        .form_error          (form_error_can),
+        .ack_error           (ack_error_can),
+        .arbitration_lost    (arbitration_lost_can),
 
         .last_error_valid    (can_last_error_valid),
         .last_error_type     (can_last_error_type),
@@ -337,19 +312,72 @@ module can_controller_top #(
     );
 
 
+    /* ================================================================
+     * CONSOLIDATED CAN -> PCLK STATUS CDC
+     * ================================================================ */
+
+    wire        line_busy_p;
+    wire        is_transmitting_p;
+
+    wire        tx_done_p;
+    wire        ack_received_p;
+    wire        arbitration_lost_p;
+
+    wire [1:0]  error_state_p;
+    wire [8:0]  tec_p;
+    wire [7:0]  rec_p;
+    wire        recovery_active_p;
+
+    wire        last_error_valid;
+    wire [3:0]  last_error_type;
+
+    wire        error_event;
+
+    wire        bit_error_p;
+    wire        stuff_error_p;
+    wire        crc_error_p;
+    wire        form_error_p;
+    wire        ack_error_p;
+
     can_error_status_cdc u_error_status_cdc (
         .pclk                 (pclk),
         .p_rst_n              (p_rst_sync),
+
+        .can_clk              (can_clk),
+        .can_rst_n            (can_rst_sync),
 
         .error_event_toggle   (error_event_toggle),
         .can_last_error_valid (can_last_error_valid),
         .can_last_error_type  (can_last_error_type),
 
+        .can_line_busy        (line_busy_can),
+        .can_is_transmitting  (is_transmitting_can),
+        .can_tx_done          (tx_done_can),
+        .can_ack_received     (ack_received_can),
+        .can_arbitration_lost (arbitration_lost_can),
+
+        .can_error_state      (error_state_can),
+        .can_tec              (tec_can),
+        .can_rec              (rec_can),
+        .can_recovery_active  (recovery_active_can),
+
+        .line_busy            (line_busy_p),
+        .is_transmitting      (is_transmitting_p),
+
+        .tx_done              (tx_done_p),
+        .ack_received         (ack_received_p),
+        .arbitration_lost     (arbitration_lost_p),
+
+        .error_state          (error_state_p),
+        .tec                  (tec_p),
+        .rec                  (rec_p),
+        .recovery_active      (recovery_active_p),
+
         .last_error_valid     (last_error_valid),
         .last_error_type      (last_error_type),
+
         .error_event          (error_event),
 
-        .arbitration_lost     (arbitration_lost_p),
         .bit_error            (bit_error_p),
         .stuff_error          (stuff_error_p),
         .crc_error            (crc_error_p),
@@ -359,7 +387,8 @@ module can_controller_top #(
 
 
     /* ================================================================
-     * RX FIFO
+     * RX FIFO CDC
+     * CAN_CLK -> PCLK
      * ================================================================ */
 
     wire [28:0] rx_identifier_p;
@@ -372,6 +401,7 @@ module can_controller_top #(
     wire       rx_fifo_empty;
     wire       rx_fifo_full;
     wire       rx_fifo_overflow;
+
     wire rx_frame_accepted;
 
     can_rx_fifo_bridge #(
@@ -403,15 +433,14 @@ module can_controller_top #(
         .fifo_full         (rx_fifo_full),
         .fifo_overflow     (rx_fifo_overflow),
 
-        .is_transmitting   (is_transmitting),
+        .is_transmitting   (is_transmitting_can),
         .loopback          (loopback_can)
     );
 
 
     /* ================================================================
-     * ACCEPTANCE FILTER
+     * ACCEPTANCE FILTER - CAN DOMAIN
      * ================================================================ */
-
 
     can_acceptance_filter #(
         .ID_WIDTH(29)
@@ -435,7 +464,7 @@ module can_controller_top #(
 
 
     /* ================================================================
-     * APB SLAVE
+     * APB SLAVE - PCLK DOMAIN
      * ================================================================ */
 
     can_apb_slave #(
@@ -484,11 +513,12 @@ module can_controller_top #(
         .filter1_enable (filter1_enable_p),
         .filter1_ide    (filter1_ide_p),
 
-        .tx_busy             (line_busy),
+        .tx_busy             (line_busy_p),
         .tx_pending          (tx_pending_p),
-        .tx_done             (tx_done),
-        .tx_ack_received     (ack_received),
-        .tx_arbitration_lost (arbitration_lost),
+        .tx_done             (tx_done_p),
+        .tx_ack_received     (ack_received_p),
+        .tx_arbitration_lost (arbitration_lost_p),
+
         .tx_error            (ack_error_p |
                                crc_error_p |
                                stuff_error_p |
@@ -507,15 +537,14 @@ module can_controller_top #(
         .form_error          (form_error_p),
         .bit_error           (bit_error_p),
 
-        .error_state         (error_state),
-
-        .recovery_active     (1'b0),
+        .error_state         (error_state_p),
+        .recovery_active     (recovery_active_p),
 
         .last_error_valid    (last_error_valid),
         .last_error_type     (last_error_type),
 
-        .tec                 (tec),
-        .rec                 (rec),
+        .tec                 (tec_p),
+        .rec                 (rec_p),
 
         .rx_identifier       (rx_identifier_p),
         .rx_ide              (rx_ide_p),
@@ -528,6 +557,7 @@ module can_controller_top #(
     /* ================================================================
      * CAN CONTROLLER
      * ================================================================ */
+
     can_controller #(
         .CAN_CLK_FREQ(CAN_CLK_FREQ),
         .CAN_BIT_RATE(CAN_BIT_RATE)
@@ -558,22 +588,24 @@ module can_controller_top #(
         .rx_data        (rx_data_can),
         .rx_frame_valid (rx_frame_valid_can),
 
-        .tx_done        (tx_done),
-        .rx_done        (),
-        .line_busy      (line_busy),
-        .is_transmitting(is_transmitting),
+        .tx_done        (tx_done_can),
+        .rx_done        (rx_done_can),
+        .line_busy      (line_busy_can),
+        .is_transmitting(is_transmitting_can),
 
-        .tec            (tec),
-        .rec            (rec),
-        .error_state    (error_state),
-        .ack_received   (ack_received),
+        .tec            (tec_can),
+        .rec            (rec_can),
+        .error_state    (error_state_can),
+        .ack_received   (ack_received_can),
 
-        .arbitration_lost(arbitration_lost),
-        .ack_error      (ack_error),
-        .crc_error      (crc_error),
-        .stuff_error    (stuff_error),
-        .form_error     (form_error),
-        .bit_error      (bit_error),
+        .arbitration_lost(arbitration_lost_can),
+        .ack_error      (ack_error_can),
+        .crc_error      (crc_error_can),
+        .stuff_error    (stuff_error_can),
+        .form_error     (form_error_can),
+        .bit_error      (bit_error_can),
+
+        .recovery_active(recovery_active_can),
 
         .can_state      (can_state)
     );
