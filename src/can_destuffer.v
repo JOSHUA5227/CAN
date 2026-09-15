@@ -90,7 +90,8 @@ module can_destuffer(
             begin
                 if (stuff_pending)
                 begin
-                    count         <= 3'd0;
+                    prev_bit      <= rx_bit;
+                    count         <= 3'd1;
                     stuff_pending <= 1'b0;
                 end
                 else if (rx_bit_same_as_prev)

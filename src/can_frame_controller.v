@@ -174,7 +174,8 @@ begin
             SOF,
             ARBITRATION,
             CONTROL,
-            DATA:
+            DATA,
+            RX_ONLY:
                 crc_en <= 1'b1;
 
             CRC:
